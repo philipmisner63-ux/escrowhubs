@@ -1,47 +1,51 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
-import { SimpleEscrow } from "../typechain-types";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import hre from "hardhat";
+import { parseEther, getAddress } from "viem";
 
-describe("SimpleEscrow", function () {
-  let escrow: SimpleEscrow;
-  let depositor: HardhatEthersSigner;
-  let beneficiary: HardhatEthersSigner;
-  let arbiter: HardhatEthersSigner;
-  const AMOUNT = ethers.parseEther("1.0");
+const AMOUNT = parseEther("1.0");
 
-  beforeEach(async () => {
-    [depositor, beneficiary, arbiter] = await ethers.getSigners();
-    const Factory = await ethers.getContractFactory("SimpleEscrow", depositor);
-    escrow = await Factory.deploy(beneficiary.address, arbiter.address);
-    await escrow.waitForDeployment();
-  });
+describe("SimpleEscrow", () => {
+  async function deploy() {
+    const conn = await hre.network.connect();
+    const [depositor, beneficiary, arbiter] = await conn.viem.getWalletClients();
+    const escrow = await conn.viem.deployContract("SimpleEscrow", [
+      getAddress(beneficiary.account.address),
+      getAddress(arbiter.account.address),
+    ]);
+    return { escrow, conn, depositor, beneficiary, arbiter };
+  }
 
   it("accepts deposit from depositor", async () => {
-    await expect(escrow.deposit({ value: AMOUNT }))
-      .to.emit(escrow, "Deposited")
-      .withArgs(depositor.address, AMOUNT);
-    expect(await escrow.state()).to.equal(1); // AWAITING_DELIVERY
+    const { escrow } = await deploy();
+    await escrow.write.deposit([], { value: AMOUNT });
+    const state = await escrow.read.state();
+    assert.equal(state, 1); // AWAITING_DELIVERY
   });
 
   it("releases funds to beneficiary", async () => {
-    await escrow.deposit({ value: AMOUNT });
-    await expect(escrow.release())
-      .to.emit(escrow, "Released")
-      .withArgs(beneficiary.address, AMOUNT);
+    const { escrow } = await deploy();
+    await escrow.write.deposit([], { value: AMOUNT });
+    await escrow.write.release();
+    const state = await escrow.read.state();
+    assert.equal(state, 2); // COMPLETE
   });
 
   it("arbiter can resolve dispute in favour of beneficiary", async () => {
-    await escrow.deposit({ value: AMOUNT });
-    await escrow.dispute();
-    await expect(escrow.connect(arbiter).resolveRelease())
-      .to.emit(escrow, "Released");
+    const { escrow, arbiter } = await deploy();
+    await escrow.write.deposit([], { value: AMOUNT });
+    await escrow.write.dispute();
+    await escrow.write.resolveRelease([], { account: arbiter.account });
+    const state = await escrow.read.state();
+    assert.equal(state, 2); // COMPLETE
   });
 
   it("arbiter can refund depositor", async () => {
-    await escrow.deposit({ value: AMOUNT });
-    await escrow.dispute();
-    await expect(escrow.connect(arbiter).resolveRefund())
-      .to.emit(escrow, "Refunded");
+    const { escrow, arbiter } = await deploy();
+    await escrow.write.deposit([], { value: AMOUNT });
+    await escrow.write.dispute();
+    await escrow.write.resolveRefund([], { account: arbiter.account });
+    const state = await escrow.read.state();
+    assert.equal(state, 4); // REFUNDED
   });
 });

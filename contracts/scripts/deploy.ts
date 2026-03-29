@@ -1,31 +1,39 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
+import { parseEther } from "viem";
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
-  console.log("Deploying with account:", deployer.address);
+  const conn = await hre.network.connect();
+  const [deployer] = await conn.viem.getWalletClients();
+
+  console.log("Deploying with account:", deployer.account.address);
+  console.log("Network:", hre.config.defaultChainType);
+
+  // Replace with real beneficiary/arbiter addresses before deploying to testnet
+  const beneficiary = process.env.BENEFICIARY_ADDRESS ?? deployer.account.address;
+  const arbiter     = process.env.ARBITER_ADDRESS     ?? deployer.account.address;
 
   // --- SimpleEscrow ---
-  // Replace with real beneficiary/arbiter addresses before deploying
-  const beneficiary = process.env.BENEFICIARY_ADDRESS || deployer.address;
-  const arbiter     = process.env.ARBITER_ADDRESS     || deployer.address;
-
-  const SimpleEscrow = await ethers.getContractFactory("SimpleEscrow");
-  const simple = await SimpleEscrow.deploy(beneficiary, arbiter);
-  await simple.waitForDeployment();
-  console.log("SimpleEscrow deployed to:", await simple.getAddress());
+  const simple = await conn.viem.deployContract("SimpleEscrow", [
+    beneficiary as `0x${string}`,
+    arbiter     as `0x${string}`,
+  ]);
+  console.log("SimpleEscrow deployed to:", simple.address);
 
   // --- MilestoneEscrow (example: 3 milestones) ---
   const descriptions = ["Kickoff", "Delivery", "Final"];
   const amounts = [
-    ethers.parseEther("0.1"),
-    ethers.parseEther("0.5"),
-    ethers.parseEther("0.4"),
+    parseEther("0.1"),
+    parseEther("0.5"),
+    parseEther("0.4"),
   ];
 
-  const MilestoneEscrow = await ethers.getContractFactory("MilestoneEscrow");
-  const milestone = await MilestoneEscrow.deploy(beneficiary, arbiter, descriptions, amounts);
-  await milestone.waitForDeployment();
-  console.log("MilestoneEscrow deployed to:", await milestone.getAddress());
+  const milestone = await conn.viem.deployContract("MilestoneEscrow", [
+    beneficiary as `0x${string}`,
+    arbiter     as `0x${string}`,
+    descriptions,
+    amounts,
+  ]);
+  console.log("MilestoneEscrow deployed to:", milestone.address);
 }
 
 main().catch((err) => {

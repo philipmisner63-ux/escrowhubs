@@ -1,10 +1,8 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
-import * as dotenv from "dotenv";
-
-dotenv.config();
+import { type HardhatUserConfig } from "hardhat/config";
+import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
 
 const config: HardhatUserConfig = {
+  plugins: [hardhatToolboxViem],
   solidity: {
     version: "0.8.24",
     settings: {
@@ -16,15 +14,20 @@ const config: HardhatUserConfig = {
   },
   networks: {
     localhost: {
+      type: "http",
       url: "http://127.0.0.1:8545",
     },
-    // BlockDAG testnet — fill in when available
-    blockdag_testnet: {
-      url: process.env.BLOCKDAG_RPC_URL || "",
-      accounts: process.env.DEPLOYER_PRIVATE_KEY
-        ? [process.env.DEPLOYER_PRIVATE_KEY]
-        : [],
-    },
+    ...(process.env.BLOCKDAG_RPC_URL
+      ? {
+          blockdag_testnet: {
+            type: "http" as const,
+            url: process.env.BLOCKDAG_RPC_URL,
+            accounts: process.env.DEPLOYER_PRIVATE_KEY
+              ? [process.env.DEPLOYER_PRIVATE_KEY]
+              : [],
+          },
+        }
+      : {}),
   },
   paths: {
     sources: "./contracts",
