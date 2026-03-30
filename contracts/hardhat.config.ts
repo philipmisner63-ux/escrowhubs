@@ -17,17 +17,14 @@ const config: HardhatUserConfig = {
       type: "http",
       url: "http://127.0.0.1:8545",
     },
-    ...(process.env.BLOCKDAG_RPC_URL
-      ? {
-          blockdag_testnet: {
-            type: "http" as const,
-            url: process.env.BLOCKDAG_RPC_URL,
-            accounts: process.env.DEPLOYER_PRIVATE_KEY
-              ? [process.env.DEPLOYER_PRIVATE_KEY]
-              : [],
-          },
-        }
-      : {}),
+    blockdag: {
+      type: "http" as const,
+      url: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.bdagscan.com",
+      chainId: 1404,
+      accounts: process.env.DEPLOYER_PRIVATE_KEY
+        ? [process.env.DEPLOYER_PRIVATE_KEY]
+        : [],
+    },
   },
   paths: {
     sources: "./contracts",

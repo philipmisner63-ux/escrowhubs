@@ -13,8 +13,26 @@ import "./MilestoneEscrow.sol";
  * @dev Trust score is computed off-chain and passed in at deploy time.
  *      On-chain it is recorded but not enforced — enforcement is the frontend's job.
  *      This keeps the contract simple and gas-efficient.
+ *
+ *      AI Arbiter: set aiArbiterAddress via setAIArbiter() after deploying AIArbiter.sol.
+ *      Pass useAIArbiter=true on create functions to auto-route disputes to the AI oracle.
  */
 contract EscrowFactory {
+
+    // ─── Admin ────────────────────────────────────────────────────────────────
+
+    address public owner;
+
+    /// Address of the deployed AIArbiter contract (set after deploy)
+    address public aiArbiterAddress;
+
+    modifier onlyOwner() { require(msg.sender == owner, "Not owner"); _; }
+
+    // ─── Constructor ──────────────────────────────────────────────────────────
+
+    constructor() {
+        owner = msg.sender;
+    }
 
     // ─── Structs ──────────────────────────────────────────────────────────────
 
@@ -62,22 +80,41 @@ contract EscrowFactory {
         uint8           trustTier
     );
 
+    event AIArbiterUpdated(address indexed newAIArbiter);
+
+    // ─── Admin: AI Arbiter ────────────────────────────────────────────────────
+
+    /**
+     * @notice Set the deployed AIArbiter contract address.
+     * @param _aiArbiter  Address of the AIArbiter contract.
+     */
+    function setAIArbiter(address _aiArbiter) external onlyOwner {
+        require(_aiArbiter != address(0), "Invalid AIArbiter address");
+        aiArbiterAddress = _aiArbiter;
+        emit AIArbiterUpdated(_aiArbiter);
+    }
+
     // ─── Deploy: SimpleEscrow ─────────────────────────────────────────────────
 
     /**
      * @notice Deploy a SimpleEscrow and register it.
-     * @param beneficiary  The party who receives funds on release.
-     * @param arbiter      The neutral third party for dispute resolution.
-     * @param trustTier    0=Standard, 1=Enhanced, 2=Full (computed off-chain).
+     * @param beneficiary   The party who receives funds on release.
+     * @param arbiter       The neutral third party for dispute resolution.
+     * @param trustTier     0=Standard, 1=Enhanced, 2=Full (computed off-chain).
+     * @param useAIArbiter  If true, override arbiter with the deployed AIArbiter address.
      */
     function createSimpleEscrow(
         address beneficiary,
         address arbiter,
-        uint8   trustTier
+        uint8   trustTier,
+        bool    useAIArbiter
     ) external payable returns (address) {
         require(trustTier <= 2, "Invalid trust tier");
 
-        SimpleEscrow escrow = new SimpleEscrow(beneficiary, arbiter);
+        address resolvedArbiter = useAIArbiter ? aiArbiterAddress : arbiter;
+        require(resolvedArbiter != address(0), "Arbiter not set");
+
+        SimpleEscrow escrow = new SimpleEscrow(beneficiary, resolvedArbiter);
 
         // Forward deposit value if provided
         if (msg.value > 0) {
@@ -90,7 +127,7 @@ contract EscrowFactory {
             escrowType:      EscrowType.SIMPLE,
             depositor:       msg.sender,
             beneficiary:     beneficiary,
-            arbiter:         arbiter,
+            arbiter:         resolvedArbiter,
             totalAmount:     msg.value,
             trustTier:       trustTier,
             createdAt:       block.timestamp
@@ -104,7 +141,7 @@ contract EscrowFactory {
             address(escrow),
             msg.sender,
             beneficiary,
-            arbiter,
+            resolvedArbiter,
             msg.value,
             trustTier
         );
@@ -121,22 +158,27 @@ contract EscrowFactory {
      * @param descriptions  Human-readable description for each milestone.
      * @param amounts       BDAG amount for each milestone (must match msg.value total).
      * @param trustTier     0=Standard, 1=Enhanced, 2=Full (computed off-chain).
+     * @param useAIArbiter  If true, override arbiter with the deployed AIArbiter address.
      */
     function createMilestoneEscrow(
         address          beneficiary,
         address          arbiter,
         string[] memory  descriptions,
         uint256[] memory amounts,
-        uint8            trustTier
+        uint8            trustTier,
+        bool             useAIArbiter
     ) external payable returns (address) {
         require(trustTier <= 2, "Invalid trust tier");
+
+        address resolvedArbiter = useAIArbiter ? aiArbiterAddress : arbiter;
+        require(resolvedArbiter != address(0), "Arbiter not set");
 
         uint256 total;
         for (uint256 i; i < amounts.length; i++) total += amounts[i];
 
         MilestoneEscrow escrow = new MilestoneEscrow(
             beneficiary,
-            arbiter,
+            resolvedArbiter,
             descriptions,
             amounts
         );
@@ -152,7 +194,7 @@ contract EscrowFactory {
             escrowType:      EscrowType.MILESTONE,
             depositor:       msg.sender,
             beneficiary:     beneficiary,
-            arbiter:         arbiter,
+            arbiter:         resolvedArbiter,
             totalAmount:     total,
             trustTier:       trustTier,
             createdAt:       block.timestamp
@@ -166,7 +208,7 @@ contract EscrowFactory {
             address(escrow),
             msg.sender,
             beneficiary,
-            arbiter,
+            resolvedArbiter,
             total,
             trustTier
         );

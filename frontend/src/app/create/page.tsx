@@ -16,6 +16,7 @@ import {
   MILESTONE_ESCROW_ABI,
   MILESTONE_ESCROW_BYTECODE,
   EXPLORER_TX_URL,
+  AI_ARBITER_ADDRESS,
 } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export default function CreateEscrowPage() {
   const [type, setType] = useState<EscrowType>("simple");
   const [form, setForm] = useState({ title: "", beneficiary: "", arbiter: "", amount: "" });
   const [milestones, setMilestones] = useState<MilestoneInput[]>([{ description: "", amount: "" }]);
+  const [useAIArbiter, setUseAIArbiter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   function addMilestone() { setMilestones(m => [...m, { description: "", amount: "" }]); }
@@ -51,11 +53,15 @@ export default function CreateEscrowPage() {
     try {
       let contractAddress: `0x${string}`;
 
+      const resolvedArbiter = useAIArbiter
+        ? AI_ARBITER_ADDRESS
+        : form.arbiter as `0x${string}`;
+
       if (type === "simple") {
         const hash = await deployContractAsync({
           abi: SIMPLE_ESCROW_ABI,
           bytecode: SIMPLE_ESCROW_BYTECODE,
-          args: [form.beneficiary as `0x${string}`, form.arbiter as `0x${string}`],
+          args: [form.beneficiary as `0x${string}`, resolvedArbiter],
           value: parseEther(form.amount),
         });
         contractAddress = hash as `0x${string}`;
@@ -67,7 +73,7 @@ export default function CreateEscrowPage() {
         const hash = await deployContractAsync({
           abi: MILESTONE_ESCROW_ABI,
           bytecode: MILESTONE_ESCROW_BYTECODE,
-          args: [form.beneficiary as `0x${string}`, form.arbiter as `0x${string}`, descriptions, amounts],
+          args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts],
           value: totalValue,
         });
         contractAddress = hash as `0x${string}`;
@@ -144,7 +150,60 @@ export default function CreateEscrowPage() {
               <GlassCard className="p-6 space-y-5">
                 <Field label="Title" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="e.g. Smart Contract Audit" />
                 <Field label="Beneficiary Address" value={form.beneficiary} onChange={v => setForm(f => ({ ...f, beneficiary: v }))} placeholder="0x..." mono />
-                <Field label="Arbiter Address" value={form.arbiter} onChange={v => setForm(f => ({ ...f, arbiter: v }))} placeholder="0x..." mono />
+                {/* Arbiter selector */}
+                <div className="space-y-3">
+                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">Arbiter</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setUseAIArbiter(false)}
+                      className={cn(
+                        "rounded-xl border p-3 text-left transition-all duration-200",
+                        !useAIArbiter
+                          ? "border-cyan-400/40 bg-cyan-400/5 shadow-[0_0_20px_rgba(0,245,255,0.08)]"
+                          : "border-white/10 bg-white/5 hover:border-white/20"
+                      )}
+                    >
+                      {!useAIArbiter && (
+                        <div className="float-right h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,245,255,0.8)]" />
+                      )}
+                      <div className="text-lg mb-1">👤</div>
+                      <p className="text-xs font-semibold text-white">Manual Arbiter</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Paste any wallet address</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUseAIArbiter(true)}
+                      className={cn(
+                        "rounded-xl border p-3 text-left transition-all duration-200",
+                        useAIArbiter
+                          ? "border-violet-400/40 bg-violet-400/5 shadow-[0_0_20px_rgba(167,139,250,0.1)]"
+                          : "border-white/10 bg-white/5 hover:border-white/20"
+                      )}
+                    >
+                      {useAIArbiter && (
+                        <div className="float-right h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.8)]" />
+                      )}
+                      <div className="text-lg mb-1">🤖</div>
+                      <p className="text-xs font-semibold text-white">AI Arbiter</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Automated dispute resolution</p>
+                    </button>
+                  </div>
+
+                  {useAIArbiter ? (
+                    <div className="rounded-xl border border-violet-400/20 bg-violet-400/5 p-3 text-xs text-violet-300 space-y-1">
+                      <p className="font-semibold">🤖 AI Arbiter enabled</p>
+                      <p className="text-violet-400/70">Disputes are resolved automatically by an AI oracle. Both parties submit evidence on-chain; the AI reviews and executes the decision.</p>
+                      {AI_ARBITER_ADDRESS ? (
+                        <p className="font-mono text-violet-400/50 break-all">{AI_ARBITER_ADDRESS}</p>
+                      ) : (
+                        <p className="text-yellow-400/70">⚠ AI Arbiter contract not yet deployed — set <code className="bg-black/30 px-1 rounded">NEXT_PUBLIC_AI_ARBITER_ADDRESS</code> in .env</p>
+                      )}
+                    </div>
+                  ) : (
+                    <Field label="" value={form.arbiter} onChange={v => setForm(f => ({ ...f, arbiter: v }))} placeholder="0x arbiter address..." mono />
+                  )}
+                </div>
 
                 {type === "simple" ? (
                   <Field label="Amount (BDAG)" value={form.amount} onChange={v => setForm(f => ({ ...f, amount: v }))} placeholder="0.0" type="number" />

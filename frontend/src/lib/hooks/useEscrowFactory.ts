@@ -86,6 +86,7 @@ export function useFactoryDeploy() {
     arbiter: Address,
     amountEth: string,
     walletAddress?: Address,
+    useAIArbiter = false,
   ) => {
     const trust = computeTrustScore({
       walletAddress,
@@ -97,7 +98,7 @@ export function useFactoryDeploy() {
       address: FACTORY_ADDRESS,
       abi: ESCROW_FACTORY_ABI,
       functionName: "createSimpleEscrow",
-      args: [beneficiary, arbiter, trust.tier],
+      args: [beneficiary, arbiter, trust.tier, useAIArbiter],
       value: parseEther(amountEth),
     });
   };
@@ -108,6 +109,7 @@ export function useFactoryDeploy() {
     descriptions: string[],
     amounts: bigint[],
     walletAddress?: Address,
+    useAIArbiter = false,
   ) => {
     const totalEth = parseFloat(
       (amounts.reduce((a, b) => a + b, 0n) / BigInt(1e18)).toString()
@@ -123,7 +125,7 @@ export function useFactoryDeploy() {
       address: FACTORY_ADDRESS,
       abi: ESCROW_FACTORY_ABI,
       functionName: "createMilestoneEscrow",
-      args: [beneficiary, arbiter, descriptions, amounts, trust.tier],
+      args: [beneficiary, arbiter, descriptions, amounts, trust.tier, useAIArbiter],
       value: total,
     });
   };
