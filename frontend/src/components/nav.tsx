@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletConnectButton } from "@/components/connect-button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -50,7 +50,7 @@ export function Nav() {
             </div>
           </div>
 
-          <ConnectButton chainStatus="icon" showBalance={false} accountStatus="avatar" />
+          <WalletConnectButton />
         </div>
       </div>
     </nav>
