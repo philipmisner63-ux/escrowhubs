@@ -1,0 +1,159 @@
+"use client";
+
+import { useReadContracts, useWriteContract, useWatchContractEvent } from "wagmi";
+import { useState, useCallback } from "react";
+import { parseEther } from "viem";
+import { ESCROW_FACTORY_ABI, FACTORY_ADDRESS } from "@/lib/contracts";
+import { computeTrustScore } from "@/lib/trustScore";
+
+type Address = `0x${string}`;
+
+export interface FactoryEscrowRecord {
+  contractAddress: Address;
+  escrowType: number;      // 0 = Simple, 1 = Milestone
+  depositor: Address;
+  beneficiary: Address;
+  arbiter: Address;
+  totalAmount: bigint;
+  trustTier: number;
+  createdAt: bigint;
+}
+
+export function useEscrowFactory() {
+  const contract = { address: FACTORY_ADDRESS, abi: ESCROW_FACTORY_ABI } as const;
+  const enabled = FACTORY_ADDRESS.length > 2;
+
+  const { data, isLoading, refetch } = useReadContracts({
+    contracts: [
+      { ...contract, functionName: "escrowCount" },
+    ],
+    query: { enabled },
+  });
+
+  return {
+    escrowCount: (data?.[0].result as bigint | undefined) ?? 0n,
+    isLoading,
+    refetch,
+    factoryDeployed: enabled,
+  };
+}
+
+export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
+  const enabled = FACTORY_ADDRESS.length > 2;
+
+  const { data, isLoading, refetch } = useReadContracts({
+    contracts: [
+      {
+        address: FACTORY_ADDRESS,
+        abi: ESCROW_FACTORY_ABI,
+        functionName: "getEscrows",
+        args: [offset, limit],
+      },
+    ],
+    query: { enabled },
+  });
+
+  const records = (data?.[0].result as FactoryEscrowRecord[] | undefined) ?? [];
+
+  return { records, isLoading, refetch };
+}
+
+export function useWalletEscrows(walletAddress: Address | undefined) {
+  const enabled = FACTORY_ADDRESS.length > 2 && !!walletAddress;
+  const contract = { address: FACTORY_ADDRESS, abi: ESCROW_FACTORY_ABI } as const;
+
+  const { data, isLoading, refetch } = useReadContracts({
+    contracts: [
+      { ...contract, functionName: "getEscrowsByDepositor",   args: [walletAddress!] },
+      { ...contract, functionName: "getEscrowsByBeneficiary", args: [walletAddress!] },
+    ],
+    query: { enabled },
+  });
+
+  return {
+    asDepositor:    (data?.[0].result as bigint[] | undefined) ?? [],
+    asBeneficiary:  (data?.[1].result as bigint[] | undefined) ?? [],
+    isLoading,
+    refetch,
+  };
+}
+
+export function useFactoryDeploy() {
+  const { writeContractAsync, isPending, data: hash, error } = useWriteContract();
+
+  const deploySimple = async (
+    beneficiary: Address,
+    arbiter: Address,
+    amountEth: string,
+    walletAddress?: Address,
+  ) => {
+    const trust = computeTrustScore({
+      walletAddress,
+      amountEth: parseFloat(amountEth),
+      isConnected: true,
+    });
+
+    return writeContractAsync({
+      address: FACTORY_ADDRESS,
+      abi: ESCROW_FACTORY_ABI,
+      functionName: "createSimpleEscrow",
+      args: [beneficiary, arbiter, trust.tier],
+      value: parseEther(amountEth),
+    });
+  };
+
+  const deployMilestone = async (
+    beneficiary: Address,
+    arbiter: Address,
+    descriptions: string[],
+    amounts: bigint[],
+    walletAddress?: Address,
+  ) => {
+    const totalEth = parseFloat(
+      (amounts.reduce((a, b) => a + b, 0n) / BigInt(1e18)).toString()
+    );
+    const trust = computeTrustScore({
+      walletAddress,
+      amountEth: totalEth,
+      isConnected: true,
+    });
+    const total = amounts.reduce((a, b) => a + b, 0n);
+
+    return writeContractAsync({
+      address: FACTORY_ADDRESS,
+      abi: ESCROW_FACTORY_ABI,
+      functionName: "createMilestoneEscrow",
+      args: [beneficiary, arbiter, descriptions, amounts, trust.tier],
+      value: total,
+    });
+  };
+
+  return { deploySimple, deployMilestone, isPending, hash, error };
+}
+
+export function useFactoryEvents() {
+  const [events, setEvents] = useState<Array<{ name: string; args: Record<string, unknown>; timestamp: number }>>([]);
+  const enabled = FACTORY_ADDRESS.length > 2;
+
+  const add = useCallback((name: string, args: Record<string, unknown>) => {
+    setEvents(prev => [{ name, args, timestamp: Date.now() }, ...prev].slice(0, 50));
+  }, []);
+
+  useWatchContractEvent({
+    address: FACTORY_ADDRESS,
+    abi: ESCROW_FACTORY_ABI,
+    eventName: "SimpleEscrowCreated",
+    onLogs: logs => logs.forEach(l => add("SimpleEscrowCreated", l.args as Record<string, unknown>)),
+    enabled,
+  });
+
+  useWatchContractEvent({
+    address: FACTORY_ADDRESS,
+    abi: ESCROW_FACTORY_ABI,
+    eventName: "MilestoneEscrowCreated",
+    onLogs: logs => logs.forEach(l => add("MilestoneEscrowCreated", l.args as Record<string, unknown>)),
+    enabled,
+  });
+
+  return { events };
+}
