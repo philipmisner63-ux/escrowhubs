@@ -1,244 +1,393 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import {
-  mockEscrows,
-  shortAddress,
-  statusColor,
-  milestoneStatusColor,
-  type Milestone,
-} from "@/lib/mock-data";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { useAccount } from "wagmi";
+import { formatEther } from "viem";
+import { Nav } from "@/components/nav";
+import { PageWrapper } from "@/components/page-wrapper";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GlowButton } from "@/components/ui/glow-button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { AddressDisplay } from "@/components/ui/address-display";
+import { AmountDisplay } from "@/components/ui/amount-display";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/toast";
+import { useContractType } from "@/lib/hooks/useContractType";
+import { useSimpleEscrowRead, useSimpleEscrowWrite } from "@/lib/hooks/useSimpleEscrow";
+import { useMilestoneEscrowRead, useMilestoneEscrowWrite } from "@/lib/hooks/useMilestoneEscrow";
+import { useEscrowEvents } from "@/lib/hooks/useEscrowEvents";
+import { addViewedEscrow } from "@/lib/localStorage";
+import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState } from "@/lib/contracts";
+import { cn } from "@/lib/utils";
+
+type Address = `0x${string}`;
+
+function isAddress(s: string): s is Address {
+  return /^0x[0-9a-fA-F]{40}$/.test(s);
+}
+
+// ─── Role detection ───────────────────────────────────────────────────────────
+
+type Role = "depositor" | "beneficiary" | "arbiter" | "observer";
+
+function deriveRole(wallet: string | undefined, depositor: string | null, beneficiary: string | null, arbiter: string | null): Role {
+  if (!wallet) return "observer";
+  const w = wallet.toLowerCase();
+  if (depositor?.toLowerCase()   === w) return "depositor";
+  if (beneficiary?.toLowerCase() === w) return "beneficiary";
+  if (arbiter?.toLowerCase()     === w) return "arbiter";
+  return "observer";
+}
+
+const ROLE_BADGE: Record<Role, string> = {
+  depositor:   "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
+  beneficiary: "text-purple-400 bg-purple-400/10 border-purple-400/20",
+  arbiter:     "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
+  observer:    "text-slate-400 bg-slate-400/10 border-slate-400/20",
+};
+
+// ─── Simple contract view ─────────────────────────────────────────────────────
+
+function SimpleEscrowView({ address }: { address: Address }) {
+  const { address: wallet } = useAccount();
+  const { addToast, removeToast } = useToast();
+  const data = useSimpleEscrowRead(address);
+  const writes = useSimpleEscrowWrite();
+
+  const role = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
+  const stateNum = data.state ?? 0;
+  const stateLabel = SIMPLE_STATE_LABEL[stateNum] ?? "Unknown";
+
+  useEffect(() => {
+    if (data.depositor) {
+      addViewedEscrow({ address, type: "simple" });
+    }
+  }, [address, data.depositor]);
+
+  async function doWrite(fn: () => Promise<`0x${string}`>, label: string) {
+    const pid = addToast({ type: "pending", message: `${label}…` });
+    try {
+      const hash = await fn();
+      removeToast(pid);
+      addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
+      data.refetch();
+    } catch (e: unknown) {
+      removeToast(pid);
+      addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Transaction failed" });
+    }
+  }
+
+  if (data.isLoading) return <LoadingState />;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <GlassCard className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-white">Simple Escrow</h1>
+              <StatusBadge status={stateLabel} />
+              <span className={cn("text-xs px-2 py-1 rounded-full border capitalize", ROLE_BADGE[role])}>
+                You: {role}
+              </span>
+            </div>
+            <AddressDisplay address={address} className="mt-2" />
+          </div>
+          {data.amount !== null && (
+            <div className="text-right shrink-0">
+              <p className="text-xs text-slate-500 mb-1">Amount</p>
+              <AmountDisplay amount={data.amount} size="lg" />
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 grid grid-cols-3 gap-4">
+          {([
+            ["Depositor",   data.depositor],
+            ["Beneficiary", data.beneficiary],
+            ["Arbiter",     data.arbiter],
+          ] as [string, string | null][]).map(([label, addr]) => (
+            <div key={label} className="rounded-xl bg-white/3 border border-white/8 p-3">
+              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">{label}</p>
+              {addr ? <AddressDisplay address={addr} /> : <span className="text-xs text-slate-600">—</span>}
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {/* Actions */}
+      <GlassCard className="p-5">
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">Actions</h3>
+        <div className="space-y-3">
+          {role === "depositor" && stateNum === SimpleEscrowState.AWAITING_DELIVERY && (
+            <>
+              <ActionRow
+                title="Release Funds"
+                desc={`Send ${data.amount ? formatEther(data.amount) : "?"} BDAG to beneficiary`}
+                action={<GlowButton variant="primary" loading={writes.isPending} onClick={() => doWrite(() => writes.release(address), "Release")}>Release</GlowButton>}
+              />
+              <ActionRow
+                title="Raise Dispute"
+                desc="Escalate to arbiter for resolution"
+                action={<GlowButton variant="danger" loading={writes.isPending} onClick={() => doWrite(() => writes.dispute(address), "Dispute")}>Dispute</GlowButton>}
+              />
+            </>
+          )}
+          {role === "arbiter" && stateNum === SimpleEscrowState.DISPUTED && (
+            <>
+              <ActionRow
+                title="Resolve — Release to Beneficiary"
+                desc="Arbiter decision: funds go to beneficiary"
+                action={<GlowButton variant="primary" loading={writes.isPending} onClick={() => doWrite(() => writes.resolveRelease(address), "Resolve Release")}>Resolve Release</GlowButton>}
+              />
+              <ActionRow
+                title="Resolve — Refund Depositor"
+                desc="Arbiter decision: funds returned to depositor"
+                action={<GlowButton variant="secondary" loading={writes.isPending} onClick={() => doWrite(() => writes.resolveRefund(address), "Resolve Refund")}>Resolve Refund</GlowButton>}
+              />
+            </>
+          )}
+          {(stateNum === SimpleEscrowState.COMPLETE || stateNum === SimpleEscrowState.REFUNDED) && (
+            <p className="text-sm text-slate-500 py-4 text-center">Escrow is {stateLabel.toLowerCase()} — no actions available.</p>
+          )}
+          {(stateNum === SimpleEscrowState.AWAITING_PAYMENT) && (
+            <p className="text-sm text-slate-500 py-4 text-center">Awaiting deposit.</p>
+          )}
+          {role === "observer" && stateNum === SimpleEscrowState.AWAITING_DELIVERY && (
+            <p className="text-sm text-slate-500 py-4 text-center">Connect the depositor or arbiter wallet to take action.</p>
+          )}
+        </div>
+      </GlassCard>
+    </div>
+  );
+}
+
+// ─── Milestone contract view ──────────────────────────────────────────────────
+
+function MilestoneEscrowView({ address }: { address: Address }) {
+  const { address: wallet } = useAccount();
+  const { addToast, removeToast } = useToast();
+  const data = useMilestoneEscrowRead(address);
+  const writes = useMilestoneEscrowWrite();
+
+  const role = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
+  const releasedCount = data.milestones.filter(m => m.state === MilestoneState.RELEASED).length;
+
+  useEffect(() => {
+    if (data.depositor) {
+      addViewedEscrow({ address, type: "milestone" });
+    }
+  }, [address, data.depositor]);
+
+  async function doWrite(fn: () => Promise<`0x${string}`>, label: string) {
+    const pid = addToast({ type: "pending", message: `${label}…` });
+    try {
+      const hash = await fn();
+      removeToast(pid);
+      addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
+      data.refetch();
+    } catch (e: unknown) {
+      removeToast(pid);
+      addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Transaction failed" });
+    }
+  }
+
+  if (data.isLoading) return <LoadingState />;
+
+  const progress = data.milestoneCount > 0 ? (releasedCount / data.milestoneCount) * 100 : 0;
+
+  return (
+    <div className="space-y-6">
+      <GlassCard className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-white">Milestone Escrow</h1>
+              <StatusBadge status={data.funded ? "active" : "awaiting_payment"} />
+              <span className={cn("text-xs px-2 py-1 rounded-full border capitalize", ROLE_BADGE[role])}>
+                You: {role}
+              </span>
+            </div>
+            <AddressDisplay address={address} className="mt-2" />
+          </div>
+          {data.totalDeposited !== null && (
+            <div className="text-right shrink-0">
+              <p className="text-xs text-slate-500 mb-1">Total</p>
+              <AmountDisplay amount={data.totalDeposited} size="lg" />
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 grid grid-cols-3 gap-4">
+          {([
+            ["Depositor",   data.depositor],
+            ["Beneficiary", data.beneficiary],
+            ["Arbiter",     data.arbiter],
+          ] as [string, string | null][]).map(([label, addr]) => (
+            <div key={label} className="rounded-xl bg-white/3 border border-white/8 p-3">
+              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">{label}</p>
+              {addr ? <AddressDisplay address={addr} /> : <span className="text-xs text-slate-600">—</span>}
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {/* Milestones */}
+      <GlassCard className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
+            Milestones ({releasedCount}/{data.milestoneCount})
+          </h3>
+        </div>
+        <Progress value={progress} className="h-2 bg-white/5 mb-5" />
+
+        <div className="space-y-3">
+          {data.milestones.map((ms, i) => {
+            const msLabel = MILESTONE_STATE_LABEL[ms.state] ?? "unknown";
+            return (
+              <div key={i} className="rounded-xl bg-white/3 border border-white/8 p-4 flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm font-mono text-slate-400 shrink-0">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-white text-sm">{ms.description}</p>
+                  <AmountDisplay amount={ms.amount} size="sm" className="mt-0.5" />
+                </div>
+                <StatusBadge status={msLabel} />
+                {role === "depositor" && ms.state === MilestoneState.PENDING && (
+                  <div className="flex gap-2 shrink-0">
+                    <GlowButton variant="secondary" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.releaseMilestone(address, BigInt(i)), `Release M${i+1}`)}>
+                      Release
+                    </GlowButton>
+                    <GlowButton variant="danger" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.disputeMilestone(address, BigInt(i)), `Dispute M${i+1}`)}>
+                      Dispute
+                    </GlowButton>
+                  </div>
+                )}
+                {role === "arbiter" && ms.state === MilestoneState.DISPUTED && (
+                  <div className="flex gap-2 shrink-0">
+                    <GlowButton variant="primary" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.resolveRelease(address, BigInt(i)), `Resolve M${i+1}`)}>
+                      Release
+                    </GlowButton>
+                    <GlowButton variant="secondary" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.resolveRefund(address, BigInt(i)), `Refund M${i+1}`)}>
+                      Refund
+                    </GlowButton>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {!data.funded && role === "depositor" && data.totalDeposited !== null && (
+          <div className="mt-4 pt-4 border-t border-white/8">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-400">Fund contract to activate milestones</p>
+              <GlowButton
+                variant="primary"
+                onClick={() => doWrite(() => writes.fund(address, data.totalDeposited!), "Fund")}
+              >
+                Fund <AmountDisplay amount={data.totalDeposited} size="sm" className="ml-1" />
+              </GlowButton>
+            </div>
+          </div>
+        )}
+      </GlassCard>
+    </div>
+  );
+}
+
+// ─── Loading / unknown states ─────────────────────────────────────────────────
+
+function LoadingState() {
+  return (
+    <GlassCard className="p-12 text-center">
+      <div className="inline-flex items-center gap-3 text-slate-400">
+        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        </svg>
+        Loading contract data…
+      </div>
+    </GlassCard>
+  );
+}
+
+function ActionRow({ title, desc, action }: { title: string; desc: string; action: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between rounded-xl bg-white/3 border border-white/8 p-4">
+      <div>
+        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EscrowDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const escrow = mockEscrows.find(e => e.id === id);
-  const [confirming, setConfirming] = useState<string | null>(null);
+  const contractType = useContractType(isAddress(id) ? id : undefined);
+  const { events } = useEscrowEvents(isAddress(id) ? id : undefined, contractType);
 
-  if (!escrow) {
+  if (!isAddress(id)) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 text-center">
-        <p className="text-slate-400 text-lg">Escrow not found</p>
-        <Link href="/" className="mt-4 text-cyan-400 hover:underline text-sm">← Back to Dashboard</Link>
+      <div className="flex flex-col min-h-screen">
+        <Nav />
+        <main className="mx-auto max-w-3xl w-full px-4 py-16 text-center">
+          <p className="text-slate-400">Invalid contract address</p>
+          <Link href="/dashboard" className="mt-4 inline-block text-cyan-400 hover:underline text-sm">← Dashboard</Link>
+        </main>
       </div>
     );
   }
 
-  const releasedCount = escrow.milestones?.filter(m => m.status === "released").length ?? 0;
-  const totalCount = escrow.milestones?.length ?? 0;
-  const progress = totalCount > 0 ? (releasedCount / totalCount) * 100 : 0;
-
-  async function handleAction(action: string) {
-    setConfirming(action);
-    // TODO: wire up contract calls
-    await new Promise(r => setTimeout(r, 1000));
-    setConfirming(null);
-  }
-
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/" className="hover:text-cyan-400 transition-colors">Dashboard</Link>
-        <span>/</span>
-        <span className="text-slate-300 font-mono">{escrow.id}</span>
-      </div>
-
-      {/* Header card */}
-      <div className="glass rounded-xl border border-white/8 p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-white">{escrow.title}</h1>
-              <span className={cn(
-                "text-xs font-medium px-2.5 py-1 rounded-full border capitalize",
-                statusColor(escrow.status)
-              )}>
-                {escrow.status}
-              </span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">
-                {escrow.type === "milestone" ? "Milestone" : "Simple"}
-              </span>
+    <div className="flex flex-col min-h-screen">
+      <Nav />
+      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
+        <PageWrapper>
+          <div className="space-y-6">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Link href="/dashboard" className="hover:text-cyan-400 transition-colors">Dashboard</Link>
+              <span>/</span>
+              <span className="font-mono text-slate-300">{id.slice(0, 10)}…</span>
             </div>
-            <p className="mt-2 text-xs font-mono text-slate-500">{escrow.id}</p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-xs text-slate-500">Total Amount</p>
-            <p className="text-2xl font-bold text-cyan-400">{escrow.amount}</p>
-          </div>
-        </div>
 
-        {/* Parties */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          {[
-            { label: "Depositor", address: escrow.depositor },
-            { label: "Beneficiary", address: escrow.beneficiary },
-            { label: "Arbiter", address: escrow.arbiter },
-          ].map(({ label, address }) => (
-            <div key={label} className="rounded-lg bg-white/3 border border-white/8 p-3">
-              <p className="text-xs text-slate-500 uppercase tracking-wide">{label}</p>
-              <p className="mt-1 text-xs font-mono text-slate-300">{shortAddress(address)}</p>
-            </div>
-          ))}
-        </div>
+            {/* Contract view */}
+            {contractType === "unknown" && <LoadingState />}
+            {contractType === "simple" && <SimpleEscrowView address={id} />}
+            {contractType === "milestone" && <MilestoneEscrowView address={id} />}
 
-        {/* Trust + created */}
-        <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-          <span>Created {escrow.createdAt}</span>
-          <div className="flex items-center gap-2">
-            <span>Trust Score:</span>
-            <span className={cn(
-              "font-semibold",
-              escrow.trustScore >= 80 ? "text-green-400" :
-              escrow.trustScore >= 60 ? "text-yellow-400" : "text-red-400"
-            )}>
-              {escrow.trustScore} / 100
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue={escrow.type === "milestone" ? "milestones" : "actions"}>
-        <TabsList className="bg-white/5 border border-white/10">
-          {escrow.type === "milestone" && (
-            <TabsTrigger value="milestones" className="data-[state=active]:bg-cyan-400/10 data-[state=active]:text-cyan-400">
-              Milestones ({releasedCount}/{totalCount})
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="actions" className="data-[state=active]:bg-cyan-400/10 data-[state=active]:text-cyan-400">
-            Actions
-          </TabsTrigger>
-          <TabsTrigger value="details" className="data-[state=active]:bg-cyan-400/10 data-[state=active]:text-cyan-400">
-            Details
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Milestones tab */}
-        {escrow.type === "milestone" && escrow.milestones && (
-          <TabsContent value="milestones" className="space-y-4 mt-4">
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span>Overall Progress</span>
-              <span>{releasedCount}/{totalCount} milestones released</span>
-            </div>
-            <Progress value={progress} className="h-2 bg-white/5" />
-
-            <div className="space-y-3">
-              {escrow.milestones.map((ms: Milestone) => (
-                <div
-                  key={ms.id}
-                  className="glass rounded-xl border border-white/8 p-4 flex items-center gap-4"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm font-mono text-slate-400">
-                    {ms.id + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white text-sm">{ms.description}</p>
-                    <p className="text-xs text-cyan-400 font-semibold mt-0.5">{ms.amount}</p>
-                  </div>
-                  <span className={cn(
-                    "text-xs font-medium px-2.5 py-1 rounded-full border capitalize shrink-0",
-                    milestoneStatusColor(ms.status)
-                  )}>
-                    {ms.status}
-                  </span>
-                  {ms.status === "pending" && escrow.status === "active" && (
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        onClick={() => handleAction(`release-${ms.id}`)}
-                        disabled={confirming === `release-${ms.id}`}
-                        className="h-7 px-3 text-xs bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 hover:bg-cyan-400/20"
-                      >
-                        {confirming === `release-${ms.id}` ? "…" : "Release"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleAction(`dispute-${ms.id}`)}
-                        disabled={confirming === `dispute-${ms.id}`}
-                        className="h-7 px-3 text-xs border-red-400/20 text-red-400 hover:bg-red-400/10"
-                      >
-                        {confirming === `dispute-${ms.id}` ? "…" : "Dispute"}
-                      </Button>
+            {/* Event log */}
+            {events.length > 0 && (
+              <GlassCard className="p-5">
+                <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">Event Log</h3>
+                <div className="space-y-2">
+                  {events.map((ev, i) => (
+                    <div key={i} className="flex items-center gap-3 text-xs">
+                      <span className="text-slate-500 font-mono">{new Date(ev.timestamp).toLocaleTimeString()}</span>
+                      <span className="text-cyan-400 font-medium">{ev.name}</span>
+                      {ev.transactionHash && (
+                        <a href={EXPLORER_TX_URL(ev.transactionHash)} target="_blank" rel="noopener noreferrer"
+                          className="font-mono text-slate-500 hover:text-cyan-400 transition-colors truncate">
+                          {ev.transactionHash.slice(0, 14)}…
+                        </a>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          </TabsContent>
-        )}
-
-        {/* Actions tab */}
-        <TabsContent value="actions" className="mt-4">
-          <div className="glass rounded-xl border border-white/8 p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-slate-300">Available Actions</h3>
-
-            {escrow.status === "active" && (
-              <div className="space-y-3">
-                {escrow.type === "simple" && (
-                  <div className="flex items-center justify-between rounded-lg bg-white/3 border border-white/8 p-4">
-                    <div>
-                      <p className="text-sm font-medium text-white">Release Funds</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Release {escrow.amount} to beneficiary</p>
-                    </div>
-                    <Button
-                      onClick={() => handleAction("release")}
-                      disabled={confirming === "release"}
-                      className="bg-cyan-400 text-black hover:bg-cyan-300 font-semibold text-sm"
-                    >
-                      {confirming === "release" ? "Releasing…" : "Release"}
-                    </Button>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between rounded-lg bg-white/3 border border-white/8 p-4">
-                  <div>
-                    <p className="text-sm font-medium text-white">Raise Dispute</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Escalate to arbiter for resolution</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAction("dispute")}
-                    disabled={confirming === "dispute"}
-                    className="border-red-400/30 text-red-400 hover:bg-red-400/10 text-sm"
-                  >
-                    {confirming === "dispute" ? "Escalating…" : "Dispute"}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {escrow.status !== "active" && (
-              <p className="text-sm text-slate-500 py-4 text-center">
-                No actions available — escrow is {escrow.status}.
-              </p>
+              </GlassCard>
             )}
           </div>
-        </TabsContent>
-
-        {/* Details tab */}
-        <TabsContent value="details" className="mt-4">
-          <div className="glass rounded-xl border border-white/8 p-5 space-y-3">
-            {[
-              { label: "Contract Address", value: escrow.id, mono: true },
-              { label: "Transaction Hash", value: escrow.txHash, mono: true },
-              { label: "Type", value: escrow.type === "milestone" ? "Milestone Escrow" : "Simple Escrow", mono: false },
-              { label: "Created", value: escrow.createdAt, mono: false },
-              { label: "Network", value: "BlockDAG Testnet", mono: false },
-            ].map(({ label, value, mono }) => (
-              <div key={label} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-                <span className="text-xs text-slate-500 uppercase tracking-wide">{label}</span>
-                <span className={cn("text-xs text-slate-300", mono && "font-mono")}>{value}</span>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+        </PageWrapper>
+      </main>
     </div>
   );
 }
