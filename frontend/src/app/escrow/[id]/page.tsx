@@ -1,8 +1,8 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useAccount } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import { formatEther } from "viem";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
@@ -19,7 +19,7 @@ import { useSimpleEscrowRead, useSimpleEscrowWrite } from "@/lib/hooks/useSimple
 import { useMilestoneEscrowRead, useMilestoneEscrowWrite } from "@/lib/hooks/useMilestoneEscrow";
 import { useEscrowEvents } from "@/lib/hooks/useEscrowEvents";
 import { addViewedEscrow } from "@/lib/localStorage";
-import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState } from "@/lib/contracts";
+import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ADDRESS, AI_ARBITER_ABI } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 
 type Address = `0x${string}`;
@@ -112,11 +112,28 @@ function SimpleEscrowView({ address }: { address: Address }) {
           ] as [string, string | null][]).map(([label, addr]) => (
             <div key={label} className="rounded-xl bg-white/3 border border-white/8 p-3">
               <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">{label}</p>
-              {addr ? <AddressDisplay address={addr} /> : <span className="text-xs text-slate-600">—</span>}
+              {addr ? (
+                <div>
+                  <AddressDisplay address={addr} />
+                  {label === "Arbiter" && AI_ARBITER_ADDRESS && addr.toLowerCase() === AI_ARBITER_ADDRESS.toLowerCase() && (
+                    <span className="inline-flex items-center gap-1 mt-1 text-xs text-violet-300 bg-violet-400/10 border border-violet-400/20 rounded-full px-2 py-0.5">
+                      🤖 AI Arbiter
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="text-xs text-slate-600">—</span>
+              )}
             </div>
           ))}
         </div>
       </GlassCard>
+
+      {/* Evidence panel for AI arbiter disputes */}
+      {stateNum === SimpleEscrowState.DISPUTED &&
+        data.arbiter?.toLowerCase() === AI_ARBITER_ADDRESS?.toLowerCase() && (
+        <EvidencePanel escrowAddress={address} />
+      )}
 
       {/* Actions */}
       <GlassCard className="p-5">
@@ -325,6 +342,74 @@ function ActionRow({ title, desc, action }: { title: string; desc: string; actio
       </div>
       {action}
     </div>
+  );
+}
+
+// ─── Evidence panel (shown when AI Arbiter + disputed) ────────────────────────
+
+function EvidencePanel({ escrowAddress }: { escrowAddress: Address }) {
+  const [evidenceText, setEvidenceText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { addToast, removeToast } = useToast();
+  const { writeContractAsync } = useWriteContract();
+
+  const isAIArbiter = !!AI_ARBITER_ADDRESS;
+
+  async function submitEvidence() {
+    if (!evidenceText.trim()) return;
+    setSubmitting(true);
+    const pid = addToast({ type: "pending", message: "Submitting evidence…" });
+    try {
+      const hash = await writeContractAsync({
+        address: AI_ARBITER_ADDRESS,
+        abi: AI_ARBITER_ABI,
+        functionName: "submitEvidence",
+        args: [escrowAddress, evidenceText.trim()],
+      });
+      removeToast(pid);
+      addToast({ type: "success", message: "Evidence submitted on-chain", txHash: hash });
+      setEvidenceText("");
+    } catch (e: unknown) {
+      removeToast(pid);
+      addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Failed to submit" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (!isAIArbiter) return null;
+
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-lg">🤖</span>
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-violet-300">AI Arbiter — Submit Evidence</h3>
+      </div>
+      <p className="text-xs text-slate-400 mb-4">
+        The AI oracle is monitoring this dispute. Submit your evidence below — it will be stored on-chain
+        and reviewed by the AI arbiter. Be clear and factual. Include links, transaction hashes, or
+        screenshots (as IPFS URIs) if available.
+      </p>
+      <textarea
+        className="w-full rounded-xl bg-white/5 border border-violet-400/20 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-violet-400/50 focus:ring-1 focus:ring-violet-400/20 transition-colors resize-none"
+        rows={4}
+        placeholder="Describe your case… e.g. 'Work was not delivered by the agreed deadline. See transaction 0x... and messages at ipfs://...'"
+        value={evidenceText}
+        onChange={e => setEvidenceText(e.target.value)}
+      />
+      <div className="flex items-center justify-between mt-3">
+        <p className="text-xs text-slate-500">Evidence is permanently stored on-chain</p>
+        <GlowButton
+          variant="secondary"
+          loading={submitting}
+          onClick={submitEvidence}
+          disabled={!evidenceText.trim()}
+          className="px-6 border-violet-400/30 text-violet-300 hover:border-violet-400/60"
+        >
+          Submit Evidence
+        </GlowButton>
+      </div>
+    </GlassCard>
   );
 }
 

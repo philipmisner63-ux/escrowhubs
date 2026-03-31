@@ -41,11 +41,34 @@ const features = [
   },
 ];
 
+const aiSteps = [
+  {
+    step: "01",
+    title: "Dispute raised",
+    desc: "Either party marks the escrow as disputed on-chain.",
+  },
+  {
+    step: "02",
+    title: "Evidence submitted",
+    desc: "Both parties submit evidence — IPFS links, text, or URLs — directly to the blockchain.",
+  },
+  {
+    step: "03",
+    title: "AI reviews",
+    desc: "Our oracle fetches all evidence and sends it to an AI model for impartial analysis.",
+  },
+  {
+    step: "04",
+    title: "Automatic resolution",
+    desc: "The AI decision is signed and executed on-chain. Funds released or refunded in minutes, not weeks.",
+  },
+];
+
 const stats = [
-  { value: "47+",   label: "Escrows Created" },
-  { value: "284",   label: "BDAG Secured"    },
-  { value: "0",     label: "Exploits"        },
-  { value: "100%",  label: "On-Chain"        },
+  { value: "0.5%", label: "Protocol Fee"    },
+  { value: "1404", label: "Chain ID"         },
+  { value: "0",    label: "Exploits"         },
+  { value: "100%", label: "On-Chain"         },
 ];
 
 export default function LandingPage() {
@@ -61,6 +84,11 @@ export default function LandingPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-3xl"
         >
+          <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/5 px-4 py-1.5 text-xs text-violet-300 mb-8">
+            <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
+            Featured on BlockDAG Academy
+          </div>
+
           <h1 className="text-5xl sm:text-7xl font-bold leading-tight tracking-tight">
             <span className="text-white block">Trustless Escrow</span>
             <span
@@ -73,7 +101,7 @@ export default function LandingPage() {
 
           <p className="mt-6 text-lg text-slate-400 max-w-xl mx-auto leading-relaxed">
             Secure milestone-based payments powered by smart contracts.
-            No middlemen, no trust required.
+            AI-driven dispute resolution. No middlemen, no trust required.
           </p>
 
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
@@ -122,13 +150,76 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* AI Arbiter section */}
+      <section className="border-t border-white/8 py-24 px-4">
+        <div className="mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="text-center mb-14">
+              <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/5 px-4 py-1.5 text-xs text-violet-300 mb-4">
+                🤖 Powered by AI
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white">
+                Disputes Resolved by AI,{" "}
+                <span style={{ color: "#a855f7", textShadow: "0 0 30px rgba(168,85,247,0.4)" }}>
+                  Not Lawyers
+                </span>
+              </h2>
+              <p className="mt-4 text-slate-400 max-w-xl mx-auto">
+                Select AI Arbiter when creating an escrow. If a dispute arises, both parties
+                submit evidence on-chain — our AI oracle reviews it and executes the ruling
+                automatically. No waiting, no bias, no fees to a third party.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {aiSteps.map((s, i) => (
+                <div key={s.step} className="relative">
+                  {i < aiSteps.length - 1 && (
+                    <div className="hidden lg:block absolute top-6 left-full w-full h-px bg-gradient-to-r from-violet-400/30 to-transparent z-10" />
+                  )}
+                  <GlassCard accentColor="purple" className="p-5 h-full">
+                    <p className="text-3xl font-bold font-mono mb-3"
+                      style={{ color: "#a855f7", textShadow: "0 0 20px rgba(168,85,247,0.4)" }}>
+                      {s.step}
+                    </p>
+                    <p className="font-semibold text-white text-sm mb-1">{s.title}</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
+                  </GlassCard>
+                </div>
+              ))}
+            </div>
+
+            {/* Pricing callout */}
+            <div className="mt-8 rounded-2xl border border-violet-400/20 bg-violet-400/5 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <p className="font-semibold text-white">AI Arbiter Pricing</p>
+                <p className="text-sm text-slate-400 mt-0.5">
+                  0.5% protocol fee on all escrows · +1 BDAG flat fee when AI Arbiter is selected
+                </p>
+              </div>
+              <Link href="/create">
+                <GlowButton variant="primary" className="shrink-0">
+                  Create Escrow →
+                </GlowButton>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Stats */}
       <section className="border-t border-white/8 py-16 px-4">
         <div className="mx-auto max-w-3xl">
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
           >
             {stats.map(s => (
@@ -148,7 +239,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/8 py-6 text-center text-xs text-slate-600">
-        Built on BlockDAG · Open Source ·{" "}
+        Built on BlockDAG · Featured on BlockDAG Academy ·{" "}
         <a
           href="https://github.com/philipmisner63-ux/blockdag-escrow"
           className="hover:text-cyan-400 transition-colors"
