@@ -107,19 +107,28 @@ export default function CreateEscrowPage() {
       // Fallback: read latest escrow from factory if event decode failed
       if (!/^0x[0-9a-fA-F]{40}$/.test(contractAddress)) {
         try {
-          const count = await publicClient!.readContract({
+          const countResult = await publicClient!.readContract({
             address: FACTORY_ADDRESS,
-            abi: ESCROW_FACTORY_ABI,
+            abi: [{ type: "function", name: "escrowCount", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" }] as const,
             functionName: "escrowCount",
-          }) as bigint;
+          });
+          const count = countResult as bigint;
           if (count > 0n) {
-            const record = await publicClient!.readContract({
+            const logs = await publicClient!.getLogs({
               address: FACTORY_ADDRESS,
-              abi: [{ type: "function", name: "escrows", inputs: [{ type: "uint256" }], outputs: [{ type: "address" }], stateMutability: "view" }] as const,
-              functionName: "escrows",
-              args: [count - 1n],
-            }) as `0x${string}`;
-            if (/^0x[0-9a-fA-F]{40}$/.test(record)) contractAddress = record;
+              fromBlock: receipt.blockNumber,
+              toBlock: receipt.blockNumber,
+            });
+            for (const log of logs) {
+              // First topic is event sig, first indexed arg (contractAddress) is second topic
+              if (log.topics[1]) {
+                const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
+                if (/^0x[0-9a-fA-F]{40}$/.test(addr)) {
+                  contractAddress = addr;
+                  break;
+                }
+              }
+            }
           }
         } catch { /* redirect to dashboard as last resort */ }
       }
