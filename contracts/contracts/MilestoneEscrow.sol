@@ -36,17 +36,19 @@ contract MilestoneEscrow is ReentrancyGuard {
     modifier onlyArbiter()   { require(msg.sender == arbiter,   "Not arbiter");   _; }
 
     constructor(
+        address          _depositor,
         address          _beneficiary,
         address          _arbiter,
         string[] memory  _descriptions,
         uint256[] memory _amounts
     ) {
+        require(_depositor   != address(0), "Invalid depositor");
         require(_beneficiary != address(0), "Invalid beneficiary");
         require(_arbiter     != address(0), "Invalid arbiter");
         require(_descriptions.length == _amounts.length, "Length mismatch");
         require(_descriptions.length > 0, "No milestones");
 
-        depositor   = msg.sender;
+        depositor   = _depositor;
         beneficiary = _beneficiary;
         arbiter     = _arbiter;
 
@@ -63,7 +65,7 @@ contract MilestoneEscrow is ReentrancyGuard {
         totalDeposited = total;
     }
 
-    function fund() external payable onlyDepositor {
+    function fund() external payable {
         require(!funded, "Already funded");
         require(msg.value == totalDeposited, "Incorrect amount");
         funded = true;

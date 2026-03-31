@@ -104,6 +104,26 @@ export default function CreateEscrowPage() {
         } catch { /* skip non-matching logs */ }
       }
 
+      // Fallback: read latest escrow from factory
+      if (contractAddress === txHash) {
+        try {
+          const count = await publicClient!.readContract({
+            address: FACTORY_ADDRESS,
+            abi: ESCROW_FACTORY_ABI,
+            functionName: "escrowCount",
+          }) as bigint;
+          if (count > 0n) {
+            const record = await publicClient!.readContract({
+              address: FACTORY_ADDRESS,
+              abi: ESCROW_FACTORY_ABI,
+              functionName: "escrows",
+              args: [count - 1n],
+            }) as readonly [`0x${string}`, ...unknown[]];
+            contractAddress = record[0];
+          }
+        } catch { /* use txHash as fallback */ }
+      }
+
       removeToast(pendingId);
       addToast({
         type: "success",

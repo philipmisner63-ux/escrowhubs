@@ -10,6 +10,7 @@ describe("SimpleEscrow", () => {
     const conn = await hre.network.connect();
     const [depositor, beneficiary, arbiter] = await conn.viem.getWalletClients();
     const escrow = await conn.viem.deployContract("SimpleEscrow", [
+      getAddress(depositor.account.address),
       getAddress(beneficiary.account.address),
       getAddress(arbiter.account.address),
     ]);

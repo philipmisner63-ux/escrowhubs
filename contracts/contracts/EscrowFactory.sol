@@ -198,7 +198,7 @@ contract EscrowFactory {
         (uint256 netAmount, uint256 fee) = _computeFee(msg.value, useAIArbiter);
         accumulatedFees += fee;
 
-        SimpleEscrow escrow = new SimpleEscrow(beneficiary, resolvedArbiter);
+        SimpleEscrow escrow = new SimpleEscrow(msg.sender, beneficiary, resolvedArbiter);
         escrow.deposit{ value: netAmount }();
 
         uint256 index = escrows.length;
@@ -272,6 +272,7 @@ contract EscrowFactory {
         accumulatedFees += fee + dust;
 
         MilestoneEscrow escrow = new MilestoneEscrow(
+            msg.sender,
             beneficiary,
             resolvedArbiter,
             descriptions,

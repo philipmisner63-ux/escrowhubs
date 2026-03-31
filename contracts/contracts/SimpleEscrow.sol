@@ -28,16 +28,17 @@ contract SimpleEscrow is ReentrancyGuard {
     modifier onlyArbiter()   { require(msg.sender == arbiter,   "Not arbiter");   _; }
     modifier inState(State _s) { require(state == _s, "Invalid state"); _; }
 
-    constructor(address _beneficiary, address _arbiter) {
+    constructor(address _depositor, address _beneficiary, address _arbiter) {
+        require(_depositor   != address(0), "Invalid depositor");
         require(_beneficiary != address(0), "Invalid beneficiary");
         require(_arbiter     != address(0), "Invalid arbiter");
-        depositor   = msg.sender;
+        depositor   = _depositor;
         beneficiary = _beneficiary;
         arbiter     = _arbiter;
         state       = State.AWAITING_PAYMENT;
     }
 
-    function deposit() external payable onlyDepositor inState(State.AWAITING_PAYMENT) {
+    function deposit() external payable inState(State.AWAITING_PAYMENT) {
         require(msg.value > 0, "Must deposit > 0");
         amount = msg.value;
         state  = State.AWAITING_DELIVERY;
