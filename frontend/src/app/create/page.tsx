@@ -115,11 +115,11 @@ export default function CreateEscrowPage() {
           if (count > 0n) {
             const record = await publicClient!.readContract({
               address: FACTORY_ADDRESS,
-              abi: [{ type: "function", name: "escrows", inputs: [{ type: "uint256" }], outputs: [{ name: "contractAddress", type: "address" }], stateMutability: "view" }],
+              abi: [{ type: "function", name: "escrows", inputs: [{ type: "uint256" }], outputs: [{ type: "address" }], stateMutability: "view" }] as const,
               functionName: "escrows",
               args: [count - 1n],
-            }) as { contractAddress: `0x${string}` };
-            if (record.contractAddress) contractAddress = record.contractAddress;
+            }) as `0x${string}`;
+            if (/^0x[0-9a-fA-F]{40}$/.test(record)) contractAddress = record;
           }
         } catch { /* redirect to dashboard as last resort */ }
       }
