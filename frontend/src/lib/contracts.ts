@@ -110,7 +110,7 @@ export const AI_ARBITER_ADDRESS  = (process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  
 
 export const blockdagTestnet = {
   id: 1404,
-  name: "BlockDAG Testnet",
+  name: "BlockDAG",
   nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 },
   rpcUrls: {
     default: {
@@ -120,7 +120,7 @@ export const blockdagTestnet = {
   blockExplorers: {
     default: { name: "BDAGScan", url: "https://bdagscan.com" },
   },
-  testnet: true,
+  testnet: false,
 } as const;
 
 export const EXPLORER_TX_URL = (hash: string) =>

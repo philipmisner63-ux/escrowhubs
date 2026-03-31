@@ -123,9 +123,8 @@ export default function CreateEscrowPage() {
             </div>
 
             {/* Network banner */}
-            <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/5 p-4 text-xs text-yellow-300">
-              <strong>BlockDAG Testnet required.</strong> Connect your wallet to the BlockDAG Testnet before deploying.
-              Bytecode sourced from <code className="font-mono bg-black/30 px-1 py-0.5 rounded">contracts/artifacts/</code> — run <code className="font-mono bg-black/30 px-1 py-0.5 rounded">pnpm compile</code> in <code className="font-mono">/contracts</code> to refresh.
+            <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-xs text-cyan-300">
+              <strong>BlockDAG Mainnet.</strong> Connect your wallet to BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) before deploying.
             </div>
 
             {/* Type selector */}
