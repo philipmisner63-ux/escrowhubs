@@ -1,10 +1,18 @@
 import hre from "hardhat";
+import { privateKeyToAccount } from "viem/accounts";
+import { config } from "dotenv";
+config();
 
 async function main() {
   const conn = await hre.network.connect();
-  const [deployer] = await conn.viem.getWalletClients();
 
-  console.log("Deploying with account:", deployer.account.address);
+  const rpcUrl = process.env.BLOCKDAG_RPC_URL ?? "https://rpc.bdagscan.com";
+  const privateKey = process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`;
+
+  if (!privateKey) throw new Error("DEPLOYER_PRIVATE_KEY not set in .env");
+
+  const account = privateKeyToAccount(privateKey);
+  console.log("Deploying with account:", account.address);
   console.log("Network:", hre.network.name);
 
   // 1. TrustScoreOracle
@@ -15,9 +23,9 @@ async function main() {
   const factory = await conn.viem.deployContract("EscrowFactory", []);
   console.log("✅ EscrowFactory:   ", factory.address);
 
-  // 3. AIArbiter (oracle signer = deployer for now, rotate after deploy)
+  // 3. AIArbiter (oracle signer = deployer for now)
   const aiArbiter = await conn.viem.deployContract("AIArbiter", [
-    deployer.account.address,
+    account.address,
   ]);
   console.log("✅ AIArbiter:       ", aiArbiter.address);
 
@@ -38,8 +46,6 @@ async function main() {
 
   console.log("\n📋 Add these to oracle/.env:");
   console.log(`AI_ARBITER_ADDRESS=${aiArbiter.address}`);
-  console.log(`# Set ORACLE_PRIVATE_KEY to the wallet you want as oracle signer`);
-  console.log(`# Then call aiArbiter.setOracleSigner(<oracle-wallet-address>)`);
 }
 
 main().catch((err) => {

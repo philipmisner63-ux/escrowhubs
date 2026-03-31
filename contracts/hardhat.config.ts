@@ -1,5 +1,7 @@
 import { type HardhatUserConfig } from "hardhat/config";
 import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
+import { config as dotenvConfig } from "dotenv";
+dotenvConfig();
 
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxViem],
@@ -11,6 +13,7 @@ const config: HardhatUserConfig = {
         runs: 200,
       },
       viaIR: true,
+      evmVersion: "paris",
     },
   },
   networks: {
