@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { parseEther, decodeEventLog } from "viem";
-import { usePublicClient, useWriteContract } from "wagmi";
+import { parseEther, createPublicClient, http } from "viem";
+import { useWriteContract } from "wagmi";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -29,7 +29,10 @@ export default function CreateEscrowPage() {
   const router = useRouter();
   const { addToast, removeToast } = useToast();
   const { writeContractAsync } = useWriteContract();
-  const publicClient = usePublicClient();
+  const publicClient = createPublicClient({
+    chain: { id: 1404, name: "BlockDAG", nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 }, rpcUrls: { default: { http: ["https://rpc.bdagscan.com"] } } },
+    transport: http("https://rpc.bdagscan.com"),
+  });
 
   const [type, setType] = useState<EscrowType>("simple");
   const [form, setForm] = useState({ title: "", beneficiary: "", arbiter: "", amount: "" });
@@ -86,66 +89,25 @@ export default function CreateEscrowPage() {
         });
       }
 
-      // Extract escrow contract address from transaction receipt events
-      const receipt = await publicClient!.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
-      let contractAddress: `0x${string}` = txHash;
+      // Wait for receipt then find the escrow contract address from logs
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
 
+      // Extract contract address: first indexed topic of the factory event = contractAddress
+      let contractAddress: `0x${string}` | null = null;
       for (const log of receipt.logs) {
-        try {
-          const decoded = decodeEventLog({
-            abi: ESCROW_FACTORY_ABI,
-            data: log.data,
-            topics: log.topics,
-          });
-          if (decoded.eventName === "SimpleEscrowCreated" || decoded.eventName === "MilestoneEscrowCreated") {
-            contractAddress = (decoded.args as { contractAddress: `0x${string}` }).contractAddress;
+        if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics[1]) {
+          const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
+          if (/^0x[0-9a-fA-F]{40}$/.test(addr)) {
+            contractAddress = addr;
             break;
           }
-        } catch { /* skip non-matching logs */ }
-      }
-
-      // Fallback: read latest escrow from factory if event decode failed
-      if (!/^0x[0-9a-fA-F]{40}$/.test(contractAddress)) {
-        try {
-          const countResult = await publicClient!.readContract({
-            address: FACTORY_ADDRESS,
-            abi: [{ type: "function", name: "escrowCount", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" }] as const,
-            functionName: "escrowCount",
-          });
-          const count = countResult as bigint;
-          if (count > 0n) {
-            const logs = await publicClient!.getLogs({
-              address: FACTORY_ADDRESS,
-              fromBlock: receipt.blockNumber,
-              toBlock: receipt.blockNumber,
-            });
-            for (const log of logs) {
-              // First topic is event sig, first indexed arg (contractAddress) is second topic
-              if (log.topics[1]) {
-                const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
-                if (/^0x[0-9a-fA-F]{40}$/.test(addr)) {
-                  contractAddress = addr;
-                  break;
-                }
-              }
-            }
-          }
-        } catch { /* redirect to dashboard as last resort */ }
+        }
       }
 
       removeToast(pendingId);
-      addToast({
-        type: "success",
-        message: "Escrow deployed!",
-        txHash,
-      });
-
+      addToast({ type: "success", message: "Escrow deployed!", txHash });
       triggerDeployConfetti();
-      // Only redirect to escrow page if we have a valid contract address (42 chars)
-      const destination = /^0x[0-9a-fA-F]{40}$/.test(contractAddress)
-        ? `/escrow/${contractAddress}`
-        : `/dashboard`;
-      setTimeout(() => router.push(destination), 500);
+      setTimeout(() => router.push(contractAddress ? `/escrow/${contractAddress}` : `/dashboard`), 500);
 
     } catch (err: unknown) {
       removeToast(pendingId);
