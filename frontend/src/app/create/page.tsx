@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { parseEther } from "viem";
-import { useDeployContract } from "wagmi";
+import { parseEther, decodeEventLog } from "viem";
+import { usePublicClient, useWriteContract } from "wagmi";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -11,10 +11,8 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 import { triggerDeployConfetti } from "@/lib/confetti";
 import {
-  SIMPLE_ESCROW_ABI,
-  SIMPLE_ESCROW_BYTECODE,
-  MILESTONE_ESCROW_ABI,
-  MILESTONE_ESCROW_BYTECODE,
+  ESCROW_FACTORY_ABI,
+  FACTORY_ADDRESS,
   EXPLORER_TX_URL,
   AI_ARBITER_ADDRESS,
 } from "@/lib/contracts";
@@ -30,7 +28,8 @@ interface MilestoneInput {
 export default function CreateEscrowPage() {
   const router = useRouter();
   const { addToast, removeToast } = useToast();
-  const { deployContractAsync } = useDeployContract();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const [type, setType] = useState<EscrowType>("simple");
   const [form, setForm] = useState({ title: "", beneficiary: "", arbiter: "", amount: "" });
@@ -51,39 +50,65 @@ export default function CreateEscrowPage() {
     const pendingId = addToast({ type: "pending", message: "Waiting for wallet confirmation…" });
 
     try {
-      let contractAddress: `0x${string}`;
-
       const resolvedArbiter = useAIArbiter
         ? AI_ARBITER_ADDRESS
         : form.arbiter as `0x${string}`;
 
+      let txHash: `0x${string}`;
+
       if (type === "simple") {
-        const hash = await deployContractAsync({
-          abi: SIMPLE_ESCROW_ABI,
-          bytecode: SIMPLE_ESCROW_BYTECODE,
-          args: [form.beneficiary as `0x${string}`, resolvedArbiter],
-          value: parseEther(form.amount),
+        const escrowAmount = parseEther(form.amount);
+        const protocolFee = escrowAmount * 50n / 10000n;
+        const aiArbiterFee = useAIArbiter ? parseEther("1") : 0n;
+        const totalValue = escrowAmount + protocolFee + aiArbiterFee;
+
+        txHash = await writeContractAsync({
+          address: FACTORY_ADDRESS,
+          abi: ESCROW_FACTORY_ABI,
+          functionName: "createSimpleEscrow",
+          args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter],
+          value: totalValue,
         });
-        contractAddress = hash as `0x${string}`;
       } else {
         const descriptions = milestones.map(m => m.description);
         const amounts = milestones.map(m => parseEther(m.amount));
-        const totalValue = amounts.reduce((a, b) => a + b, 0n);
+        const netTotal = amounts.reduce((a, b) => a + b, 0n);
+        const protocolFee = netTotal * 50n / 10000n;
+        const aiArbiterFee = useAIArbiter ? parseEther("1") : 0n;
+        const totalValue = netTotal + protocolFee + aiArbiterFee;
 
-        const hash = await deployContractAsync({
-          abi: MILESTONE_ESCROW_ABI,
-          bytecode: MILESTONE_ESCROW_BYTECODE,
-          args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts],
+        txHash = await writeContractAsync({
+          address: FACTORY_ADDRESS,
+          abi: ESCROW_FACTORY_ABI,
+          functionName: "createMilestoneEscrow",
+          args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter],
           value: totalValue,
         });
-        contractAddress = hash as `0x${string}`;
+      }
+
+      // Extract escrow contract address from transaction receipt events
+      const receipt = await publicClient!.waitForTransactionReceipt({ hash: txHash });
+      let contractAddress: `0x${string}` = txHash;
+
+      for (const log of receipt.logs) {
+        try {
+          const decoded = decodeEventLog({
+            abi: ESCROW_FACTORY_ABI,
+            data: log.data,
+            topics: log.topics,
+          });
+          if (decoded.eventName === "SimpleEscrowCreated" || decoded.eventName === "MilestoneEscrowCreated") {
+            contractAddress = (decoded.args as { contractAddress: `0x${string}` }).contractAddress;
+            break;
+          }
+        } catch { /* skip non-matching logs */ }
       }
 
       removeToast(pendingId);
       addToast({
         type: "success",
-        message: "Contract deployed!",
-        txHash: contractAddress,
+        message: "Escrow deployed!",
+        txHash,
       });
 
       triggerDeployConfetti();
