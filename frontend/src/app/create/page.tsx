@@ -47,7 +47,7 @@ export default function CreateEscrowPage() {
     e.preventDefault();
     setSubmitting(true);
 
-    const pendingId = addToast({ type: "pending", message: "Waiting for wallet confirmation…" });
+    const pendingId = addToast({ type: "pending", message: "Waiting for wallet confirmation… (may take 30–60s)" });
 
     try {
       const resolvedArbiter = useAIArbiter
@@ -87,7 +87,7 @@ export default function CreateEscrowPage() {
       }
 
       // Extract escrow contract address from transaction receipt events
-      const receipt = await publicClient!.waitForTransactionReceipt({ hash: txHash });
+      const receipt = await publicClient!.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
       let contractAddress: `0x${string}` = txHash;
 
       for (const log of receipt.logs) {
