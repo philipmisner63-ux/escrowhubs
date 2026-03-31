@@ -89,25 +89,10 @@ export default function CreateEscrowPage() {
         });
       }
 
-      // Wait for receipt then find the escrow contract address from logs
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
-
-      // Extract contract address: first indexed topic of the factory event = contractAddress
-      let contractAddress: `0x${string}` | null = null;
-      for (const log of receipt.logs) {
-        if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics[1]) {
-          const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
-          if (/^0x[0-9a-fA-F]{40}$/.test(addr)) {
-            contractAddress = addr;
-            break;
-          }
-        }
-      }
-
       removeToast(pendingId);
-      addToast({ type: "success", message: "Escrow deployed!", txHash });
+      addToast({ type: "success", message: "Escrow deployed! Loading dashboard…", txHash });
       triggerDeployConfetti();
-      setTimeout(() => router.push(contractAddress ? `/escrow/${contractAddress}` : `/dashboard`), 500);
+      setTimeout(() => router.push(`/dashboard`), 1500);
 
     } catch (err: unknown) {
       removeToast(pendingId);
