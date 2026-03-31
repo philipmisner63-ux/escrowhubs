@@ -99,6 +99,17 @@ export default function CreateEscrowPage() {
 
   const milestoneTotal = milestones.reduce((s, m) => s + (parseFloat(m.amount) || 0), 0);
 
+  // Fee preview (client-side approximation matching contract logic)
+  const PROTOCOL_FEE_BPS = 50; // 0.5%
+  const AI_ARBITER_FLAT  = 1;  // 1 BDAG
+  const escrowNet = type === "simple"
+    ? parseFloat(form.amount) || 0
+    : milestoneTotal;
+  const protocolFee = escrowNet * PROTOCOL_FEE_BPS / 10_000;
+  const aiArbiterFee = useAIArbiter ? AI_ARBITER_FLAT : 0;
+  const totalFee = protocolFee + aiArbiterFee;
+  const totalSend = escrowNet + totalFee;
+
   return (
     <div className="flex flex-col min-h-screen">
       <Nav />
@@ -253,17 +264,45 @@ export default function CreateEscrowPage() {
                   </div>
                 )}
 
-                {/* Verification tier */}
-                <div className="rounded-xl bg-white/3 border border-white/8 p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-slate-400">Adaptive Verification</p>
-                    <p className="text-xs text-slate-600 mt-0.5">Scales with trust score + transaction size</p>
+                {/* Fee preview */}
+                {escrowNet > 0 && (
+                  <div className={cn(
+                    "rounded-xl border p-4 space-y-2 text-xs",
+                    useAIArbiter
+                      ? "border-violet-400/20 bg-violet-400/5"
+                      : "border-white/8 bg-white/3"
+                  )}>
+                    <p className={cn(
+                      "font-semibold uppercase tracking-widest",
+                      useAIArbiter ? "text-violet-300" : "text-slate-400"
+                    )}>
+                      Fee Breakdown
+                    </p>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-slate-400">
+                        <span>Escrow amount</span>
+                        <span className="font-mono">{escrowNet.toFixed(4)} BDAG</span>
+                      </div>
+                      <div className="flex justify-between text-slate-500">
+                        <span>Protocol fee (0.5%)</span>
+                        <span className="font-mono">+{protocolFee.toFixed(4)} BDAG</span>
+                      </div>
+                      {useAIArbiter && (
+                        <div className="flex justify-between text-violet-400">
+                          <span>🤖 AI Arbiter fee</span>
+                          <span className="font-mono">+{aiArbiterFee.toFixed(4)} BDAG</span>
+                        </div>
+                      )}
+                      <div className={cn(
+                        "flex justify-between font-semibold pt-1 border-t",
+                        useAIArbiter ? "border-violet-400/20 text-violet-300" : "border-white/8 text-white"
+                      )}>
+                        <span>Total to send</span>
+                        <span className="font-mono">{totalSend.toFixed(4)} BDAG</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs text-slate-500">Est. tier</span>
-                    <p className="text-sm font-semibold text-cyan-400">Standard</p>
-                  </div>
-                </div>
+                )}
 
                 <GlowButton type="submit" variant="primary" loading={submitting} className="w-full py-3 text-base">
                   {submitting ? "Deploying…" : "Deploy Escrow Contract"}
