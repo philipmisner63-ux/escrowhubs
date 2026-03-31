@@ -104,8 +104,8 @@ export default function CreateEscrowPage() {
         } catch { /* skip non-matching logs */ }
       }
 
-      // Fallback: read latest escrow from factory
-      if (contractAddress === txHash) {
+      // Fallback: read latest escrow from factory if event decode failed
+      if (!/^0x[0-9a-fA-F]{40}$/.test(contractAddress)) {
         try {
           const count = await publicClient!.readContract({
             address: FACTORY_ADDRESS,
@@ -115,13 +115,13 @@ export default function CreateEscrowPage() {
           if (count > 0n) {
             const record = await publicClient!.readContract({
               address: FACTORY_ADDRESS,
-              abi: ESCROW_FACTORY_ABI,
+              abi: [{ type: "function", name: "escrows", inputs: [{ type: "uint256" }], outputs: [{ name: "contractAddress", type: "address" }], stateMutability: "view" }],
               functionName: "escrows",
               args: [count - 1n],
-            }) as readonly [`0x${string}`, ...unknown[]];
-            contractAddress = record[0];
+            }) as { contractAddress: `0x${string}` };
+            if (record.contractAddress) contractAddress = record.contractAddress;
           }
-        } catch { /* use txHash as fallback */ }
+        } catch { /* redirect to dashboard as last resort */ }
       }
 
       removeToast(pendingId);
@@ -132,7 +132,11 @@ export default function CreateEscrowPage() {
       });
 
       triggerDeployConfetti();
-      setTimeout(() => router.push(`/escrow/${contractAddress}`), 500);
+      // Only redirect to escrow page if we have a valid contract address (42 chars)
+      const destination = /^0x[0-9a-fA-F]{40}$/.test(contractAddress)
+        ? `/escrow/${contractAddress}`
+        : `/dashboard`;
+      setTimeout(() => router.push(destination), 500);
 
     } catch (err: unknown) {
       removeToast(pendingId);
