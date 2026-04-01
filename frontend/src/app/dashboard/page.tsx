@@ -3,25 +3,42 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAccount } from "wagmi";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
-import { StatCard } from "@/components/ui/stat-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AddressDisplay } from "@/components/ui/address-display";
-import { mockStats } from "@/lib/mock-data";
+import { useWalletEscrows, useFactoryEscrows } from "@/lib/hooks/useEscrowFactory";
+import { SIMPLE_STATE_LABEL } from "@/lib/contracts";
 import { getViewedEscrows, type ViewedEscrow } from "@/lib/localStorage";
 
 function isValidAddress(addr: string) {
   return /^0x[0-9a-fA-F]{40}$/.test(addr);
 }
 
+function stateToStatus(stateNum: number): "pending" | "active" | "complete" | "disputed" {
+  if (stateNum === 0) return "pending";
+  if (stateNum === 1) return "active";
+  if (stateNum === 2) return "complete";
+  if (stateNum === 3) return "disputed";
+  return "pending";
+}
+
 export default function DashboardPage() {
   const router = useRouter();
+  const { address: wallet } = useAccount();
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [viewed, setViewed] = useState<ViewedEscrow[]>([]);
+
+  const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(wallet);
+  const { records: allRecords, isLoading: recordsLoading } = useFactoryEscrows(0n, 50n);
+
+  // Combine depositor + beneficiary indices, deduplicate
+  const myIndices = Array.from(new Set([...asDepositor, ...asBeneficiary].map(n => Number(n))));
+  const myEscrows = myIndices.map(i => allRecords[i]).filter(Boolean);
 
   useEffect(() => {
     setViewed(getViewedEscrows());
@@ -36,6 +53,8 @@ export default function DashboardPage() {
     setError("");
     router.push(`/escrow/${addr}`);
   }
+
+  const isLoading = walletLoading || recordsLoading;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -52,6 +71,46 @@ export default function DashboardPage() {
               <Link href="/create">
                 <GlowButton variant="primary">+ New Escrow</GlowButton>
               </Link>
+            </div>
+
+            {/* My Escrows */}
+            <div>
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500">
+                My Escrows
+              </h2>
+              {!wallet ? (
+                <GlassCard className="p-8 text-center">
+                  <p className="text-slate-500 text-sm">Connect your wallet to see your escrows.</p>
+                </GlassCard>
+              ) : isLoading ? (
+                <GlassCard className="p-8 text-center">
+                  <p className="text-slate-500 text-sm animate-pulse">Loading escrows…</p>
+                </GlassCard>
+              ) : myEscrows.length === 0 ? (
+                <GlassCard className="p-8 text-center">
+                  <p className="text-slate-500 text-sm">No escrows found for your wallet.</p>
+                  <p className="text-slate-600 text-xs mt-1">Create one or paste an address below.</p>
+                </GlassCard>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {myEscrows.map(e => (
+                    <Link key={e.contractAddress} href={`/escrow/${e.contractAddress}`}>
+                      <GlassCard className="p-4 cursor-pointer hover:border-cyan-400/30 transition-all">
+                        <div className="flex items-center justify-between mb-2">
+                          <StatusBadge status={e.depositor?.toLowerCase() === wallet?.toLowerCase() ? "active" : "pending"} />
+                          <span className="text-xs text-slate-500">
+                            {e.escrowType === 0 ? "Simple" : "Milestone"}
+                          </span>
+                        </div>
+                        <AddressDisplay address={e.contractAddress} />
+                        <p className="text-xs text-slate-500 mt-2">
+                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG
+                        </p>
+                      </GlassCard>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Load by address */}
@@ -71,22 +130,6 @@ export default function DashboardPage() {
               </div>
               {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
             </GlassCard>
-
-            {/* Stats */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Stats</h2>
-                <span className="text-xs text-slate-600 border border-white/8 px-2 py-1 rounded-full">
-                  Live data coming soon — connect an indexer
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <StatCard label="Total Volume"     value={mockStats.totalVolume}      icon="⬡" accent="cyan"  />
-                <StatCard label="Active Escrows"   value={mockStats.activeEscrows}    icon="◈" accent="blue"  />
-                <StatCard label="Completed"        value={mockStats.completedEscrows} icon="✓" accent="green" />
-                <StatCard label="Disputed"         value={mockStats.disputedEscrows}  icon="⚠" accent="red"   />
-              </div>
-            </div>
 
             {/* Recently Viewed */}
             {viewed.length > 0 && (
@@ -111,13 +154,6 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-            )}
-
-            {viewed.length === 0 && (
-              <GlassCard className="p-12 text-center">
-                <p className="text-slate-500 text-sm">No escrows loaded yet.</p>
-                <p className="text-slate-600 text-xs mt-1">Paste a contract address above to get started.</p>
-              </GlassCard>
             )}
           </div>
         </PageWrapper>

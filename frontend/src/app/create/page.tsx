@@ -89,10 +89,29 @@ export default function CreateEscrowPage() {
         });
       }
 
-      removeToast(pendingId);
-      addToast({ type: "success", message: "Escrow deployed! Loading dashboard…", txHash });
+      // Wait for receipt and extract escrow address from logs
+      addToast({ type: "success", message: "Transaction submitted! Waiting for confirmation…", txHash });
       triggerDeployConfetti();
-      setTimeout(() => router.push(`/dashboard`), 1500);
+
+      try {
+        const rpcClient = createPublicClient({
+          chain: { id: 1404, name: "BlockDAG", nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 }, rpcUrls: { default: { http: ["https://rpc.bdagscan.com"] } } } as const,
+          transport: http(),
+        });
+        const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 60_000, pollingInterval: 2_000 });
+        let contractAddress: `0x${string}` | null = null;
+        for (const log of receipt.logs) {
+          if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics[1]) {
+            const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
+            if (/^0x[0-9a-fA-F]{40}$/.test(addr)) { contractAddress = addr; break; }
+          }
+        }
+        removeToast(pendingId);
+        setTimeout(() => router.push(contractAddress ? `/escrow/${contractAddress}` : `/dashboard`), 500);
+      } catch {
+        removeToast(pendingId);
+        setTimeout(() => router.push(`/dashboard`), 500);
+      }
 
     } catch (err: unknown) {
       removeToast(pendingId);
