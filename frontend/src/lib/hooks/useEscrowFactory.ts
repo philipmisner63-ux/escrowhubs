@@ -27,7 +27,7 @@ export function useEscrowFactory() {
     contracts: [
       { ...contract, functionName: "escrowCount" },
     ],
-    query: { enabled },
+    query: { enabled, refetchInterval: 5_000 },
   });
 
   return {
@@ -50,7 +50,7 @@ export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
         args: [offset, limit],
       },
     ],
-    query: { enabled },
+    query: { enabled, refetchInterval: 5_000 },
   });
 
   const records = (data?.[0].result as FactoryEscrowRecord[] | undefined) ?? [];
@@ -67,7 +67,7 @@ export function useWalletEscrows(walletAddress: Address | undefined) {
       { ...contract, functionName: "getEscrowsByDepositor",   args: [walletAddress!] },
       { ...contract, functionName: "getEscrowsByBeneficiary", args: [walletAddress!] },
     ],
-    query: { enabled },
+    query: { enabled, refetchInterval: 5_000 },
   });
 
   return {

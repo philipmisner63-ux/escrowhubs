@@ -96,9 +96,9 @@ export default function CreateEscrowPage() {
       try {
         const rpcClient = createPublicClient({
           chain: { id: 1404, name: "BlockDAG", nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 }, rpcUrls: { default: { http: ["https://rpc.bdagscan.com"] } } } as const,
-          transport: http(),
+          transport: http("https://rpc.bdagscan.com"),
         });
-        const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 60_000, pollingInterval: 2_000 });
+        const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
         let contractAddress: `0x${string}` | null = null;
         for (const log of receipt.logs) {
           if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics[1]) {
@@ -107,10 +107,17 @@ export default function CreateEscrowPage() {
           }
         }
         removeToast(pendingId);
-        setTimeout(() => router.push(contractAddress ? `/escrow/${contractAddress}` : `/dashboard`), 500);
+        if (contractAddress) {
+          setTimeout(() => router.push(`/escrow/${contractAddress}`), 500);
+        } else {
+          addToast({ type: "error", message: `Receipt received but couldn't parse escrow address. Check the dashboard.` });
+          setTimeout(() => router.push(`/dashboard`), 1500);
+        }
       } catch {
+        // Timed out — tx is probably still pending on-chain. Don't show success.
         removeToast(pendingId);
-        setTimeout(() => router.push(`/dashboard`), 500);
+        addToast({ type: "error", message: `Confirmation timed out. Tx: ${txHash.slice(0, 18)}… — check your dashboard in a moment.` });
+        setTimeout(() => router.push(`/dashboard`), 3_000);
       }
 
     } catch (err: unknown) {

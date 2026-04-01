@@ -45,7 +45,7 @@ export default function DashboardPage() {
       functionName: "escrows" as const,
       args: [BigInt(i)],
     })),
-    query: { enabled: myIndices.length > 0 },
+    query: { enabled: myIndices.length > 0, refetchInterval: 5_000 },
   });
 
   const myEscrows = (escrowData ?? [])
