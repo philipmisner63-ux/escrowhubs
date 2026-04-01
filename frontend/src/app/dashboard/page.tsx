@@ -49,9 +49,22 @@ export default function DashboardPage() {
   });
 
   const myEscrows = (escrowData ?? [])
-    .map((r) => r?.result as { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } | undefined)
-    .filter((e): e is { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } => 
-      !!e && !!e.contractAddress && typeof e.contractAddress === 'string');
+    .map((r) => {
+      const raw = r?.result;
+      if (!raw) return null;
+      // Result may be array-like or object depending on wagmi version
+      const arr = Array.isArray(raw) ? raw : Object.values(raw);
+      const contractAddress = arr[0] as `0x${string}`;
+      if (!contractAddress || typeof contractAddress !== 'string') return null;
+      return {
+        contractAddress,
+        escrowType: arr[1] as number,
+        depositor: arr[2] as `0x${string}`,
+        beneficiary: arr[3] as `0x${string}`,
+        totalAmount: arr[5] as bigint,
+      };
+    })
+    .filter((e): e is { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } => !!e);
 
   useEffect(() => {
     setViewed(getViewedEscrows());
