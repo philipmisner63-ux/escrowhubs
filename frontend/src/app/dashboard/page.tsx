@@ -49,8 +49,9 @@ export default function DashboardPage() {
   });
 
   const myEscrows = (escrowData ?? [])
-    .map((r) => r.result as { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } | undefined)
-    .filter(Boolean) as { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint }[];
+    .map((r) => r?.result as { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } | undefined)
+    .filter((e): e is { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } => 
+      !!e && !!e.contractAddress && typeof e.contractAddress === 'string');
 
   useEffect(() => {
     setViewed(getViewedEscrows());
