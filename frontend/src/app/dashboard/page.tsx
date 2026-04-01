@@ -114,9 +114,11 @@ export default function DashboardPage() {
                             {e.escrowType === 0 ? "Simple" : "Milestone"}
                           </span>
                         </div>
-                        <AddressDisplay address={e.contractAddress} />
-                        <p className="text-xs text-slate-500 mt-2">
-                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG
+                        <p className="text-xs font-mono text-slate-300 truncate">
+                          {e.contractAddress.slice(0, 10)}…{e.contractAddress.slice(-6)}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · tap to open →
                         </p>
                       </GlassCard>
                     </Link>
