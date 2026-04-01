@@ -17,7 +17,7 @@ export function useSimpleEscrowRead(address: Address | undefined) {
       { ...contract, functionName: "beneficiary" },
       { ...contract, functionName: "arbiter" },
     ],
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: 5_000 },
   });
 
   return {

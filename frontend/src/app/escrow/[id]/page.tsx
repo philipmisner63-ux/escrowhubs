@@ -74,11 +74,16 @@ function SimpleEscrowView({ address }: { address: Address }) {
       addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
       try {
         const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http() });
-        await rpcClient.waitForTransactionReceipt({ hash, timeout: 60_000, pollingInterval: 2_000 });
-      } catch { /* timeout — still refetch */ }
+        await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
+      } catch { /* timeout — still attempt refetch */ }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
+      // Retry-poll until state settles (BlockDAG can lag after receipt)
       data.refetch();
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 3_000));
+        data.refetch();
+      }
     } catch (e: unknown) {
       removeToast(pid);
       addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Transaction failed" });
@@ -212,11 +217,16 @@ function MilestoneEscrowView({ address }: { address: Address }) {
       addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
       try {
         const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http() });
-        await rpcClient.waitForTransactionReceipt({ hash, timeout: 60_000, pollingInterval: 2_000 });
-      } catch { /* timeout — still refetch */ }
+        await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
+      } catch { /* timeout — still attempt refetch */ }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
+      // Retry-poll until state settles (BlockDAG can lag after receipt)
       data.refetch();
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 3_000));
+        data.refetch();
+      }
     } catch (e: unknown) {
       removeToast(pid);
       addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Transaction failed" });

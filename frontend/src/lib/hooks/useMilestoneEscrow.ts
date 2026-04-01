@@ -24,7 +24,7 @@ export function useMilestoneEscrowRead(address: Address | undefined) {
       { ...contract, functionName: "funded" },
       { ...contract, functionName: "milestoneCount" },
     ],
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: 5_000 },
   });
 
   const milestoneCount = (baseData?.[5].result as bigint | undefined) ?? 0n;
@@ -37,7 +37,7 @@ export function useMilestoneEscrowRead(address: Address | undefined) {
       functionName: "milestones" as const,
       args: [i] as const,
     })),
-    query: { enabled: !!address && milestoneCount > 0n },
+    query: { enabled: !!address && milestoneCount > 0n, refetchInterval: 5_000 },
   });
 
   const milestones: MilestoneData[] = (milestoneData ?? []).map(d => {
