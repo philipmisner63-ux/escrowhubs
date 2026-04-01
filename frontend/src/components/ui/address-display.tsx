@@ -16,7 +16,20 @@ export function AddressDisplay({ address, label, className }: AddressDisplayProp
     : address;
 
   async function copy() {
-    await navigator.clipboard.writeText(address);
+    try {
+      await navigator.clipboard.writeText(address);
+    } catch {
+      // Fallback for HTTP (clipboard API requires HTTPS)
+      const el = document.createElement("textarea");
+      el.value = address;
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
