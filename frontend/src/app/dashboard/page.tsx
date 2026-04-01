@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContracts } from "wagmi";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AddressDisplay } from "@/components/ui/address-display";
-import { useWalletEscrows, useFactoryEscrows } from "@/lib/hooks/useEscrowFactory";
-import { SIMPLE_STATE_LABEL } from "@/lib/contracts";
+import { useWalletEscrows } from "@/lib/hooks/useEscrowFactory";
+import { ESCROW_FACTORY_ABI, FACTORY_ADDRESS } from "@/lib/contracts";
 import { getViewedEscrows, type ViewedEscrow } from "@/lib/localStorage";
 
 function isValidAddress(addr: string) {
@@ -34,11 +34,23 @@ export default function DashboardPage() {
   const [viewed, setViewed] = useState<ViewedEscrow[]>([]);
 
   const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(wallet);
-  const { records: allRecords, isLoading: recordsLoading } = useFactoryEscrows(0n, 50n);
 
-  // Combine depositor + beneficiary indices, deduplicate
+  // Get escrow addresses directly from factory using raw index lookup
   const myIndices = Array.from(new Set([...asDepositor, ...asBeneficiary].map(n => Number(n))));
-  const myEscrows = myIndices.map(i => allRecords[i]).filter(Boolean);
+
+  const { data: escrowData, isLoading: recordsLoading } = useReadContracts({
+    contracts: myIndices.map(i => ({
+      address: FACTORY_ADDRESS as `0x${string}`,
+      abi: ESCROW_FACTORY_ABI,
+      functionName: "escrows" as const,
+      args: [BigInt(i)],
+    })),
+    query: { enabled: myIndices.length > 0 },
+  });
+
+  const myEscrows = (escrowData ?? [])
+    .map((r) => r.result as { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } | undefined)
+    .filter(Boolean) as { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint }[];
 
   useEffect(() => {
     setViewed(getViewedEscrows());
