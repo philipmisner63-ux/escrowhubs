@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount, useWriteContract } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatEther, createPublicClient, http } from "viem";
 import { blockdagTestnet } from "@/lib/contracts";
 import { Nav } from "@/components/nav";
@@ -20,7 +21,7 @@ import { useSimpleEscrowRead, useSimpleEscrowWrite } from "@/lib/hooks/useSimple
 import { useMilestoneEscrowRead, useMilestoneEscrowWrite } from "@/lib/hooks/useMilestoneEscrow";
 import { useEscrowEvents } from "@/lib/hooks/useEscrowEvents";
 import { addViewedEscrow } from "@/lib/localStorage";
-import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ADDRESS, AI_ARBITER_ABI } from "@/lib/contracts";
+import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ADDRESS, AI_ARBITER_ABI, SIMPLE_ESCROW_ABI } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 
 type Address = `0x${string}`;
@@ -51,9 +52,12 @@ const ROLE_BADGE: Record<Role, string> = {
 
 // ─── Simple contract view ─────────────────────────────────────────────────────
 
+const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http("https://rpc.bdagscan.com") });
+
 function SimpleEscrowView({ address }: { address: Address }) {
   const { address: wallet } = useAccount();
   const { addToast, removeToast } = useToast();
+  const queryClient = useQueryClient();
   const data = useSimpleEscrowRead(address);
   const writes = useSimpleEscrowWrite();
 
@@ -72,16 +76,28 @@ function SimpleEscrowView({ address }: { address: Address }) {
     try {
       const hash = await fn();
       addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
+      // Wait for receipt
       try {
-        const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http() });
         await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
-      } catch { /* timeout — still attempt refetch */ }
+      } catch { /* timeout — still poll below */ }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
-      // Retry-poll until state settles (BlockDAG can lag after receipt)
-      data.refetch();
-      for (let i = 0; i < 10; i++) {
+      // Poll contract state directly (bypasses wagmi cache) until it changes
+      const stateBeforeWrite = data.state;
+      let settled = false;
+      for (let i = 0; i < 20 && !settled; i++) {
         await new Promise(r => setTimeout(r, 3_000));
+        try {
+          const fresh = await rpcClient.readContract({
+            address, abi: SIMPLE_ESCROW_ABI,
+            functionName: "state",
+          });
+          if (fresh !== stateBeforeWrite) {
+            settled = true;
+          }
+        } catch { /* rpc hiccup, keep trying */ }
+        // Invalidate wagmi cache so hooks re-fetch from chain
+        queryClient.invalidateQueries();
         data.refetch();
       }
     } catch (e: unknown) {
@@ -198,6 +214,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
 function MilestoneEscrowView({ address }: { address: Address }) {
   const { address: wallet } = useAccount();
   const { addToast, removeToast } = useToast();
+  const queryClient = useQueryClient();
   const data = useMilestoneEscrowRead(address);
   const writes = useMilestoneEscrowWrite();
 
@@ -216,15 +233,14 @@ function MilestoneEscrowView({ address }: { address: Address }) {
       const hash = await fn();
       addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
       try {
-        const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http() });
         await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
-      } catch { /* timeout — still attempt refetch */ }
+      } catch { /* timeout — still poll below */ }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
-      // Retry-poll until state settles (BlockDAG can lag after receipt)
-      data.refetch();
-      for (let i = 0; i < 10; i++) {
+      // Invalidate wagmi cache + keep polling until state is fresh
+      for (let i = 0; i < 20; i++) {
         await new Promise(r => setTimeout(r, 3_000));
+        queryClient.invalidateQueries();
         data.refetch();
       }
     } catch (e: unknown) {
