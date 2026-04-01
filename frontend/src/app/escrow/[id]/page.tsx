@@ -3,7 +3,8 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount, useWriteContract } from "wagmi";
-import { formatEther } from "viem";
+import { formatEther, createPublicClient, http } from "viem";
+import { blockdagTestnet } from "@/lib/contracts";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -70,6 +71,11 @@ function SimpleEscrowView({ address }: { address: Address }) {
     const pid = addToast({ type: "pending", message: `${label}…` });
     try {
       const hash = await fn();
+      addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
+      try {
+        const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http() });
+        await rpcClient.waitForTransactionReceipt({ hash, timeout: 60_000, pollingInterval: 2_000 });
+      } catch { /* timeout — still refetch */ }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
       data.refetch();
@@ -203,6 +209,11 @@ function MilestoneEscrowView({ address }: { address: Address }) {
     const pid = addToast({ type: "pending", message: `${label}…` });
     try {
       const hash = await fn();
+      addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
+      try {
+        const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http() });
+        await rpcClient.waitForTransactionReceipt({ hash, timeout: 60_000, pollingInterval: 2_000 });
+      } catch { /* timeout — still refetch */ }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
       data.refetch();
