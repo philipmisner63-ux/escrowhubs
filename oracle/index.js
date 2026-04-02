@@ -32,6 +32,8 @@ if (!PRIVATE_KEY || !AI_ARBITER_ADDR || !ANTHROPIC_KEY) {
 }
 
 // ─── Chain ───────────────────────────────────────────────────────────────────
+// Configured for BlockDAG Mainnet (Chain ID 1404).
+// To support additional chains, duplicate this config and update env vars accordingly.
 
 const blockdag = {
   id: 1404,
@@ -58,6 +60,10 @@ const walletClient = createWalletClient({
 const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY });
 
 // ─── ABIs ────────────────────────────────────────────────────────────────────
+
+// ─── ABIs ────────────────────────────────────────────────────────────────────
+// Inlined for oracle self-containment. Canonical source: contracts/contracts/*.sol
+// If ABIs change, update both here and in frontend/src/lib/contracts.ts
 
 const AI_ARBITER_ABI = [
   { type: "function", name: "resolveRelease",          inputs: [{ name: "escrowAddress", type: "address" }], outputs: [], stateMutability: "nonpayable" },

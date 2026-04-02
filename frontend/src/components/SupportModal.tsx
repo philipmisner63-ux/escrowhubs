@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { usePathname } from "next/navigation";
 import { createPublicClient, http } from "viem";
-import { blockdagTestnet, SIMPLE_ESCROW_ABI, SIMPLE_STATE_LABEL } from "@/lib/contracts";
+import { SIMPLE_ESCROW_ABI, SIMPLE_STATE_LABEL } from "@/lib/contracts";
+import { getChain, DEFAULT_CHAIN_ID } from "@/lib/chainRegistry";
 import { useToast } from "@/components/toast";
 import { GlowButton } from "@/components/ui/glow-button";
 import { cn } from "@/lib/utils";
@@ -18,9 +19,10 @@ const ISSUE_TYPES = [
   "Other",
 ];
 
+const defaultChainConfig = getChain(DEFAULT_CHAIN_ID);
 const rpcClient = createPublicClient({
-  chain: blockdagTestnet,
-  transport: http("https://rpc.bdagscan.com"),
+  chain: defaultChainConfig.chain as Parameters<typeof createPublicClient>[0]["chain"],
+  transport: http(defaultChainConfig.rpcUrl),
 });
 
 interface SupportModalProps {
@@ -162,7 +164,7 @@ export function SupportModal({ open, onClose, lastTxHash }: SupportModalProps) {
             {(
               [
                 ["Wallet", wallet ? `${wallet.slice(0, 8)}…${wallet.slice(-6)}` : "not connected"],
-                ["Network", chainId === 1404 ? "BlockDAG" : `Chain ${chainId}`],
+                ["Network", getChain(chainId).chain.name],
                 ["Page", pathname],
                 ...(escrowId ? [["Escrow", `${escrowId.slice(0, 10)}…`]] : []),
                 ...(lastTxHash ? [["Last Tx", `${lastTxHash.slice(0, 14)}…`]] : []),

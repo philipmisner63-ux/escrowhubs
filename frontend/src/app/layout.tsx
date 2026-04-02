@@ -11,9 +11,27 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
+const APP_URL = "https://app.escrowhubs.io";
+const TITLE = "BlockDAG Escrow | Trustless Smart Contract Payments";
+const DESCRIPTION = "Create and manage trustless escrow contracts on BlockDAG. Milestone-based payments, AI dispute resolution, and full WalletConnect support.";
+
 export const metadata: Metadata = {
-  title: "BlockDAG Escrow",
-  description: "Trustless escrow on BlockDAG — milestone-based smart contract payments",
+  metadataBase: new URL(APP_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: APP_URL,
+    siteName: "BlockDAG Escrow",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

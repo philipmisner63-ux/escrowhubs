@@ -5,8 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAccount, useChainId } from "wagmi";
 import { WalletConnectButton } from "@/components/connect-button";
 import { cn } from "@/lib/utils";
-
-const BLOCKDAG_CHAIN_ID = 1404;
+import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chainRegistry";
 
 function WalletWarningBanner() {
   const { isConnected } = useAccount();
@@ -14,10 +13,11 @@ function WalletWarningBanner() {
 
   if (!isConnected) return null;
 
-  if (chainId !== BLOCKDAG_CHAIN_ID) {
+  if (chainId !== DEFAULT_CHAIN_ID) {
+    const target = getChain(DEFAULT_CHAIN_ID);
     return (
       <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 text-center text-xs text-yellow-300">
-        ⚠️ Your wallet is on the wrong network. Switch to <strong>BlockDAG (Chain ID 1404)</strong> to use this app.
+        ⚠️ Your wallet is on the wrong network. Switch to <strong>{target.chain.name} (Chain ID {DEFAULT_CHAIN_ID})</strong> to use this app.
       </div>
     );
   }
