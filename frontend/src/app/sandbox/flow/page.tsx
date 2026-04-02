@@ -1,5 +1,38 @@
 "use client";
 
+import { motion } from "framer-motion";
+
+const TIMELINE_STEPS = [
+  { title: "1. Create Escrow",                   desc: "User sets terms & roles" },
+  { title: "2. Deposit Funds",                   desc: "Funds locked on-chain" },
+  { title: "3. Work or Transaction Completed",   desc: "Beneficiary delivers or transaction finishes" },
+  { title: "4. Release or Dispute",              desc: "Parties choose outcome" },
+  { title: "5. Funds Released",                  desc: "On-chain settlement" },
+];
+
+function AnimatedTimeline() {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold text-white border-b border-white/8 pb-2">Animated Escrow Timeline</h2>
+      <div className="flex flex-col gap-4 max-w-lg">
+        {TIMELINE_STEPS.map((step, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
+            className="rounded-xl border border-white/10 bg-[#111] p-5"
+            style={{ boxShadow: "0 0 12px rgba(0,0,0,0.4)" }}
+          >
+            <h3 className="text-white font-semibold">{step.title}</h3>
+            <p className="mt-1.5 text-sm text-slate-400">{step.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 const STEPS = [
   { n: 1, label: "Create Escrow",    icon: "📝", desc: "Depositor deploys contract with beneficiary + arbiter" },
   { n: 2, label: "Deposit Funds",    icon: "💰", desc: "BDAG locked into the smart contract" },
@@ -118,6 +151,7 @@ export default function FlowPage() {
         <p className="mt-1 text-slate-400 text-sm">Three views of how escrow works — linear, multi-party, and circular.</p>
       </div>
 
+      <AnimatedTimeline />
       <LinearSteps />
       <DiagramBlock title="Three‑Party Flow"     diagram={THREE_PARTY}   />
       <DiagramBlock title="Circular Trust Loop"  diagram={CIRCULAR}      />
