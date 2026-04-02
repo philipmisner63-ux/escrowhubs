@@ -7,7 +7,7 @@ const TIMEOUT_MS = 5 * 60 * 1_000; // 5 minutes
 interface UseWalletTimeoutOptions {
   isConnected: boolean;
   disconnect: () => void;
-  addToast?: (opts: { type: string; message: string }) => void;
+  addToast?: (opts: { type: "success" | "error" | "info" | "pending"; message: string }) => void;
 }
 
 /**

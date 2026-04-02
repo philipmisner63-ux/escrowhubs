@@ -6,6 +6,7 @@ import { WagmiProvider, useAccount, useDisconnect } from "wagmi";
 import { wagmiConfig } from "@/lib/wagmi";
 import { ToastProvider, useToast } from "@/components/toast";
 import { useWalletTimeout } from "@/lib/hooks/useWalletTimeout";
+import { SupportButton } from "@/components/SupportButton";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <ToastProvider>
             <WalletTimeoutGuard />
+            <SupportButton />
             {children}
           </ToastProvider>
         </RainbowKitProvider>
