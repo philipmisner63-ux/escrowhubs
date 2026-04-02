@@ -2,6 +2,49 @@
 
 import { motion } from "framer-motion";
 
+const ASCII_STEPS = [
+  `┌──────────────┐\n│  1. Create   │\n│   Escrow     │\n└──────────────┘`,
+  ` │\n ▼`,
+  `┌──────────────┐\n│  2. Deposit  │\n│    Funds     │\n└──────────────┘`,
+  ` │\n ▼`,
+  `┌──────────────┐\n│  3. Work or  │\n│ Transaction  │\n│  Completed   │\n└──────────────┘`,
+  ` │\n ▼`,
+  `┌──────────────┐\n│ 4. Release or│\n│   Dispute    │\n└──────────────┘`,
+  ` │\n ▼`,
+  `┌──────────────┐\n│ 5. Funds Move│\n│   On‑Chain   │\n└──────────────┘`,
+];
+
+function AnimatedLinearFlow() {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold text-white border-b border-white/8 pb-2">Animated Simple Linear Flow</h2>
+      <div className="flex flex-col gap-0 max-w-xs">
+        {ASCII_STEPS.map((ascii, i) => (
+          <motion.pre
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
+            style={{
+              background: ascii.startsWith(" │") ? "transparent" : "#111",
+              color: "#0ff",
+              padding: ascii.startsWith(" │") ? "0 16px" : "16px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              lineHeight: "18px",
+              border: ascii.startsWith(" │") ? "none" : "1px solid #333",
+              whiteSpace: "pre",
+              boxShadow: ascii.startsWith(" │") ? "none" : "0 0 12px rgba(0,0,0,0.4)",
+            }}
+          >
+            {ascii}
+          </motion.pre>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 const TIMELINE_STEPS = [
   { title: "1. Create Escrow",                   desc: "User sets terms & roles" },
   { title: "2. Deposit Funds",                   desc: "Funds locked on-chain" },
@@ -151,6 +194,7 @@ export default function FlowPage() {
         <p className="mt-1 text-slate-400 text-sm">Three views of how escrow works — linear, multi-party, and circular.</p>
       </div>
 
+      <AnimatedLinearFlow />
       <AnimatedTimeline />
       <LinearSteps />
       <DiagramBlock title="Three‑Party Flow"     diagram={THREE_PARTY}   />
