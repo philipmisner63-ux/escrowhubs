@@ -10,34 +10,26 @@ const steps = [
   { icon: "🔓", title: "Funds Released",                desc: "Smart contract settles on-chain" },
 ];
 
-export default function FlowPage() {
+export default function EscrowFlowPage() {
   return (
-    <div style={{ padding: "40px", maxWidth: "700px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "20px", color: "white" }}>Escrow Flow</h1>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Escrow Flow</h1>
+        <p className="mt-1 text-slate-400 text-sm">Step-by-step animated view of how a single escrow moves from creation to settlement.</p>
+      </div>
+      <div className="flex flex-col gap-4">
         {steps.map((step, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              padding: "20px",
-              borderRadius: "12px",
-              border: "1px solid #333",
-              background: "#111",
-              color: "white",
-              boxShadow: "0 0 12px rgba(0,0,0,0.4)",
-            }}
+            className="flex items-center gap-4 rounded-xl border border-white/10 bg-[#111] p-5 shadow-lg"
           >
-            <div style={{ fontSize: "40px" }}>{step.icon}</div>
+            <span className="text-4xl shrink-0">{step.icon}</span>
             <div>
-              <h2 style={{ margin: 0 }}>{step.title}</h2>
-              <p style={{ marginTop: "6px", opacity: 0.8 }}>{step.desc}</p>
+              <h3 className="font-semibold text-white">{step.title}</h3>
+              <p className="mt-1 text-sm text-slate-400">{step.desc}</p>
             </div>
           </motion.div>
         ))}
