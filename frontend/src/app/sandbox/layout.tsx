@@ -14,6 +14,7 @@ const SANDBOX_LINKS = [
   { href: "/sandbox/role-view",        label: "Role View",     icon: "👥" },
   { href: "/sandbox/network-sim",      label: "Network Sim",   icon: "🌐" },
   { href: "/sandbox/flow",              label: "Flow Visuals",  icon: "📊" },
+  { href: "/sandbox/escrow-flow",       label: "Escrow Flow",   icon: "🔄" },
   { href: "/sandbox/global-flow",      label: "Global Flow",   icon: "🗺️"  },
 ];
 
