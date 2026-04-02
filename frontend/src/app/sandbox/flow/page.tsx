@@ -2,6 +2,40 @@
 
 import { motion } from "framer-motion";
 
+const ICON_STEPS = [
+  { icon: "📄", title: "Create Escrow",                  desc: "Contract is created with roles & terms" },
+  { icon: "💰", title: "Deposit Funds",                  desc: "Depositor locks funds into the contract" },
+  { icon: "🧾", title: "Work or Transaction Completed",  desc: "Beneficiary delivers work or completes transaction" },
+  { icon: "⚖️", title: "Release or Dispute",              desc: "Parties choose outcome or escalate to arbiter" },
+  { icon: "🔓", title: "Funds Released",                 desc: "Smart contract settles on-chain" },
+];
+
+function AnimatedIconFlow() {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold text-white border-b border-white/8 pb-2">Animated Escrow Flow</h2>
+      <div className="flex flex-col gap-5 max-w-lg">
+        {ICON_STEPS.map((step, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
+            className="flex items-center gap-4 rounded-xl border border-[#333] bg-[#111] p-5"
+            style={{ boxShadow: "0 0 12px rgba(0,0,0,0.4)" }}
+          >
+            <div className="text-4xl shrink-0">{step.icon}</div>
+            <div>
+              <h3 className="text-white font-semibold">{step.title}</h3>
+              <p className="mt-1.5 text-sm text-slate-400">{step.desc}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 const ASCII_STEPS = [
   `┌──────────────┐\n│  1. Create   │\n│   Escrow     │\n└──────────────┘`,
   ` │\n ▼`,
@@ -194,6 +228,7 @@ export default function FlowPage() {
         <p className="mt-1 text-slate-400 text-sm">Three views of how escrow works — linear, multi-party, and circular.</p>
       </div>
 
+      <AnimatedIconFlow />
       <AnimatedLinearFlow />
       <AnimatedTimeline />
       <LinearSteps />
