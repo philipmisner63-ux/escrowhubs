@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { AnimatedBackground } from "@/components/animated-background";
 import { routing } from "@/i18n/routing";
@@ -53,6 +53,9 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
+
+  // Required for static rendering — tells next-intl the locale for this request
+  setRequestLocale(locale);
 
   const messages = await getMessages();
   const meta = localeMetadata[locale as Locale];
