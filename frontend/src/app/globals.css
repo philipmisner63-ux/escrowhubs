@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Explicit content sources — ensures all component files are scanned for utility classes */
+@source "../../components/**/*.{js,ts,jsx,tsx}";
+@source "../../app/**/*.{js,ts,jsx,tsx}";
+@source "../../i18n/**/*.{js,ts,jsx,tsx}";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
