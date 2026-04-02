@@ -1,24 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { locales, localeMetadata, type Locale } from "@/i18n/config";
 
+function switchLocale(next: Locale) {
+  document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
+  const segments = window.location.pathname.split("/").filter(Boolean);
+  segments[0] = next;
+  window.location.href = "/" + segments.join("/");
+}
+
 export function LanguagePickerMobile() {
   const locale = useLocale() as Locale;
-  const router = useRouter();
-  const pathname = usePathname();
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
-
   const current = localeMetadata[locale];
-
-  const switchLocale = useCallback((next: Locale) => {
-    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
-    router.replace(pathname, { locale: next });
-    setOpen(false);
-  }, [pathname, router]);
 
   return (
     <div className="md:hidden">
@@ -34,10 +31,8 @@ export function LanguagePickerMobile() {
         </svg>
       </button>
 
-      {/* Full-screen sheet */}
       {open && (
         <div className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-xl">
-          {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
             <h2 className="text-base font-semibold text-white">{t("language")}</h2>
             <button
@@ -53,7 +48,6 @@ export function LanguagePickerMobile() {
             </button>
           </div>
 
-          {/* Language list */}
           <ul className="flex-1 overflow-y-auto py-2">
             {locales.map((loc) => {
               const meta = localeMetadata[loc];
@@ -64,9 +58,7 @@ export function LanguagePickerMobile() {
                     type="button"
                     onClick={() => switchLocale(loc)}
                     className={`w-full flex items-center gap-4 px-6 py-4 text-start transition-colors ${
-                      isSelected
-                        ? "text-cyan-400 bg-cyan-400/5"
-                        : "text-slate-300 hover:bg-white/5 hover:text-white"
+                      isSelected ? "text-cyan-400 bg-cyan-400/5" : "text-slate-300 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     <span className="text-2xl leading-none">{meta.flag}</span>

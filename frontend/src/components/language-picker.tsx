@@ -1,27 +1,25 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { locales, localeMetadata, type Locale } from "@/i18n/config";
 
+function switchLocale(next: Locale) {
+  document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
+  // Replace the locale segment in the current URL
+  const segments = window.location.pathname.split("/").filter(Boolean);
+  segments[0] = next; // first segment is always the locale
+  window.location.href = "/" + segments.join("/");
+}
+
 export function LanguagePicker() {
   const locale = useLocale() as Locale;
-  const router = useRouter();
-  const pathname = usePathname();
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-
   const current = localeMetadata[locale];
-
-  const switchLocale = useCallback((next: Locale) => {
-    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
-    router.replace(pathname, { locale: next });
-    setOpen(false);
-  }, [pathname, router]);
 
   // Close on outside click
   useEffect(() => {
@@ -34,7 +32,6 @@ export function LanguagePicker() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!open) {
       if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
@@ -45,34 +42,16 @@ export function LanguagePicker() {
       return;
     }
     switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setFocused(f => (f + 1) % locales.length);
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setFocused(f => (f - 1 + locales.length) % locales.length);
-        break;
+      case "ArrowDown":  e.preventDefault(); setFocused(f => (f + 1) % locales.length); break;
+      case "ArrowUp":    e.preventDefault(); setFocused(f => (f - 1 + locales.length) % locales.length); break;
       case "Enter":
-      case " ":
-        e.preventDefault();
-        switchLocale(locales[focused]);
-        break;
-      case "Escape":
-        setOpen(false);
-        break;
-      case "Home":
-        e.preventDefault();
-        setFocused(0);
-        break;
-      case "End":
-        e.preventDefault();
-        setFocused(locales.length - 1);
-        break;
+      case " ":          e.preventDefault(); switchLocale(locales[focused]); break;
+      case "Escape":     setOpen(false); break;
+      case "Home":       e.preventDefault(); setFocused(0); break;
+      case "End":        e.preventDefault(); setFocused(locales.length - 1); break;
     }
   };
 
-  // Scroll focused item into view
   useEffect(() => {
     if (open && listRef.current) {
       const item = listRef.current.children[focused] as HTMLElement;
@@ -113,7 +92,6 @@ export function LanguagePicker() {
                 key={loc}
                 role="option"
                 aria-selected={isSelected}
-                tabIndex={-1}
                 onClick={() => switchLocale(loc)}
                 className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
                   i === focused ? "bg-cyan-400/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"
