@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { locales, localeMetadata, type Locale } from "@/i18n/config";
 
@@ -15,12 +15,8 @@ export function LanguagePickerMobile() {
   const current = localeMetadata[locale];
 
   const switchLocale = useCallback((next: Locale) => {
-    const segments = pathname.split("/");
-    const withoutLocale = segments.slice(2).join("/");
-    const newPath = `/${next}/${withoutLocale}`;
     document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
-    router.push(newPath);
-    router.refresh();
+    router.replace(pathname, { locale: next });
     setOpen(false);
   }, [pathname, router]);
 
