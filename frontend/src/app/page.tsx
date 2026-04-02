@@ -128,7 +128,7 @@ export default function LandingPage() {
                   Learn how to use escrows with anyone worldwide. See how roles work, how funds move, and how disputes are resolved — all on-chain.
                 </p>
               </div>
-              <Link href="/how-it-works" className="shrink-0 px-5 py-2.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-medium hover:bg-cyan-400/15 transition-all">
+              <Link href="/learn" className="shrink-0 px-5 py-2.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-medium hover:bg-cyan-400/15 transition-all">
                 Open Guide →
               </Link>
             </div>
