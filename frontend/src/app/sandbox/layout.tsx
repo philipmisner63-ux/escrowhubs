@@ -5,14 +5,16 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const SANDBOX_LINKS = [
-  { href: "/sandbox",              label: "Overview",      icon: "🧪" },
-  { href: "/sandbox/onboarding",   label: "Onboarding",    icon: "🚀" },
-  { href: "/sandbox/how-it-works", label: "How It Works",  icon: "⚙️"  },
-  { href: "/sandbox/faq",          label: "FAQ",           icon: "❓" },
-  { href: "/sandbox/mock-escrow",  label: "Mock Escrow",   icon: "📋" },
-  { href: "/sandbox/role-view",    label: "Role View",     icon: "👥" },
-  { href: "/sandbox/network-sim",  label: "Network Sim",   icon: "🌐" },
-  { href: "/sandbox/global-flow",  label: "Global Flow",   icon: "🗺️"  },
+  { href: "/sandbox",                  label: "Overview",      icon: "🧪" },
+  { href: "/sandbox/home-preview",     label: "Home Preview",  icon: "🏠" },
+  { href: "/sandbox/onboarding",       label: "Onboarding",    icon: "🚀" },
+  { href: "/sandbox/how-it-works",     label: "How It Works",  icon: "⚙️"  },
+  { href: "/sandbox/faq",              label: "FAQ",           icon: "❓" },
+  { href: "/sandbox/mock-escrow",      label: "Mock Escrow",   icon: "📋" },
+  { href: "/sandbox/role-view",        label: "Role View",     icon: "👥" },
+  { href: "/sandbox/network-sim",      label: "Network Sim",   icon: "🌐" },
+  { href: "/sandbox/flow",              label: "Flow Visuals",  icon: "📊" },
+  { href: "/sandbox/global-flow",      label: "Global Flow",   icon: "🗺️"  },
 ];
 
 export default function SandboxLayout({ children }: { children: React.ReactNode }) {
