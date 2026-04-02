@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAccount, useChainId } from "wagmi";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { createPublicClient, http } from "viem";
 import { SIMPLE_ESCROW_ABI, SIMPLE_STATE_LABEL } from "@/lib/contracts";
 import { getChain, DEFAULT_CHAIN_ID } from "@/lib/chainRegistry";

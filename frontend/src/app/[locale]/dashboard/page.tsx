@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { useAccount, useReadContracts } from "wagmi";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";

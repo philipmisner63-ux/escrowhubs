@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { parseEther, createPublicClient, http } from "viem";
 import { useWriteContract } from "wagmi";
 import { Nav } from "@/components/nav";

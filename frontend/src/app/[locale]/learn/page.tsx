@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const PAGES = [
   { href: "/learn/onboarding",   label: "Onboarding Flow",    icon: "🚀", desc: "Step-by-step wallet connect and network switching guide" },
