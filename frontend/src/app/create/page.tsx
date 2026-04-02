@@ -71,6 +71,7 @@ export default function CreateEscrowPage() {
           functionName: "createSimpleEscrow",
           args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter],
           value: totalValue,
+          gas: 500_000n,
         });
       } else {
         const descriptions = milestones.map(m => m.description);
@@ -86,6 +87,7 @@ export default function CreateEscrowPage() {
           functionName: "createMilestoneEscrow",
           args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter],
           value: totalValue,
+          gas: 1_000_000n,
         });
       }
 

@@ -43,13 +43,13 @@ export function useSimpleEscrowWrite() {
         value: parseEther(value),
       }),
     release: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "release" }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "release", gas: 100_000n }),
     dispute: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "dispute" }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "dispute", gas: 100_000n }),
     resolveRelease: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRelease" }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRelease", gas: 100_000n }),
     resolveRefund: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRefund" }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRefund", gas: 100_000n }),
     isPending,
     hash,
     error,

@@ -70,15 +70,16 @@ export function useMilestoneEscrowWrite() {
         abi: MILESTONE_ESCROW_ABI,
         functionName: "fund",
         value,
+        gas: 100_000n,
       }),
     releaseMilestone: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "releaseMilestone", args: [index] }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "releaseMilestone", args: [index], gas: 100_000n }),
     disputeMilestone: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "disputeMilestone", args: [index] }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "disputeMilestone", args: [index], gas: 100_000n }),
     resolveRelease: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRelease", args: [index] }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRelease", args: [index], gas: 100_000n }),
     resolveRefund: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRefund", args: [index] }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRefund", args: [index], gas: 100_000n }),
     isPending,
     hash,
     error,
