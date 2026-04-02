@@ -26,8 +26,9 @@ function WalletWarningBanner() {
 }
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/create",    label: "Create"    },
+  { href: "/dashboard",    label: "Dashboard"    },
+  { href: "/create",       label: "Create"       },
+  { href: "/how-it-works", label: "How It Works" },
 ];
 
 export function Nav() {
