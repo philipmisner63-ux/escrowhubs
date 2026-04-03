@@ -323,5 +323,10 @@
     "evidencePlaceholder": "描述您的情况…",
     "submitEvidence": "提交证据",
     "evidenceOnChain": "证据永久存储在链上"
+  },
+  "receipt": {
+    "downloadReceipt": "下载收据",
+    "receipt": "收据",
+    "generating": "生成中…"
   }
 }

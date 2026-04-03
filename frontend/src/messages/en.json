@@ -323,5 +323,10 @@
     "evidencePlaceholder": "Describe your case…",
     "submitEvidence": "Submit Evidence",
     "evidenceOnChain": "Evidence is permanently stored on-chain"
+  },
+  "receipt": {
+    "downloadReceipt": "Download Receipt",
+    "receipt": "Receipt",
+    "generating": "Generating…"
   }
 }

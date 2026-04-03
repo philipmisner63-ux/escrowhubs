@@ -323,5 +323,10 @@
     "evidencePlaceholder": "Опишите вашу ситуацию…",
     "submitEvidence": "Отправить доказательства",
     "evidenceOnChain": "Доказательства постоянно хранятся в блокчейне"
+  },
+  "receipt": {
+    "downloadReceipt": "Скачать квитанцию",
+    "receipt": "Квитанция",
+    "generating": "Создание…"
   }
 }

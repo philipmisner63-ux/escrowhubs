@@ -323,5 +323,10 @@
     "evidencePlaceholder": "Descreva seu caso…",
     "submitEvidence": "Enviar Evidências",
     "evidenceOnChain": "Evidências são armazenadas permanentemente on-chain"
+  },
+  "receipt": {
+    "downloadReceipt": "Baixar Recibo",
+    "receipt": "Recibo",
+    "generating": "Gerando…"
   }
 }

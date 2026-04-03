@@ -323,5 +323,10 @@
     "evidencePlaceholder": "अपना मामला बताएं…",
     "submitEvidence": "साक्ष्य सबमिट करें",
     "evidenceOnChain": "साक्ष्य स्थायी रूप से ऑन-चेन संग्रहीत हैं"
+  },
+  "receipt": {
+    "downloadReceipt": "रसीद डाउनलोड करें",
+    "receipt": "रसीद",
+    "generating": "बन रहा है…"
   }
 }

@@ -323,5 +323,10 @@
     "evidencePlaceholder": "Davanızı açıklayın…",
     "submitEvidence": "Kanıt Gönder",
     "evidenceOnChain": "Kanıtlar zincirde kalıcı olarak saklanır"
+  },
+  "receipt": {
+    "downloadReceipt": "Makbuzu İndir",
+    "receipt": "Makbuz",
+    "generating": "Oluşturuluyor…"
   }
 }

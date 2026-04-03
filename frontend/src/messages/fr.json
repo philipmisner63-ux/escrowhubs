@@ -323,5 +323,10 @@
     "evidencePlaceholder": "Décrivez votre cas…",
     "submitEvidence": "Soumettre les Preuves",
     "evidenceOnChain": "Les preuves sont stockées définitivement on-chain"
+  },
+  "receipt": {
+    "downloadReceipt": "Télécharger le Reçu",
+    "receipt": "Reçu",
+    "generating": "Génération…"
   }
 }

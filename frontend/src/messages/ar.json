@@ -323,5 +323,10 @@
     "evidencePlaceholder": "صف حالتك…",
     "submitEvidence": "تقديم الأدلة",
     "evidenceOnChain": "الأدلة مخزنة بشكل دائم على السلسلة"
+  },
+  "receipt": {
+    "downloadReceipt": "تحميل الإيصال",
+    "receipt": "إيصال",
+    "generating": "جارٍ الإنشاء…"
   }
 }

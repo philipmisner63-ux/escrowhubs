@@ -24,6 +24,8 @@ import { addViewedEscrow } from "@/lib/localStorage";
 import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ADDRESS, AI_ARBITER_ABI, SIMPLE_ESCROW_ABI } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import { ShareEscrow } from "@/components/share-escrow";
+import { DownloadReceipt } from "@/components/download-receipt";
+import type { ReceiptData } from "@/lib/generateReceipt";
 
 type Address = `0x${string}`;
 
@@ -196,7 +198,20 @@ function SimpleEscrowView({ address }: { address: Address }) {
             </>
           )}
           {(stateNum === SimpleEscrowState.COMPLETE || stateNum === SimpleEscrowState.REFUNDED) && (
-            <p className="text-sm text-slate-500 py-4 text-center">Escrow is {stateLabel.toLowerCase()} — no actions available.</p>
+            <div className="flex flex-col items-center gap-3 py-4">
+              <p className="text-sm text-slate-500">Escrow is {stateLabel.toLowerCase()} — no actions available.</p>
+              {stateNum === SimpleEscrowState.COMPLETE && (
+                <DownloadReceipt data={{
+                  escrowAddress: address,
+                  escrowType: "simple",
+                  depositor: data.depositor ?? "",
+                  beneficiary: data.beneficiary ?? "",
+                  arbiter: data.arbiter ?? "",
+                  amount: data.amount ?? 0n,
+                  isAIArbiter: data.arbiter?.toLowerCase() === AI_ARBITER_ADDRESS?.toLowerCase(),
+                }} />
+              )}
+            </div>
           )}
           {(stateNum === SimpleEscrowState.AWAITING_PAYMENT) && (
             <p className="text-sm text-slate-500 py-4 text-center">Awaiting deposit.</p>
@@ -337,6 +352,19 @@ function MilestoneEscrowView({ address }: { address: Address }) {
           })}
         </div>
 
+        {data.milestones.length > 0 && data.milestones.every(m => m.state === MilestoneState.RELEASED) && (
+          <div className="mt-4 pt-4 border-t border-white/8 flex justify-center">
+            <DownloadReceipt data={{
+              escrowAddress: address,
+              escrowType: "milestone",
+              depositor: data.depositor ?? "",
+              beneficiary: data.beneficiary ?? "",
+              arbiter: data.arbiter ?? "",
+              amount: data.totalDeposited ?? 0n,
+              milestones: data.milestones,
+            }} />
+          </div>
+        )}
         {!data.funded && role === "depositor" && data.totalDeposited !== null && (
           <div className="mt-4 pt-4 border-t border-white/8">
             <div className="flex items-center justify-between">

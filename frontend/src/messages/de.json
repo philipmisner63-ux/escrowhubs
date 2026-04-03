@@ -323,5 +323,10 @@
     "evidencePlaceholder": "Beschreibe deinen Fall…",
     "submitEvidence": "Beweise Einreichen",
     "evidenceOnChain": "Beweise werden dauerhaft on-chain gespeichert"
+  },
+  "receipt": {
+    "downloadReceipt": "Quittung Herunterladen",
+    "receipt": "Quittung",
+    "generating": "Wird erstellt…"
   }
 }

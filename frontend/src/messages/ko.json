@@ -323,5 +323,10 @@
     "evidencePlaceholder": "사례를 설명하세요…",
     "submitEvidence": "증거 제출",
     "evidenceOnChain": "증거는 영구적으로 온체인에 저장됩니다"
+  },
+  "receipt": {
+    "downloadReceipt": "영수증 다운로드",
+    "receipt": "영수증",
+    "generating": "생성 중…"
   }
 }

@@ -323,5 +323,10 @@
     "evidencePlaceholder": "事案を説明してください…",
     "submitEvidence": "証拠を提出",
     "evidenceOnChain": "証拠はオンチェーンに永久保存されます"
+  },
+  "receipt": {
+    "downloadReceipt": "領収書をダウンロード",
+    "receipt": "領収書",
+    "generating": "生成中…"
   }
 }
