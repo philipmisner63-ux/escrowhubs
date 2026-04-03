@@ -94,3 +94,88 @@ body::before {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0, 245, 255, 0.2); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0, 245, 255, 0.4); }
+
+/* ── Neon Glow Effects ─────────────────────────────────────────────────────── */
+
+/* Feature cards — cyan/blue glow */
+.card-glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.08), 0 0 30px rgba(0, 245, 255, 0.03);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+/* Feature cards — purple glow */
+.card-glow-purple {
+  box-shadow: 0 0 15px rgba(167, 139, 250, 0.08), 0 0 30px rgba(167, 139, 250, 0.03);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+/* Feature cards — blue glow */
+.card-glow-blue {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1), 0 0 30px rgba(59, 130, 246, 0.04);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+/* AI step cards — emerald glow */
+.card-glow-emerald {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.1), 0 0 24px rgba(16, 185, 129, 0.04);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+/* Stats cards */
+.card-glow-stats {
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.06);
+  transition: box-shadow 0.3s ease;
+}
+/* CTA button glow */
+.btn-glow {
+  box-shadow: 0 0 12px rgba(0, 245, 255, 0.25), 0 0 24px rgba(0, 245, 255, 0.08);
+  transition: box-shadow 0.3s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* Hero section background glow */
+.hero-glow {
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    linear-gradient(to bottom, #080a10, #060608);
+}
+
+/* Quick action cards */
+.card-glow-action {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+/* ── Hover states (motion-safe only) ──────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .card-glow-cyan:hover {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.18), 0 0 40px rgba(0, 245, 255, 0.07);
+    transform: translateY(-1px);
+  }
+  .card-glow-purple:hover {
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.2), 0 0 40px rgba(167, 139, 250, 0.08);
+    transform: translateY(-1px);
+  }
+  .card-glow-blue:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.22), 0 0 40px rgba(59, 130, 246, 0.09);
+    transform: translateY(-1px);
+  }
+  .card-glow-emerald:hover {
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.22), 0 0 36px rgba(16, 185, 129, 0.09);
+  }
+  .card-glow-stats:hover {
+    box-shadow: 0 0 28px rgba(0, 245, 255, 0.14);
+  }
+  .btn-glow:hover {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.45), 0 0 40px rgba(0, 245, 255, 0.15);
+    transform: scale(1.02);
+  }
+  .card-glow-action:hover {
+    box-shadow: 0 0 18px rgba(0, 245, 255, 0.12), 0 0 36px rgba(0, 245, 255, 0.05);
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Mobile: reduce glow intensity ───────────────────────────────────────── */
+@media (max-width: 767px) {
+  .card-glow-cyan   { box-shadow: 0 0 8px rgba(0, 245, 255, 0.05); }
+  .card-glow-purple { box-shadow: 0 0 8px rgba(167, 139, 250, 0.05); }
+  .card-glow-blue   { box-shadow: 0 0 8px rgba(59, 130, 246, 0.06); }
+  .card-glow-emerald{ box-shadow: 0 0 6px rgba(16, 185, 129, 0.06); }
+  .card-glow-stats  { box-shadow: 0 0 10px rgba(0, 245, 255, 0.04); }
+  .btn-glow         { box-shadow: 0 0 8px rgba(0, 245, 255, 0.15); }
+}

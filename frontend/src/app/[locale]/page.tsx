@@ -10,9 +10,9 @@ export default function LandingPage() {
   const t = useTranslations("landing");
 
   const features = [
-    { icon: "🛡️", title: t("feature1Title"), desc: t("feature1Desc"), accent: "border-cyan-400/20 bg-cyan-400/5 text-cyan-400" },
-    { icon: "◈",  title: t("feature2Title"), desc: t("feature2Desc"), accent: "border-purple-400/20 bg-purple-400/5 text-purple-400" },
-    { icon: "⚡", title: t("feature3Title"), desc: t("feature3Desc"), accent: "border-blue-400/20 bg-blue-400/5 text-blue-400" },
+    { icon: "🛡️", title: t("feature1Title"), desc: t("feature1Desc"), accent: "border-cyan-400/20 bg-cyan-400/5 text-cyan-400",   glow: "card-glow-cyan"   },
+    { icon: "◈",  title: t("feature2Title"), desc: t("feature2Desc"), accent: "border-purple-400/20 bg-purple-400/5 text-purple-400", glow: "card-glow-purple" },
+    { icon: "⚡", title: t("feature3Title"), desc: t("feature3Desc"), accent: "border-blue-400/20 bg-blue-400/5 text-blue-400",     glow: "card-glow-blue"   },
   ];
 
   const aiSteps = [
@@ -36,7 +36,7 @@ export default function LandingPage() {
       <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 space-y-16">
 
         {/* ── Hero ─────────────────────────────────────────────────── */}
-        <section className="rounded-2xl border border-white/8 bg-gradient-to-b from-[#080a10] to-[#060608] px-6 py-16 text-center space-y-5">
+        <section className="hero-glow rounded-2xl border border-white/8 px-6 py-16 text-center space-y-5">
           <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/5 px-4 py-1.5 text-xs text-violet-300">
             <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
             {t("badge")}
@@ -52,11 +52,18 @@ export default function LandingPage() {
           </motion.h1>
           <p className="text-slate-400 max-w-xl mx-auto leading-relaxed">{t("heroSubtitle")}</p>
           <div className="flex items-center justify-center gap-4 flex-wrap pt-2">
-            <Link href="/dashboard" className="px-8 py-3 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 font-semibold hover:bg-cyan-400/20 transition-all">
+            <Link
+              href="/dashboard"
+              className="btn-glow px-8 py-3 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 font-semibold hover:bg-cyan-400/20 transition-all"
+            >
               {t("launchApp")}
             </Link>
-            <a href="https://github.com/philipmisner63-ux/blockdag-escrow" target="_blank" rel="noopener noreferrer"
-              className="px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/8 transition-all">
+            <a
+              href="https://github.com/philipmisner63-ux/blockdag-escrow"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/8 transition-all"
+            >
               {t("viewContracts")}
             </a>
           </div>
@@ -69,17 +76,20 @@ export default function LandingPage() {
               <p className="text-white font-semibold">{t("welcomeTitle")}</p>
               <p className="text-slate-400 text-sm mt-0.5">{t("welcomeSubtitle")}</p>
             </div>
-            <Link href="/dashboard" className="shrink-0 px-4 py-2 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-medium hover:bg-cyan-400/15 transition-all">
+            <Link
+              href="/dashboard"
+              className="btn-glow shrink-0 px-4 py-2 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-medium hover:bg-cyan-400/15 transition-all"
+            >
               {t("gotoDashboard")}
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link href="/create" className="rounded-xl border border-white/8 bg-white/3 p-5 hover:border-cyan-400/20 transition-all group">
+            <Link href="/create" className="card-glow-action rounded-xl border border-white/8 bg-white/3 p-5 hover:border-cyan-400/20 transition-all group">
               <div className="text-2xl mb-2">⬡</div>
               <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">{t("createNewEscrow")}</h3>
               <p className="text-xs text-slate-500 mt-1">{t("createNewEscrowDesc")}</p>
             </Link>
-            <Link href="/dashboard" className="rounded-xl border border-white/8 bg-white/3 p-5 hover:border-cyan-400/20 transition-all group">
+            <Link href="/dashboard" className="card-glow-action rounded-xl border border-white/8 bg-white/3 p-5 hover:border-cyan-400/20 transition-all group">
               <div className="text-2xl mb-2">🔍</div>
               <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">{t("viewExisting")}</h3>
               <p className="text-xs text-slate-500 mt-1">{t("viewExistingDesc")}</p>
@@ -94,7 +104,7 @@ export default function LandingPage() {
               key={f.title}
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.15, duration: 0.4 }}
-              className={`rounded-xl border p-6 ${f.accent.split(" ").slice(0, 2).join(" ")}`}
+              className={`${f.glow} rounded-xl border p-6 ${f.accent.split(" ").slice(0, 2).join(" ")}`}
             >
               <div className={`text-2xl mb-3 ${f.accent.split(" ")[2]}`}>{f.icon}</div>
               <h3 className="font-bold text-white">{f.title}</h3>
@@ -112,7 +122,10 @@ export default function LandingPage() {
                 <h3 className="font-semibold text-white">{t("howWorksTitle")}</h3>
                 <p className="text-sm text-slate-400 mt-1">{t("howWorksDesc")}</p>
               </div>
-              <Link href="/learn" className="shrink-0 px-5 py-2.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-medium hover:bg-cyan-400/15 transition-all">
+              <Link
+                href="/learn"
+                className="btn-glow shrink-0 px-5 py-2.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-medium hover:bg-cyan-400/15 transition-all"
+              >
                 {t("openGuide")}
               </Link>
             </div>
@@ -137,7 +150,7 @@ export default function LandingPage() {
                 key={s.step}
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15, duration: 0.4 }}
-                className="rounded-xl border border-violet-400/20 bg-violet-400/5 p-4"
+                className="card-glow-emerald rounded-xl border border-emerald-400/20 bg-violet-400/5 p-4"
               >
                 <p className="text-2xl font-bold font-mono text-purple-400 mb-2">{s.step}</p>
                 <p className="font-semibold text-white text-sm mb-1">{s.title}</p>
@@ -150,7 +163,10 @@ export default function LandingPage() {
               <p className="font-semibold text-white text-sm">{t("aiPricingTitle")}</p>
               <p className="text-xs text-slate-400 mt-0.5">{t("aiPricingDesc")}</p>
             </div>
-            <Link href="/create" className="shrink-0 px-5 py-2 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/20 transition-all">
+            <Link
+              href="/create"
+              className="btn-glow shrink-0 px-5 py-2 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/20 transition-all"
+            >
               {t("createEscrow")}
             </Link>
           </div>
@@ -159,11 +175,14 @@ export default function LandingPage() {
         {/* ── Protocol Stats ───────────────────────────────────────── */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           {stats.map(s => (
-            <div key={s.label} className="rounded-xl border border-white/8 bg-white/3 p-5">
-              <p className="text-3xl font-bold font-mono text-cyan-400" style={{ textShadow: "0 0 20px rgba(0,245,255,0.4)" }}>
+            <div key={s.label} className="card-glow-stats rounded-xl border border-white/8 bg-white/3 p-5">
+              <p
+                className="text-4xl sm:text-5xl font-bold font-mono text-cyan-400"
+                style={{ textShadow: "0 0 20px rgba(0,245,255,0.4), 0 0 10px rgba(59,130,246,0.3)" }}
+              >
                 {s.value}
               </p>
-              <p className="mt-1 text-xs text-slate-500 uppercase tracking-widest">{s.label}</p>
+              <p className="mt-2 text-xs text-slate-500 uppercase tracking-widest">{s.label}</p>
             </div>
           ))}
         </section>
