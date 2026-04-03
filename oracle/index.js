@@ -1,8 +1,8 @@
 /**
- * AI Arbiter Oracle Service
+ * AI Arbiter Oracle Service — Multi-Chain
  *
- * Watches for Disputed events on SimpleEscrow contracts and MilestoneDisputed
- * events on MilestoneEscrow contracts whose arbiter is the AIArbiter contract.
+ * Watches for Disputed (SimpleEscrow) and MilestoneDisputed (MilestoneEscrow)
+ * events across all chains defined in chains.json.
  *
  * For each dispute:
  *  1. Build a structured DisputeContext from on-chain data
@@ -10,6 +10,8 @@
  *  3. Auto-resolve on-chain if confidence >= 70, else flag for manual review
  *  4. Append every decision to oracle/decisions.json for audit trail
  *  5. Optionally notify a Discord webhook for low-confidence disputes
+ *
+ * To add a new chain: add an entry to chains.json — no code changes needed.
  */
 
 import "dotenv/config";
@@ -28,85 +30,51 @@ import { privateKeyToAccount } from "viem/accounts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ─── Config ──────────────────────────────────────────────────────────────────
+// ─── ABIs (imported from JSON — single source of truth) ──────────────────────
 
-const RPC_URL            = process.env.BLOCKDAG_RPC_URL    ?? "https://rpc.bdagscan.com";
-const PRIVATE_KEY        = process.env.ORACLE_PRIVATE_KEY;
-const AI_ARBITER_ADDR    = process.env.AI_ARBITER_ADDRESS;
-const ANTHROPIC_KEY      = process.env.ANTHROPIC_API_KEY;
-const DISCORD_WEBHOOK    = process.env.DISCORD_WEBHOOK_URL ?? null;
-const POLL_INTERVAL_MS   = parseInt(process.env.POLL_INTERVAL_MS ?? "30000");
-const AUTO_RESOLVE_MIN_CONFIDENCE = 70; // below this → manual review
-const DECISIONS_FILE     = path.join(__dirname, "decisions.json");
+const { default: SimpleEscrowABI }    = await import("./abis/SimpleEscrow.json",    { with: { type: "json" } });
+const { default: MilestoneEscrowABI } = await import("./abis/MilestoneEscrow.json", { with: { type: "json" } });
+const { default: AIArbiterABI }       = await import("./abis/AIArbiter.json",       { with: { type: "json" } });
 
-if (!PRIVATE_KEY || !AI_ARBITER_ADDR || !ANTHROPIC_KEY) {
-  console.error("❌ Missing required env vars: ORACLE_PRIVATE_KEY, AI_ARBITER_ADDRESS, ANTHROPIC_API_KEY");
+// ─── Chain config (from chains.json, resolved with env vars) ─────────────────
+
+const chainsRaw = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "chains.json"), "utf8")
+);
+
+/**
+ * Resolve a chain entry from chains.json into a runtime config object.
+ * Env vars override the fallback values from the JSON file.
+ */
+function resolveChainConfig(raw) {
+  return {
+    chainId:         raw.chainId,
+    name:            raw.name,
+    nativeCurrency:  raw.nativeCurrency,
+    rpcUrl:          process.env[raw.rpcUrlEnvVar]          ?? raw.rpcUrlFallback,
+    factoryAddress:  process.env[raw.factoryAddressEnvVar]  ?? raw.factoryAddressFallback,
+    arbiterAddress:  process.env[raw.arbiterAddressEnvVar]  ?? raw.arbiterAddressFallback,
+  };
+}
+
+const CHAINS = chainsRaw.map(resolveChainConfig);
+
+// ─── Global config ────────────────────────────────────────────────────────────
+
+const PRIVATE_KEY              = process.env.ORACLE_PRIVATE_KEY;
+const ANTHROPIC_KEY            = process.env.ANTHROPIC_API_KEY;
+const DISCORD_WEBHOOK          = process.env.DISCORD_WEBHOOK_URL ?? null;
+const POLL_INTERVAL_MS         = parseInt(process.env.POLL_INTERVAL_MS ?? "30000");
+const AUTO_RESOLVE_MIN_CONFIDENCE = 70;
+const DECISIONS_FILE           = path.join(__dirname, "decisions.json");
+
+if (!PRIVATE_KEY || !ANTHROPIC_KEY) {
+  console.error("❌ Missing required env vars: ORACLE_PRIVATE_KEY, ANTHROPIC_API_KEY");
   process.exit(1);
 }
 
-// ─── Chain ───────────────────────────────────────────────────────────────────
-
-const blockdag = {
-  id: 1404,
-  name: "BlockDAG",
-  nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 },
-  rpcUrls: { default: { http: [RPC_URL] } },
-};
-
-// ─── Clients ─────────────────────────────────────────────────────────────────
-
-const account = privateKeyToAccount(PRIVATE_KEY);
-
-const publicClient = createPublicClient({
-  chain: blockdag,
-  transport: http(RPC_URL),
-});
-
-const walletClient = createWalletClient({
-  account,
-  chain: blockdag,
-  transport: http(RPC_URL),
-});
-
-const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY });
-
-// ─── ABIs ────────────────────────────────────────────────────────────────────
-// Inlined for oracle self-containment. Canonical source: contracts/contracts/*.sol
-// If ABIs change, update both here and in frontend/src/lib/contracts.ts
-
-const AI_ARBITER_ABI = [
-  { type: "function", name: "resolveRelease",          inputs: [{ name: "escrowAddress", type: "address" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "resolveRefund",           inputs: [{ name: "escrowAddress", type: "address" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "resolveMilestoneRelease", inputs: [{ name: "escrowAddress", type: "address" }, { name: "milestoneIndex", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "resolveMilestoneRefund",  inputs: [{ name: "escrowAddress", type: "address" }, { name: "milestoneIndex", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "getEvidenceCount",        inputs: [{ name: "escrowAddress", type: "address" }], outputs: [{ type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getAllEvidence",          inputs: [{ name: "escrowAddress", type: "address" }], outputs: [{ type: "tuple[]", components: [{ name: "submitter", type: "address" }, { name: "uri", type: "string" }, { name: "submittedAt", type: "uint256" }] }], stateMutability: "view" },
-  { type: "event",    name: "EvidenceSubmitted",       inputs: [{ name: "escrow", type: "address", indexed: true }, { name: "submitter", type: "address", indexed: true }, { name: "evidenceURI", type: "string", indexed: false }] },
-];
-
-const SIMPLE_ESCROW_ABI = [
-  { type: "function", name: "depositor",   inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
-  { type: "function", name: "beneficiary", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
-  { type: "function", name: "amount",      inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "state",       inputs: [], outputs: [{ type: "uint8"  }], stateMutability: "view" },
-  { type: "event",    name: "Disputed",    inputs: [{ name: "by", type: "address", indexed: true }] },
-];
-
-const MILESTONE_ESCROW_ABI = [
-  { type: "function", name: "depositor",      inputs: [],                                   outputs: [{ type: "address" }], stateMutability: "view" },
-  { type: "function", name: "beneficiary",    inputs: [],                                   outputs: [{ type: "address" }], stateMutability: "view" },
-  { type: "function", name: "arbiter",        inputs: [],                                   outputs: [{ type: "address" }], stateMutability: "view" },
-  { type: "function", name: "totalDeposited", inputs: [],                                   outputs: [{ type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "funded",         inputs: [],                                   outputs: [{ type: "bool"    }], stateMutability: "view" },
-  { type: "function", name: "milestoneCount", inputs: [],                                   outputs: [{ type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "milestones",     inputs: [{ name: "index", type: "uint256" }], outputs: [{ type: "string" }, { type: "uint256" }, { type: "uint8" }], stateMutability: "view" },
-  { type: "event",    name: "MilestoneDisputed", inputs: [{ name: "index", type: "uint256", indexed: true }] },
-];
-
-// ─── State ───────────────────────────────────────────────────────────────────
-
-// Track disputes already processed to avoid double-resolution
-const processed = new Set();
+const account    = privateKeyToAccount(PRIVATE_KEY);
+const anthropic  = new Anthropic({ apiKey: ANTHROPIC_KEY });
 
 // ─── Utility: human-readable elapsed time ────────────────────────────────────
 
@@ -121,22 +89,6 @@ function humanElapsed(ms) {
   if (hours % 24 > 0) parts.push(`${hours % 24} hour${hours % 24 !== 1 ? "s" : ""}`);
   if (minutes % 60 > 0 && days === 0) parts.push(`${minutes % 60} min`);
   return parts.length > 0 ? parts.join(" ") : "less than 1 minute";
-}
-
-// ─── Utility: get deploy block timestamp for a contract ──────────────────────
-
-async function getContractDeployTimestamp(address) {
-  try {
-    // Binary-search isn't feasible here; use the earliest known block heuristic:
-    // get the first non-zero code block by fetching current block and stepping back
-    const code = await publicClient.getCode({ address });
-    if (!code || code === "0x") return null;
-    // Fall back to current block timestamp as "unknown deploy time"
-    const block = await publicClient.getBlock({ blockTag: "latest" });
-    return Number(block.timestamp);
-  } catch {
-    return null;
-  }
 }
 
 // ─── Utility: append to decisions.json ───────────────────────────────────────
@@ -167,23 +119,23 @@ async function notifyDiscord(disputeContext, decision, urgency) {
 
     const body = {
       embeds: [{
-        title: `${label}`,
+        title: label,
         color,
         fields: [
-          { name: "Contract",       value: `\`${disputeContext.contractAddress}\``,          inline: false },
-          { name: "Type",           value: disputeContext.escrowType,                         inline: true  },
-          { name: "Chain ID",       value: String(disputeContext.chainId),                   inline: true  },
-          { name: "Amount",         value: `${disputeContext.amount} BDAG`,                  inline: true  },
-          { name: "Depositor",      value: `\`${disputeContext.depositor.address}\``,        inline: false },
-          { name: "Beneficiary",    value: `\`${disputeContext.beneficiary.address}\``,      inline: false },
-          { name: "Dispute Raised", value: disputeContext.disputeRaisedAt,                   inline: true  },
-          { name: "Elapsed",        value: disputeContext.timeElapsedSinceDeposit,            inline: true  },
+          { name: "Chain",          value: `${disputeContext.chainName} (${disputeContext.chainId})`, inline: true  },
+          { name: "Type",           value: disputeContext.escrowType,                                  inline: true  },
+          { name: "Amount",         value: `${disputeContext.amount} ${disputeContext.nativeSymbol}`,  inline: true  },
+          { name: "Contract",       value: `\`${disputeContext.contractAddress}\``,                    inline: false },
+          { name: "Depositor",      value: `\`${disputeContext.depositor.address}\``,                  inline: false },
+          { name: "Beneficiary",    value: `\`${disputeContext.beneficiary.address}\``,                inline: false },
+          { name: "Dispute Raised", value: disputeContext.disputeRaisedAt,                             inline: true  },
+          { name: "Elapsed",        value: disputeContext.timeElapsedSinceDeposit,                     inline: true  },
           ...(disputeContext.milestoneIndex !== null
             ? [{ name: "Milestone", value: `#${disputeContext.milestoneIndex} of ${disputeContext.totalMilestones}`, inline: true }]
             : []),
-          { name: "AI Confidence",  value: `${decision.confidence}/100`,                    inline: true  },
-          { name: "AI Ruling",      value: decision.ruling,                                  inline: true  },
-          { name: "AI Reasoning",   value: decision.reasoning ?? "N/A",                      inline: false },
+          { name: "AI Confidence",  value: `${decision.confidence}/100`,  inline: true  },
+          { name: "AI Ruling",      value: decision.ruling,                inline: true  },
+          { name: "AI Reasoning",   value: decision.reasoning ?? "N/A",    inline: false },
         ],
         footer: { text: "EscrowHubs AI Arbiter Oracle" },
         timestamp: new Date().toISOString(),
@@ -199,21 +151,6 @@ async function notifyDiscord(disputeContext, decision, urgency) {
     else console.log(`📣 Discord notification sent (${urgency})`);
   } catch (err) {
     console.error("❌ Discord notification error:", err.message);
-  }
-}
-
-// ─── Utility: fetch evidence ─────────────────────────────────────────────────
-
-async function fetchEvidence(escrowAddress) {
-  try {
-    return await publicClient.readContract({
-      address: AI_ARBITER_ADDR,
-      abi: AI_ARBITER_ABI,
-      functionName: "getAllEvidence",
-      args: [escrowAddress],
-    });
-  } catch {
-    return [];
   }
 }
 
@@ -237,7 +174,7 @@ MILESTONE INFO:
 - Already completed/released: ${disputeContext.completedMilestones}
 - Remaining (incl. disputed): ${disputeContext.totalMilestones - disputeContext.completedMilestones}
 ${disputeContext.milestoneDescription ? `- Milestone description: "${disputeContext.milestoneDescription}"` : ""}
-${disputeContext.milestoneAmount ? `- Milestone amount: ${disputeContext.milestoneAmount} BDAG` : ""}
+${disputeContext.milestoneAmount ? `- Milestone amount: ${disputeContext.milestoneAmount} ${disputeContext.nativeSymbol}` : ""}
 `
     : "";
 
@@ -245,11 +182,11 @@ ${disputeContext.milestoneAmount ? `- Milestone amount: ${disputeContext.milesto
 
 DISPUTE CONTEXT:
 - Escrow type: ${disputeContext.escrowType}
+- Chain: ${disputeContext.chainName} (ID: ${disputeContext.chainId})
 - Contract: ${disputeContext.contractAddress}
-- Chain ID: ${disputeContext.chainId}
 - Depositor (buyer): ${disputeContext.depositor.address}
 - Beneficiary (seller): ${disputeContext.beneficiary.address}
-- Amount locked: ${disputeContext.amount} BDAG
+- Amount locked: ${disputeContext.amount} ${disputeContext.nativeSymbol}
 - Dispute raised by: ${disputeContext.disputeRaisedBy}
 - Dispute raised at: ${disputeContext.disputeRaisedAt}
 - Time since deposit: ${disputeContext.timeElapsedSinceDeposit}
@@ -288,7 +225,6 @@ Rules:
 
   try {
     const decision = JSON.parse(raw);
-    // Normalise ruling to uppercase RELEASE/REFUND for on-chain use
     decision._onChainRuling = decision.ruling === "beneficiary" ? "RELEASE" : "REFUND";
     return decision;
   } catch {
@@ -312,16 +248,16 @@ function shouldAutoResolve(decision) {
   return decision.confidence >= AUTO_RESOLVE_MIN_CONFIDENCE && !decision.escalateToManual;
 }
 
-function logDecisionSummary(prefix, decision, disputeContext) {
-  const conf = decision.confidence;
+function logDecisionSummary(tag, decision) {
+  const conf    = decision.confidence;
   const urgency = conf < 40 ? "HIGH_RISK" : conf < AUTO_RESOLVE_MIN_CONFIDENCE ? "MANUAL" : "AUTO";
-  const badge = urgency === "HIGH_RISK"
+  const badge   = urgency === "HIGH_RISK"
     ? "🚨 [HIGH RISK - MANUAL REVIEW URGENT]"
     : urgency === "MANUAL"
     ? "⚠️  [MANUAL REVIEW NEEDED]"
     : "✅ [AUTO-RESOLVE]";
 
-  console.log(`${badge} ${prefix} | Ruling: ${decision._onChainRuling} | Confidence: ${conf}/100`);
+  console.log(`${badge} ${tag} | Ruling: ${decision._onChainRuling} | Confidence: ${conf}/100`);
   console.log(`   Reasoning: ${decision.reasoning}`);
   if (decision.factors?.length) {
     decision.factors.forEach(f =>
@@ -331,320 +267,332 @@ function logDecisionSummary(prefix, decision, disputeContext) {
   return urgency;
 }
 
-// ─── On-chain execution ───────────────────────────────────────────────────────
+// ─── Per-chain listener ───────────────────────────────────────────────────────
 
-async function executeSimpleResolution(escrowAddress, ruling) {
-  const functionName = ruling === "RELEASE" ? "resolveRelease" : "resolveRefund";
-  const hash = await walletClient.writeContract({
-    address: AI_ARBITER_ADDR,
-    abi: AI_ARBITER_ABI,
-    functionName,
-    args: [escrowAddress],
-  });
-  console.log(`✅ [SIMPLE] Resolution tx: ${hash}`);
-  return hash;
-}
+function startChainListener(chainConfig) {
+  const { chainId, name, rpcUrl, factoryAddress, arbiterAddress, nativeCurrency } = chainConfig;
+  const tag = `[${name}/${chainId}]`;
 
-async function executeMilestoneResolution(escrowAddress, milestoneIndex, ruling) {
-  const functionName = ruling === "RELEASE" ? "resolveMilestoneRelease" : "resolveMilestoneRefund";
-  const hash = await walletClient.writeContract({
-    address: AI_ARBITER_ADDR,
-    abi: AI_ARBITER_ABI,
-    functionName,
-    args: [escrowAddress, BigInt(milestoneIndex)],
-  });
-  console.log(`✅ [MILESTONE] Resolution tx: ${hash}`);
-  return hash;
-}
+  // Build viem chain descriptor
+  const viemChain = {
+    id: chainId,
+    name,
+    nativeCurrency: nativeCurrency ?? { name: "ETH", symbol: "ETH", decimals: 18 },
+    rpcUrls: { default: { http: [rpcUrl] } },
+  };
 
-// ─── Milestone data fetcher ───────────────────────────────────────────────────
+  const publicClient = createPublicClient({ chain: viemChain, transport: http(rpcUrl) });
+  const walletClient = createWalletClient({ account, chain: viemChain, transport: http(rpcUrl) });
 
-async function fetchMilestoneDetails(escrowAddress, milestoneIndex) {
-  const count = await publicClient.readContract({
-    address: escrowAddress,
-    abi: MILESTONE_ESCROW_ABI,
-    functionName: "milestoneCount",
-  });
+  // Scoped processed-key set (chain-specific to avoid cross-chain collisions)
+  const processed = new Set();
 
-  const indices = Array.from({ length: Number(count) }, (_, i) => BigInt(i));
-  const allRaw  = await Promise.all(
-    indices.map(i =>
-      publicClient.readContract({
-        address: escrowAddress,
-        abi: MILESTONE_ESCROW_ABI,
-        functionName: "milestones",
-        args: [i],
-      })
-    )
-  );
+  // ── Evidence fetch ──────────────────────────────────────────────────────────
 
-  // MilestoneState: 0=PENDING, 1=RELEASED, 2=DISPUTED, 3=REFUNDED
-  const STATE_LABELS = ["PENDING", "RELEASED", "DISPUTED", "REFUNDED"];
-  const parsed = allRaw.map((m, i) => ({
-    index: i,
-    description: m[0],
-    amount: m[1],
-    state: Number(m[2]),
-    stateLabel: STATE_LABELS[Number(m[2])] ?? "UNKNOWN",
-  }));
+  async function fetchEvidence(escrowAddress) {
+    try {
+      return await publicClient.readContract({
+        address: arbiterAddress,
+        abi: AIArbiterABI,
+        functionName: "getAllEvidence",
+        args: [escrowAddress],
+      });
+    } catch {
+      return [];
+    }
+  }
 
-  const disputed  = parsed[Number(milestoneIndex)];
-  const released  = parsed.filter(m => m.state === 1).length;
+  // ── Deploy timestamp ────────────────────────────────────────────────────────
 
-  return { milestones: parsed, disputed, released, total: parsed.length };
-}
+  async function getContractDeployTimestamp(address) {
+    try {
+      const code = await publicClient.getCode({ address });
+      if (!code || code === "0x") return null;
+      const block = await publicClient.getBlock({ blockTag: "latest" });
+      return Number(block.timestamp);
+    } catch {
+      return null;
+    }
+  }
 
-// ─── Main dispute handler ─────────────────────────────────────────────────────
+  // ── Resolution executors ────────────────────────────────────────────────────
 
-async function handleDispute(escrowAddress, disputeRaisedBy) {
-  if (processed.has(escrowAddress)) return;
+  async function executeSimpleResolution(escrowAddress, ruling) {
+    const functionName = ruling === "RELEASE" ? "resolveRelease" : "resolveRefund";
+    const hash = await walletClient.writeContract({
+      address: arbiterAddress,
+      abi: AIArbiterABI,
+      functionName,
+      args: [escrowAddress],
+    });
+    console.log(`✅ ${tag} [SIMPLE] Resolution tx: ${hash}`);
+    return hash;
+  }
 
-  const detectedAt = new Date().toISOString();
-  console.log(`\n🔔 [SIMPLE] Dispute detected: ${escrowAddress} at ${detectedAt}`);
+  async function executeMilestoneResolution(escrowAddress, milestoneIndex, ruling) {
+    const functionName = ruling === "RELEASE" ? "resolveMilestoneRelease" : "resolveMilestoneRefund";
+    const hash = await walletClient.writeContract({
+      address: arbiterAddress,
+      abi: AIArbiterABI,
+      functionName,
+      args: [escrowAddress, BigInt(milestoneIndex)],
+    });
+    console.log(`✅ ${tag} [MILESTONE] Resolution tx: ${hash}`);
+    return hash;
+  }
 
-  try {
-    console.log(`⏳ [SIMPLE] Waiting 60s for evidence submissions...`);
-    await new Promise(r => setTimeout(r, 60_000));
+  // ── Milestone details fetcher ───────────────────────────────────────────────
 
-    const [[depositor, beneficiary, amount, state], evidence, deployTs] = await Promise.all([
-      Promise.all([
-        publicClient.readContract({ address: escrowAddress, abi: SIMPLE_ESCROW_ABI, functionName: "depositor" }),
-        publicClient.readContract({ address: escrowAddress, abi: SIMPLE_ESCROW_ABI, functionName: "beneficiary" }),
-        publicClient.readContract({ address: escrowAddress, abi: SIMPLE_ESCROW_ABI, functionName: "amount" }),
-        publicClient.readContract({ address: escrowAddress, abi: SIMPLE_ESCROW_ABI, functionName: "state" }),
-      ]),
-      fetchEvidence(escrowAddress),
-      getContractDeployTimestamp(escrowAddress),
-    ]);
+  async function fetchMilestoneDetails(escrowAddress, milestoneIndex) {
+    const count = await publicClient.readContract({
+      address: escrowAddress,
+      abi: MilestoneEscrowABI,
+      functionName: "milestoneCount",
+    });
+    const indices = Array.from({ length: Number(count) }, (_, i) => BigInt(i));
+    const allRaw  = await Promise.all(
+      indices.map(i =>
+        publicClient.readContract({
+          address: escrowAddress,
+          abi: MilestoneEscrowABI,
+          functionName: "milestones",
+          args: [i],
+        })
+      )
+    );
+    const STATE_LABELS = ["PENDING", "RELEASED", "DISPUTED", "REFUNDED"];
+    const parsed = allRaw.map((m, i) => ({
+      index: i,
+      description: m[0],
+      amount: m[1],
+      state: Number(m[2]),
+      stateLabel: STATE_LABELS[Number(m[2])] ?? "UNKNOWN",
+    }));
+    const disputed = parsed[Number(milestoneIndex)];
+    const released = parsed.filter(m => m.state === 1).length;
+    return { milestones: parsed, disputed, released, total: parsed.length };
+  }
 
-    // SimpleEscrow state 3 = DISPUTED
-    if (Number(state) !== 3) {
-      console.log(`ℹ️  [SIMPLE] Escrow ${escrowAddress} no longer disputed, skipping.`);
+  // ── Simple escrow dispute handler ──────────────────────────────────────────
+
+  async function handleDispute(escrowAddress, disputeRaisedByAddr) {
+    if (processed.has(escrowAddress)) return;
+    const detectedAt = new Date().toISOString();
+    console.log(`\n🔔 ${tag} [SIMPLE] Dispute detected: ${escrowAddress} at ${detectedAt}`);
+
+    try {
+      console.log(`⏳ ${tag} [SIMPLE] Waiting 60s for evidence submissions...`);
+      await new Promise(r => setTimeout(r, 60_000));
+
+      const [[depositor, beneficiary, amount, state], evidence, deployTs] = await Promise.all([
+        Promise.all([
+          publicClient.readContract({ address: escrowAddress, abi: SimpleEscrowABI, functionName: "depositor" }),
+          publicClient.readContract({ address: escrowAddress, abi: SimpleEscrowABI, functionName: "beneficiary" }),
+          publicClient.readContract({ address: escrowAddress, abi: SimpleEscrowABI, functionName: "amount" }),
+          publicClient.readContract({ address: escrowAddress, abi: SimpleEscrowABI, functionName: "state" }),
+        ]),
+        fetchEvidence(escrowAddress),
+        getContractDeployTimestamp(escrowAddress),
+      ]);
+
+      if (Number(state) !== 3) {
+        console.log(`ℹ️  ${tag} [SIMPLE] ${escrowAddress} no longer disputed, skipping.`);
+        processed.add(escrowAddress);
+        return;
+      }
+
+      const nowMs    = Date.now();
+      const deployMs = deployTs ? deployTs * 1000 : nowMs;
+      const raisedBy = disputeRaisedByAddr?.toLowerCase() === depositor?.toLowerCase()
+        ? "depositor" : "beneficiary";
+
+      const disputeContext = {
+        escrowType:              "simple",
+        contractAddress:         escrowAddress,
+        chainId,
+        chainName:               name,
+        nativeSymbol:            nativeCurrency?.symbol ?? "ETH",
+        createdAt:               deployTs ? new Date(deployMs).toISOString() : null,
+        disputeRaisedAt:         detectedAt,
+        depositor:               { address: depositor },
+        beneficiary:             { address: beneficiary },
+        amount:                  formatEther(amount),
+        milestoneIndex:          null,
+        totalMilestones:         null,
+        completedMilestones:     null,
+        milestoneDescription:    null,
+        milestoneAmount:         null,
+        depositTxHash:           null,
+        timeElapsedSinceDeposit: humanElapsed(nowMs - deployMs),
+        disputeReason:           "Dispute raised on SimpleEscrow",
+        disputeRaisedBy:         raisedBy,
+      };
+
+      console.log(`📋 ${tag} [SIMPLE] Evidence: ${evidence.length} | Depositor: ${depositor} | Amount: ${formatEther(amount)} ${nativeCurrency?.symbol}`);
+      console.log(`🤖 ${tag} [SIMPLE] Consulting AI...`);
+
+      const decision = await callAI(disputeContext, evidence);
+      const urgency  = logDecisionSummary(`${tag} [SIMPLE]`, decision);
+
+      let txHash = "pending_manual_review";
+      if (shouldAutoResolve(decision)) {
+        txHash = await executeSimpleResolution(escrowAddress, decision._onChainRuling);
+      } else {
+        await notifyDiscord(disputeContext, decision, urgency);
+      }
+
+      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, txHash });
       processed.add(escrowAddress);
-      return;
+
+    } catch (err) {
+      console.error(`❌ ${tag} [SIMPLE] Error for ${escrowAddress}:`, err.message);
     }
-
-    const nowMs    = Date.now();
-    const deployMs = deployTs ? deployTs * 1000 : nowMs;
-    const raisedBy = disputeRaisedBy?.toLowerCase() === depositor?.toLowerCase()
-      ? "depositor"
-      : "beneficiary";
-
-    /** @type {DisputeContext} */
-    const disputeContext = {
-      escrowType:              "simple",
-      contractAddress:         escrowAddress,
-      chainId:                 blockdag.id,
-      createdAt:               deployTs ? new Date(deployMs).toISOString() : null,
-      disputeRaisedAt:         detectedAt,
-      depositor:               { address: depositor },
-      beneficiary:             { address: beneficiary },
-      amount:                  formatEther(amount),
-      milestoneIndex:          null,
-      totalMilestones:         null,
-      completedMilestones:     null,
-      milestoneDescription:    null,
-      milestoneAmount:         null,
-      depositTxHash:           null,
-      timeElapsedSinceDeposit: humanElapsed(nowMs - deployMs),
-      disputeReason:           "Dispute raised on SimpleEscrow — no on-chain reason string",
-      disputeRaisedBy:         raisedBy,
-    };
-
-    console.log(`📋 [SIMPLE] Evidence: ${evidence.length} item(s) | Depositor: ${depositor} | Amount: ${formatEther(amount)} BDAG`);
-    console.log(`🤖 [SIMPLE] Consulting AI...`);
-
-    const decision = await callAI(disputeContext, evidence);
-    const urgency  = logDecisionSummary("[SIMPLE]", decision, disputeContext);
-
-    let txHash = "pending_manual_review";
-
-    if (shouldAutoResolve(decision)) {
-      txHash = await executeSimpleResolution(escrowAddress, decision._onChainRuling);
-    } else {
-      await notifyDiscord(disputeContext, decision, urgency);
-    }
-
-    appendDecision({
-      timestamp:       detectedAt,
-      contractAddress: escrowAddress,
-      chainId:         blockdag.id,
-      escrowType:      "simple",
-      disputeContext,
-      decision,
-      txHash,
-    });
-
-    processed.add(escrowAddress);
-
-  } catch (err) {
-    console.error(`❌ [SIMPLE] Error handling dispute for ${escrowAddress}:`, err.message);
   }
-}
 
-async function handleMilestoneDispute(escrowAddress, milestoneIndex) {
-  const disputeKey = `${escrowAddress}:${milestoneIndex}`;
-  if (processed.has(disputeKey)) return;
+  // ── Milestone escrow dispute handler ───────────────────────────────────────
 
-  const detectedAt = new Date().toISOString();
-  console.log(`\n🔔 [MILESTONE] Dispute detected: ${escrowAddress} milestone #${milestoneIndex} at ${detectedAt}`);
+  async function handleMilestoneDispute(escrowAddress, milestoneIndex) {
+    const disputeKey = `${escrowAddress}:${milestoneIndex}`;
+    if (processed.has(disputeKey)) return;
+    const detectedAt = new Date().toISOString();
+    console.log(`\n🔔 ${tag} [MILESTONE] Dispute: ${escrowAddress} milestone #${milestoneIndex} at ${detectedAt}`);
 
-  try {
-    console.log(`⏳ [MILESTONE] Waiting 60s for evidence submissions...`);
-    await new Promise(r => setTimeout(r, 60_000));
+    try {
+      console.log(`⏳ ${tag} [MILESTONE] Waiting 60s for evidence submissions...`);
+      await new Promise(r => setTimeout(r, 60_000));
 
-    const [[depositor, beneficiary, totalDeposited, funded], milestoneDetails, evidence, deployTs] = await Promise.all([
-      Promise.all([
-        publicClient.readContract({ address: escrowAddress, abi: MILESTONE_ESCROW_ABI, functionName: "depositor" }),
-        publicClient.readContract({ address: escrowAddress, abi: MILESTONE_ESCROW_ABI, functionName: "beneficiary" }),
-        publicClient.readContract({ address: escrowAddress, abi: MILESTONE_ESCROW_ABI, functionName: "totalDeposited" }),
-        publicClient.readContract({ address: escrowAddress, abi: MILESTONE_ESCROW_ABI, functionName: "funded" }),
-      ]),
-      fetchMilestoneDetails(escrowAddress, milestoneIndex),
-      fetchEvidence(escrowAddress),
-      getContractDeployTimestamp(escrowAddress),
-    ]);
+      const [[depositor, beneficiary, totalDeposited], milestoneDetails, evidence, deployTs] = await Promise.all([
+        Promise.all([
+          publicClient.readContract({ address: escrowAddress, abi: MilestoneEscrowABI, functionName: "depositor" }),
+          publicClient.readContract({ address: escrowAddress, abi: MilestoneEscrowABI, functionName: "beneficiary" }),
+          publicClient.readContract({ address: escrowAddress, abi: MilestoneEscrowABI, functionName: "totalDeposited" }),
+        ]),
+        fetchMilestoneDetails(escrowAddress, milestoneIndex),
+        fetchEvidence(escrowAddress),
+        getContractDeployTimestamp(escrowAddress),
+      ]);
 
-    const { disputed, released, total } = milestoneDetails;
+      const { disputed, released, total } = milestoneDetails;
+      if (disputed.state !== 2) {
+        console.log(`ℹ️  ${tag} [MILESTONE] Milestone #${milestoneIndex} on ${escrowAddress} no longer disputed, skipping.`);
+        processed.add(disputeKey);
+        return;
+      }
 
-    // MilestoneState 2 = DISPUTED
-    if (disputed.state !== 2) {
-      console.log(`ℹ️  [MILESTONE] Milestone #${milestoneIndex} on ${escrowAddress} no longer disputed, skipping.`);
+      const nowMs    = Date.now();
+      const deployMs = deployTs ? deployTs * 1000 : nowMs;
+
+      const disputeContext = {
+        escrowType:              "milestone",
+        contractAddress:         escrowAddress,
+        chainId,
+        chainName:               name,
+        nativeSymbol:            nativeCurrency?.symbol ?? "ETH",
+        createdAt:               deployTs ? new Date(deployMs).toISOString() : null,
+        disputeRaisedAt:         detectedAt,
+        depositor:               { address: depositor },
+        beneficiary:             { address: beneficiary },
+        amount:                  formatEther(totalDeposited),
+        milestoneIndex,
+        totalMilestones:         total,
+        completedMilestones:     released,
+        milestoneDescription:    disputed.description,
+        milestoneAmount:         formatEther(disputed.amount),
+        depositTxHash:           null,
+        timeElapsedSinceDeposit: humanElapsed(nowMs - deployMs),
+        disputeReason:           `MilestoneDisputed #${milestoneIndex}: "${disputed.description}"`,
+        disputeRaisedBy:         "depositor",
+      };
+
+      console.log(`📋 ${tag} [MILESTONE] Evidence: ${evidence.length} | #${milestoneIndex} "${disputed.description}" — ${formatEther(disputed.amount)} ${nativeCurrency?.symbol}`);
+      console.log(`   Progress: ${released}/${total} released | Depositor: ${depositor}`);
+      console.log(`🤖 ${tag} [MILESTONE] Consulting AI...`);
+
+      const decision = await callAI(disputeContext, evidence);
+      const urgency  = logDecisionSummary(`${tag} [MILESTONE]`, decision);
+
+      let txHash = "pending_manual_review";
+      if (shouldAutoResolve(decision)) {
+        txHash = await executeMilestoneResolution(escrowAddress, milestoneIndex, decision._onChainRuling);
+      } else {
+        await notifyDiscord(disputeContext, decision, urgency);
+      }
+
+      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, txHash });
       processed.add(disputeKey);
-      return;
+
+    } catch (err) {
+      console.error(`❌ ${tag} [MILESTONE] Error for ${escrowAddress} #${milestoneIndex}:`, err.message);
     }
-
-    const nowMs    = Date.now();
-    const deployMs = deployTs ? deployTs * 1000 : nowMs;
-
-    /** @type {DisputeContext} */
-    const disputeContext = {
-      escrowType:              "milestone",
-      contractAddress:         escrowAddress,
-      chainId:                 blockdag.id,
-      createdAt:               deployTs ? new Date(deployMs).toISOString() : null,
-      disputeRaisedAt:         detectedAt,
-      depositor:               { address: depositor },
-      beneficiary:             { address: beneficiary },
-      amount:                  formatEther(totalDeposited),
-      milestoneIndex:          milestoneIndex,
-      totalMilestones:         total,
-      completedMilestones:     released,
-      milestoneDescription:    disputed.description,
-      milestoneAmount:         formatEther(disputed.amount),
-      depositTxHash:           null,
-      timeElapsedSinceDeposit: humanElapsed(nowMs - deployMs),
-      disputeReason:           `MilestoneDisputed event on milestone #${milestoneIndex}: "${disputed.description}"`,
-      disputeRaisedBy:         "depositor", // only depositor can call disputeMilestone()
-    };
-
-    console.log(`📋 [MILESTONE] Evidence: ${evidence.length} item(s)`);
-    console.log(`   Milestone: #${milestoneIndex} "${disputed.description}" — ${formatEther(disputed.amount)} BDAG`);
-    console.log(`   Progress:  ${released}/${total} milestones released | Depositor: ${depositor}`);
-    console.log(`🤖 [MILESTONE] Consulting AI...`);
-
-    const decision = await callAI(disputeContext, evidence);
-    const urgency  = logDecisionSummary("[MILESTONE]", decision, disputeContext);
-
-    let txHash = "pending_manual_review";
-
-    if (shouldAutoResolve(decision)) {
-      txHash = await executeMilestoneResolution(escrowAddress, milestoneIndex, decision._onChainRuling);
-    } else {
-      await notifyDiscord(disputeContext, decision, urgency);
-    }
-
-    appendDecision({
-      timestamp:       detectedAt,
-      contractAddress: escrowAddress,
-      chainId:         blockdag.id,
-      escrowType:      "milestone",
-      milestoneIndex,
-      disputeContext,
-      decision,
-      txHash,
-    });
-
-    processed.add(disputeKey);
-
-  } catch (err) {
-    console.error(`❌ [MILESTONE] Error handling dispute ${escrowAddress} #${milestoneIndex}:`, err.message);
   }
-}
 
-// ─── Event polling ────────────────────────────────────────────────────────────
+  // ── Polling loop for this chain ─────────────────────────────────────────────
 
-let lastBlock = 0n;
+  let lastBlock = 0n;
 
-async function pollForDisputes() {
-  try {
-    const currentBlock = await publicClient.getBlockNumber();
+  async function poll() {
+    try {
+      const currentBlock = await publicClient.getBlockNumber();
+      if (lastBlock === 0n) lastBlock = currentBlock - 100n;
+      if (currentBlock <= lastBlock) return;
 
-    if (lastBlock === 0n) {
-      // On first run, start from 100 blocks back
-      lastBlock = currentBlock - 100n;
-    }
+      const fromBlock = lastBlock + 1n;
+      const toBlock   = currentBlock;
 
-    if (currentBlock <= lastBlock) return;
-
-    const fromBlock = lastBlock + 1n;
-    const toBlock   = currentBlock;
-
-    // ── [SIMPLE] SimpleEscrow Disputed events ────────────────────────────────
-    const simpleLogs = await publicClient.getLogs({
-      fromBlock,
-      toBlock,
-      event: parseAbiItem("event Disputed(address indexed by)"),
-    });
-
-    for (const log of simpleLogs) {
-      const escrowAddress  = log.address;
-      const disputeRaisedBy = log.args.by;
-      try {
-        const arbiter = await publicClient.readContract({
-          address: escrowAddress,
-          abi: [{ type: "function", name: "arbiter", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" }],
-          functionName: "arbiter",
-        });
-        if (arbiter.toLowerCase() === AI_ARBITER_ADDR.toLowerCase()) {
-          console.log(`[SIMPLE] Dispute event from ${escrowAddress} raised by ${disputeRaisedBy}`);
-          handleDispute(escrowAddress, disputeRaisedBy);
-        }
-      } catch {
-        // Not a compatible escrow contract, skip
+      // SimpleEscrow Disputed events
+      const simpleLogs = await publicClient.getLogs({
+        fromBlock, toBlock,
+        event: parseAbiItem("event Disputed(address indexed by)"),
+      });
+      for (const log of simpleLogs) {
+        try {
+          const arbiter = await publicClient.readContract({
+            address: log.address,
+            abi: [{ type: "function", name: "arbiter", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" }],
+            functionName: "arbiter",
+          });
+          if (arbiter.toLowerCase() === arbiterAddress.toLowerCase()) {
+            console.log(`${tag} [SIMPLE] Dispute event from ${log.address} by ${log.args.by}`);
+            handleDispute(log.address, log.args.by);
+          }
+        } catch { /* not a compatible escrow */ }
       }
-    }
 
-    // ── [MILESTONE] MilestoneEscrow MilestoneDisputed events ─────────────────
-    const milestoneLogs = await publicClient.getLogs({
-      fromBlock,
-      toBlock,
-      event: parseAbiItem("event MilestoneDisputed(uint256 indexed index)"),
-    });
-
-    for (const log of milestoneLogs) {
-      const escrowAddress  = log.address;
-      const milestoneIndex = Number(log.args.index);
-      try {
-        const arbiter = await publicClient.readContract({
-          address: escrowAddress,
-          abi: [{ type: "function", name: "arbiter", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" }],
-          functionName: "arbiter",
-        });
-        if (arbiter.toLowerCase() === AI_ARBITER_ADDR.toLowerCase()) {
-          console.log(`[MILESTONE] Dispute event from ${escrowAddress}, milestone #${milestoneIndex}`);
-          handleMilestoneDispute(escrowAddress, milestoneIndex);
-        }
-      } catch {
-        // Not a compatible escrow contract, skip
+      // MilestoneEscrow MilestoneDisputed events
+      const milestoneLogs = await publicClient.getLogs({
+        fromBlock, toBlock,
+        event: parseAbiItem("event MilestoneDisputed(uint256 indexed index)"),
+      });
+      for (const log of milestoneLogs) {
+        try {
+          const arbiter = await publicClient.readContract({
+            address: log.address,
+            abi: [{ type: "function", name: "arbiter", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" }],
+            functionName: "arbiter",
+          });
+          if (arbiter.toLowerCase() === arbiterAddress.toLowerCase()) {
+            const idx = Number(log.args.index);
+            console.log(`${tag} [MILESTONE] Dispute event from ${log.address}, milestone #${idx}`);
+            handleMilestoneDispute(log.address, idx);
+          }
+        } catch { /* not a compatible escrow */ }
       }
+
+      lastBlock = currentBlock;
+
+    } catch (err) {
+      // Log and continue — one chain's RPC failure must not crash other listeners
+      console.error(`❌ ${tag} Poll error: ${err.message}`);
     }
-
-    lastBlock = currentBlock;
-
-  } catch (err) {
-    console.error("❌ Poll error:", err.message);
   }
+
+  // Start polling for this chain
+  poll();
+  const interval = setInterval(poll, POLL_INTERVAL_MS);
+
+  console.log(`🔭 ${tag} Listening for disputes on chain ${chainId} | Arbiter: ${arbiterAddress}`);
+
+  return { chainId, name, interval };
 }
 
 // ─── Start ────────────────────────────────────────────────────────────────────
@@ -656,15 +604,20 @@ if (!fs.existsSync(DECISIONS_FILE)) {
 }
 
 console.log("🤖 AI Arbiter Oracle starting...");
-console.log(`📡 RPC:           ${RPC_URL}`);
-console.log(`🏛️  AIArbiter:    ${AI_ARBITER_ADDR}`);
-console.log(`👛 Oracle wallet: ${account.address}`);
-console.log(`⏱️  Poll interval: ${POLL_INTERVAL_MS / 1000}s`);
-console.log(`🔭 Watching:      [SIMPLE] Disputed + [MILESTONE] MilestoneDisputed`);
-console.log(`🎯 Auto-resolve:  confidence >= ${AUTO_RESOLVE_MIN_CONFIDENCE}`);
-console.log(`📝 Decisions log: ${DECISIONS_FILE}`);
-console.log(`📣 Discord:       ${DISCORD_WEBHOOK ? "configured" : "not configured"}`);
+console.log(`👛 Oracle wallet:  ${account.address}`);
+console.log(`⏱️  Poll interval:  ${POLL_INTERVAL_MS / 1000}s`);
+console.log(`🎯 Auto-resolve:   confidence >= ${AUTO_RESOLVE_MIN_CONFIDENCE}`);
+console.log(`📝 Decisions log:  ${DECISIONS_FILE}`);
+console.log(`📣 Discord:        ${DISCORD_WEBHOOK ? "configured" : "not configured"}`);
+console.log(`⛓️  Chains:         ${CHAINS.length} configured`);
 console.log("");
 
-pollForDisputes();
-setInterval(pollForDisputes, POLL_INTERVAL_MS);
+for (const chain of CHAINS) {
+  try {
+    startChainListener(chain);
+    console.log(`[${chain.name}] Oracle listening on chain ${chain.chainId}`);
+  } catch (err) {
+    console.error(`❌ Failed to start listener for chain ${chain.chainId} (${chain.name}): ${err.message}`);
+    // Continue starting other chains
+  }
+}

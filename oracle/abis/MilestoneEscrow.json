@@ -1,0 +1,21 @@
+[
+  { "type": "function", "name": "depositor",       "inputs": [], "outputs": [{ "type": "address" }], "stateMutability": "view" },
+  { "type": "function", "name": "beneficiary",     "inputs": [], "outputs": [{ "type": "address" }], "stateMutability": "view" },
+  { "type": "function", "name": "arbiter",         "inputs": [], "outputs": [{ "type": "address" }], "stateMutability": "view" },
+  { "type": "function", "name": "totalDeposited",  "inputs": [], "outputs": [{ "type": "uint256" }], "stateMutability": "view" },
+  { "type": "function", "name": "funded",          "inputs": [], "outputs": [{ "type": "bool" }],    "stateMutability": "view" },
+  { "type": "function", "name": "milestoneCount",  "inputs": [], "outputs": [{ "type": "uint256" }], "stateMutability": "view" },
+  { "type": "function", "name": "milestones",
+    "inputs": [{ "name": "index", "type": "uint256" }],
+    "outputs": [{ "name": "description", "type": "string" }, { "name": "amount", "type": "uint256" }, { "name": "state", "type": "uint8" }],
+    "stateMutability": "view" },
+  { "type": "function", "name": "fund",             "inputs": [], "outputs": [], "stateMutability": "payable" },
+  { "type": "function", "name": "releaseMilestone", "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
+  { "type": "function", "name": "disputeMilestone", "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
+  { "type": "function", "name": "resolveRelease",   "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
+  { "type": "function", "name": "resolveRefund",    "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
+  { "type": "event", "name": "Funded",            "inputs": [{ "name": "total",  "type": "uint256", "indexed": false }] },
+  { "type": "event", "name": "MilestoneReleased", "inputs": [{ "name": "index",  "type": "uint256", "indexed": true  }, { "name": "amount", "type": "uint256", "indexed": false }] },
+  { "type": "event", "name": "MilestoneDisputed", "inputs": [{ "name": "index",  "type": "uint256", "indexed": true  }] },
+  { "type": "event", "name": "MilestoneRefunded", "inputs": [{ "name": "index",  "type": "uint256", "indexed": true  }, { "name": "amount", "type": "uint256", "indexed": false }] }
+]
