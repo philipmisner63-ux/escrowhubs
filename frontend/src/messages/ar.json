@@ -110,38 +110,103 @@
     "deployFailed": "فشل النشر"
   },
   "escrow": {
-    "stateLabel": { "0": "بانتظار الدفع", "1": "بانتظار التسليم", "2": "مكتمل", "3": "متنازع عليه", "4": "مسترد" },
-    "milestoneState": { "0": "معلق", "1": "محرر", "2": "متنازع عليه", "3": "مسترد" },
-    "depositor": "المودع", "beneficiary": "المستفيد", "arbiter": "الحكم", "amount": "المبلغ",
-    "release": "تحرير الأموال", "dispute": "رفع نزاع", "refund": "استرداد",
-    "resolveRelease": "حل: تحرير", "resolveRefund": "حل: استرداد",
-    "submitEvidence": "تقديم الأدلة", "evidenceUri": "رابط الأدلة (IPFS أو URL)",
-    "releaseMilestone": "تحرير", "disputeMilestone": "نزاع", "milestone": "مرحلة {n}", "notFound": "الضمان غير موجود"
+    "stateLabel": {
+      "0": "بانتظار الدفع",
+      "1": "بانتظار التسليم",
+      "2": "مكتمل",
+      "3": "متنازع عليه",
+      "4": "مسترد"
+    },
+    "milestoneState": {
+      "0": "معلق",
+      "1": "محرر",
+      "2": "متنازع عليه",
+      "3": "مسترد"
+    },
+    "depositor": "المودع",
+    "beneficiary": "المستفيد",
+    "arbiter": "الحكم",
+    "amount": "المبلغ",
+    "release": "تحرير الأموال",
+    "dispute": "رفع نزاع",
+    "refund": "استرداد",
+    "resolveRelease": "حل: تحرير",
+    "resolveRefund": "حل: استرداد",
+    "submitEvidence": "تقديم الأدلة",
+    "evidenceUri": "رابط الأدلة (IPFS أو URL)",
+    "releaseMilestone": "تحرير",
+    "disputeMilestone": "نزاع",
+    "milestone": "مرحلة {n}",
+    "notFound": "الضمان غير موجود"
   },
   "howItWorks": {
     "title": "كيف يعمل",
     "subtitle": "ثلاث طرق لاستخدام الضمان على BlockDAG — إصدار بسيط، مدفوعات بالمراحل، أو حل نزاعات بالذكاء الاصطناعي."
   },
   "admin": {
-    "title": "لوحة الإدارة", "subtitle": "EscrowFactory — تحكم المالك فقط",
-    "accessDenied": "رفض الوصول", "accessDeniedMsg": "المحفظة المتصلة ليست مالك العقد.",
+    "title": "لوحة الإدارة",
+    "subtitle": "EscrowFactory — تحكم المالك فقط",
+    "accessDenied": "رفض الوصول",
+    "accessDeniedMsg": "المحفظة المتصلة ليست مالك العقد.",
     "connectMsg": "ربط محفظة المالك للمتابعة.",
-    "accumulatedFees": "الرسوم المتراكمة", "protocolFee": "رسوم البروتوكول", "aiArbiterFee": "رسوم AI Arbiter",
-    "totalEscrows": "إجمالي الضمانات", "owner": "المالك", "treasury": "الخزينة",
-    "withdrawFees": "سحب إلى الخزينة", "withdrawDesc": "إرسال {amount} BDAG إلى الخزينة",
-    "updateFees": "تحديث معاملات الرسوم", "currentFees": "الحالي: {bps}% بروتوكول / {fee} BDAG حكم",
-    "protocolFeeBps": "رسوم البروتوكول (bps، حد أقصى 500)", "aiArbiterFeeLabel": "رسوم AI Arbiter (BDAG)",
-    "saveFees": "حفظ الإعداد", "updateTreasury": "تحديث عنوان الخزينة",
-    "setTreasury": "تعيين الخزينة", "confirming": "جارٍ التأكيد…", "confirmed": "تم التأكيد!", "viewExplorer": "عرض في المستكشف"
+    "accumulatedFees": "الرسوم المتراكمة",
+    "protocolFee": "رسوم البروتوكول",
+    "aiArbiterFee": "رسوم AI Arbiter",
+    "totalEscrows": "إجمالي الضمانات",
+    "owner": "المالك",
+    "treasury": "الخزينة",
+    "withdrawFees": "سحب إلى الخزينة",
+    "withdrawDesc": "إرسال {amount} BDAG إلى الخزينة",
+    "updateFees": "تحديث معاملات الرسوم",
+    "currentFees": "الحالي: {bps}% بروتوكول / {fee} BDAG حكم",
+    "protocolFeeBps": "رسوم البروتوكول (bps، حد أقصى 500)",
+    "aiArbiterFeeLabel": "رسوم AI Arbiter (BDAG)",
+    "saveFees": "حفظ الإعداد",
+    "updateTreasury": "تحديث عنوان الخزينة",
+    "setTreasury": "تعيين الخزينة",
+    "confirming": "جارٍ التأكيد…",
+    "confirmed": "تم التأكيد!",
+    "viewExplorer": "عرض في المستكشف"
   },
   "support": {
-    "button": "الدعم", "title": "تحتاج مساعدة؟", "subtitle": "صف مشكلتك وسنرد عليك.",
-    "messagePlaceholder": "صف مشكلتك...", "send": "إرسال الرسالة", "sending": "جارٍ الإرسال...",
-    "success": "تم إرسال الرسالة! سنتواصل معك.", "error": "فشل الإرسال. يرجى المحاولة مجدداً."
+    "button": "الدعم",
+    "title": "تحتاج مساعدة؟",
+    "subtitle": "صف مشكلتك وسنرد عليك.",
+    "messagePlaceholder": "صف مشكلتك...",
+    "send": "إرسال الرسالة",
+    "sending": "جارٍ الإرسال...",
+    "success": "تم إرسال الرسالة! سنتواصل معك.",
+    "error": "فشل الإرسال. يرجى المحاولة مجدداً."
   },
   "common": {
-    "loading": "جارٍ التحميل...", "error": "خطأ", "retry": "إعادة المحاولة", "cancel": "إلغاء",
-    "save": "حفظ", "close": "إغلاق", "copy": "نسخ", "copied": "تم النسخ!",
-    "viewOnExplorer": "عرض في المستكشف", "language": "اللغة", "github": "GitHub"
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "close": "إغلاق",
+    "copy": "نسخ",
+    "copied": "تم النسخ!",
+    "viewOnExplorer": "عرض في المستكشف",
+    "language": "اللغة",
+    "github": "GitHub"
+  },
+  "meta": {
+    "home": {
+      "title": "EscrowHubs — ضمان بلا وسيط على BlockDAG",
+      "description": "أنشئ اتفاقيات ضمان آمنة وموثوقة على BlockDAG. ضمان بسيط، مدفوعات بالمراحل، وحل النزاعات بالذكاء الاصطناعي. رسوم 0.5%."
+    },
+    "dashboard": {
+      "title": "لوحة التحكم — EscrowHubs",
+      "description": "أدر اتفاقيات الضمان النشطة، تتبع المراحل، وراقب المدفوعات على BlockDAG."
+    },
+    "create": {
+      "title": "إنشاء ضمان — EscrowHubs",
+      "description": "أعد اتفاقية ضمان جديدة في دقائق. اختر بين الضمان البسيط أو بالمراحل أو مع حكم الذكاء الاصطناعي على BlockDAG."
+    },
+    "howItWorks": {
+      "title": "كيف يعمل — EscrowHubs",
+      "description": "تعلم كيف يعمل الضمان بلا وسيط على BlockDAG مع أدلة خطوة بخطوة لجميع أنواع الضمان."
+    }
   }
 }

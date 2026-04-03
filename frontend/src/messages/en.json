@@ -190,5 +190,23 @@
     "viewOnExplorer": "View on Explorer",
     "language": "Language",
     "github": "GitHub"
+  },
+  "meta": {
+    "home": {
+      "title": "EscrowHubs — Trustless Escrow on BlockDAG",
+      "description": "Create secure, trustless escrow agreements powered by BlockDAG. Simple escrow, milestone payments, and AI-powered dispute resolution. 0.5% fees."
+    },
+    "dashboard": {
+      "title": "Dashboard — EscrowHubs",
+      "description": "Manage your active escrow agreements, track milestones, and monitor payments on BlockDAG."
+    },
+    "create": {
+      "title": "Create Escrow — EscrowHubs",
+      "description": "Set up a new escrow agreement in minutes. Choose simple, milestone, or AI arbiter escrow on BlockDAG."
+    },
+    "howItWorks": {
+      "title": "How It Works — EscrowHubs",
+      "description": "Learn how trustless escrow works on BlockDAG with step-by-step guides for all escrow types."
+    }
   }
 }

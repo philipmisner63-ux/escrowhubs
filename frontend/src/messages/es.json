@@ -110,38 +110,103 @@
     "deployFailed": "Error al desplegar"
   },
   "escrow": {
-    "stateLabel": { "0": "Esperando Pago", "1": "Esperando Entrega", "2": "Completado", "3": "En Disputa", "4": "Reembolsado" },
-    "milestoneState": { "0": "Pendiente", "1": "Liberado", "2": "En Disputa", "3": "Reembolsado" },
-    "depositor": "Depositante", "beneficiary": "Beneficiario", "arbiter": "Árbitro", "amount": "Monto",
-    "release": "Liberar Fondos", "dispute": "Iniciar Disputa", "refund": "Reembolsar",
-    "resolveRelease": "Resolver: Liberar", "resolveRefund": "Resolver: Reembolsar",
-    "submitEvidence": "Enviar Evidencia", "evidenceUri": "URI de Evidencia (IPFS o URL)",
-    "releaseMilestone": "Liberar", "disputeMilestone": "Disputar", "milestone": "Hito {n}", "notFound": "Custodia no encontrada"
+    "stateLabel": {
+      "0": "Esperando Pago",
+      "1": "Esperando Entrega",
+      "2": "Completado",
+      "3": "En Disputa",
+      "4": "Reembolsado"
+    },
+    "milestoneState": {
+      "0": "Pendiente",
+      "1": "Liberado",
+      "2": "En Disputa",
+      "3": "Reembolsado"
+    },
+    "depositor": "Depositante",
+    "beneficiary": "Beneficiario",
+    "arbiter": "Árbitro",
+    "amount": "Monto",
+    "release": "Liberar Fondos",
+    "dispute": "Iniciar Disputa",
+    "refund": "Reembolsar",
+    "resolveRelease": "Resolver: Liberar",
+    "resolveRefund": "Resolver: Reembolsar",
+    "submitEvidence": "Enviar Evidencia",
+    "evidenceUri": "URI de Evidencia (IPFS o URL)",
+    "releaseMilestone": "Liberar",
+    "disputeMilestone": "Disputar",
+    "milestone": "Hito {n}",
+    "notFound": "Custodia no encontrada"
   },
   "howItWorks": {
     "title": "Cómo Funciona",
     "subtitle": "Tres formas de usar custodia en BlockDAG — liberación simple, pagos por hitos, o resolución de disputas con IA."
   },
   "admin": {
-    "title": "Panel de Administración", "subtitle": "EscrowFactory — controles solo para el propietario",
-    "accessDenied": "Acceso Denegado", "accessDeniedMsg": "La billetera conectada no es el propietario del contrato.",
+    "title": "Panel de Administración",
+    "subtitle": "EscrowFactory — controles solo para el propietario",
+    "accessDenied": "Acceso Denegado",
+    "accessDeniedMsg": "La billetera conectada no es el propietario del contrato.",
     "connectMsg": "Conecta la billetera del propietario para continuar.",
-    "accumulatedFees": "Tarifas Acumuladas", "protocolFee": "Tarifa de Protocolo", "aiArbiterFee": "Tarifa AI Arbiter",
-    "totalEscrows": "Total de Custodias", "owner": "Propietario", "treasury": "Tesorería",
-    "withdrawFees": "Retirar a Tesorería", "withdrawDesc": "Envía {amount} BDAG a la tesorería",
-    "updateFees": "Actualizar Parámetros de Tarifas", "currentFees": "Actual: {bps}% protocolo / {fee} BDAG árbitro",
-    "protocolFeeBps": "Tarifa de Protocolo (bps, máx 500)", "aiArbiterFeeLabel": "Tarifa AI Arbiter (BDAG)",
-    "saveFees": "Guardar Configuración", "updateTreasury": "Actualizar Dirección de Tesorería",
-    "setTreasury": "Establecer Tesorería", "confirming": "Confirmando…", "confirmed": "¡Confirmado!", "viewExplorer": "Ver en explorador"
+    "accumulatedFees": "Tarifas Acumuladas",
+    "protocolFee": "Tarifa de Protocolo",
+    "aiArbiterFee": "Tarifa AI Arbiter",
+    "totalEscrows": "Total de Custodias",
+    "owner": "Propietario",
+    "treasury": "Tesorería",
+    "withdrawFees": "Retirar a Tesorería",
+    "withdrawDesc": "Envía {amount} BDAG a la tesorería",
+    "updateFees": "Actualizar Parámetros de Tarifas",
+    "currentFees": "Actual: {bps}% protocolo / {fee} BDAG árbitro",
+    "protocolFeeBps": "Tarifa de Protocolo (bps, máx 500)",
+    "aiArbiterFeeLabel": "Tarifa AI Arbiter (BDAG)",
+    "saveFees": "Guardar Configuración",
+    "updateTreasury": "Actualizar Dirección de Tesorería",
+    "setTreasury": "Establecer Tesorería",
+    "confirming": "Confirmando…",
+    "confirmed": "¡Confirmado!",
+    "viewExplorer": "Ver en explorador"
   },
   "support": {
-    "button": "Soporte", "title": "¿Necesitas Ayuda?", "subtitle": "Describe tu problema y te responderemos.",
-    "messagePlaceholder": "Describe tu problema...", "send": "Enviar Mensaje", "sending": "Enviando...",
-    "success": "¡Mensaje enviado! Nos pondremos en contacto.", "error": "Error al enviar. Por favor intenta de nuevo."
+    "button": "Soporte",
+    "title": "¿Necesitas Ayuda?",
+    "subtitle": "Describe tu problema y te responderemos.",
+    "messagePlaceholder": "Describe tu problema...",
+    "send": "Enviar Mensaje",
+    "sending": "Enviando...",
+    "success": "¡Mensaje enviado! Nos pondremos en contacto.",
+    "error": "Error al enviar. Por favor intenta de nuevo."
   },
   "common": {
-    "loading": "Cargando...", "error": "Error", "retry": "Reintentar", "cancel": "Cancelar",
-    "save": "Guardar", "close": "Cerrar", "copy": "Copiar", "copied": "¡Copiado!",
-    "viewOnExplorer": "Ver en Explorador", "language": "Idioma", "github": "GitHub"
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "viewOnExplorer": "Ver en Explorador",
+    "language": "Idioma",
+    "github": "GitHub"
+  },
+  "meta": {
+    "home": {
+      "title": "EscrowHubs — Custodia Sin Confianza en BlockDAG",
+      "description": "Crea acuerdos de custodia seguros y sin confianza en BlockDAG. Custodia simple, pagos por hitos y resolución de disputas con IA. Comisión del 0.5%."
+    },
+    "dashboard": {
+      "title": "Panel — EscrowHubs",
+      "description": "Gestiona tus acuerdos de custodia activos, sigue los hitos y monitorea los pagos en BlockDAG."
+    },
+    "create": {
+      "title": "Crear Custodia — EscrowHubs",
+      "description": "Configura un nuevo acuerdo de custodia en minutos. Elige entre custodia simple, por hitos o con árbitro IA en BlockDAG."
+    },
+    "howItWorks": {
+      "title": "Cómo Funciona — EscrowHubs",
+      "description": "Aprende cómo funciona la custodia sin confianza en BlockDAG con guías paso a paso para todos los tipos de custodia."
+    }
   }
 }

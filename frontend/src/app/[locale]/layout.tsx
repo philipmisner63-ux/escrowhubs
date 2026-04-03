@@ -8,6 +8,7 @@ import { AnimatedBackground } from "@/components/animated-background";
 import { routing } from "@/i18n/routing";
 import { localeMetadata } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
+import { APP_URL, SITE_NAME, buildMetadata } from "@/lib/metadata";
 import "../globals.css";
 
 const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
@@ -17,28 +18,20 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
-const APP_URL = "https://app.escrowhubs.io";
-const TITLE = "BlockDAG Escrow | Trustless Smart Contract Payments";
-const DESCRIPTION = "Create and manage trustless escrow contracts on BlockDAG. Milestone-based payments, AI dispute resolution, and full WalletConnect support.";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(APP_URL),
-  title: TITLE,
-  description: DESCRIPTION,
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: APP_URL,
-    siteName: "BlockDAG Escrow",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-  robots: { index: true, follow: true },
-};
+// Default (home page) metadata — per-page metadata overrides this
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const base = await buildMetadata(locale, "home", "");
+  return {
+    metadataBase: new URL(APP_URL),
+    ...base,
+    robots: { index: true, follow: true },
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
