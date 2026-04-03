@@ -40,3 +40,9 @@ Thumbs.db
 
 # Testing
 lcov.info
+
+# PWA generated files (if using next-pwa plugin in future)
+**/public/workbox-*.js
+**/public/workbox-*.js.map
+**/public/sw.js.map
+**/public/fallback-*.js

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a0a0a" rx="92.16"/>
+  <rect x="40.96" y="40.96" width="430.08" height="430.08" rx="61.44" fill="#050510"/>
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+    font-family="system-ui, -apple-system, sans-serif" font-weight="800"
+    font-size="143.36" fill="#06b6d4"
+    filter="url(#glow)">EH</text>
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="7.68" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
