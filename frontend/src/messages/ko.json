@@ -231,7 +231,8 @@
     "terms": "서비스 약관",
     "privacy": "개인정보 처리방침",
     "security": "보안",
-    "takeTour": "투어 시작"
+    "takeTour": "투어 시작",
+    "suggestFeature": "기능 제안"
   },
   "security": {
     "title": "보안 및 신뢰",

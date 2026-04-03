@@ -231,7 +231,8 @@
     "terms": "利用規約",
     "privacy": "プライバシーポリシー",
     "security": "セキュリティ",
-    "takeTour": "ツアーを始める"
+    "takeTour": "ツアーを始める",
+    "suggestFeature": "機能を提案する"
   },
   "security": {
     "title": "セキュリティと信頼",

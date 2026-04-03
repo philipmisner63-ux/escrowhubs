@@ -231,7 +231,8 @@
     "terms": "شروط الخدمة",
     "privacy": "سياسة الخصوصية",
     "security": "الأمان",
-    "takeTour": "خذ جولة"
+    "takeTour": "خذ جولة",
+    "suggestFeature": "اقترح ميزة"
   },
   "security": {
     "title": "الأمان والثقة",

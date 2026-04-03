@@ -231,7 +231,8 @@
     "terms": "服务条款",
     "privacy": "隐私政策",
     "security": "安全",
-    "takeTour": "开始导览"
+    "takeTour": "开始导览",
+    "suggestFeature": "建议功能"
   },
   "security": {
     "title": "安全与信任",

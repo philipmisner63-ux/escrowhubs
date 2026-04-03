@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { resetAndStartTour } from "@/components/onboarding-tour";
+import { FeedbackModal } from "@/components/feedback-modal";
 import Link from "next/link";
 
 export function Footer() {
   const t = useTranslations("footer");
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const productLinks = [
     { label: t("createEscrow"), href: "/create" },
@@ -110,8 +113,6 @@ export function Footer() {
                 <button
                   type="button"
                   onClick={() => {
-                    const btn = document.querySelector<HTMLButtonElement>("[aria-label]");
-                    // Find support button by its fixed position
                     const allBtns = document.querySelectorAll<HTMLButtonElement>("button[aria-label]");
                     for (const b of allBtns) {
                       if (b.className.includes("fixed")) { b.click(); break; }
@@ -122,8 +123,19 @@ export function Footer() {
                   {t("support")}
                 </button>
               </li>
+              {/* Suggest a Feature */}
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(true)}
+                  className="text-sm text-slate-500 hover:text-cyan-400 transition-colors"
+                >
+                  {t("suggestFeature")}
+                </button>
+              </li>
             </ul>
           </div>
+          <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
 
           {/* Col 4 — Community */}
           <div className="space-y-4">

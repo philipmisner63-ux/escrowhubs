@@ -231,7 +231,8 @@
     "terms": "Kullanım Şartları",
     "privacy": "Gizlilik Politikası",
     "security": "Güvenlik",
-    "takeTour": "Tur Yap"
+    "takeTour": "Tur Yap",
+    "suggestFeature": "Özellik Öner"
   },
   "security": {
     "title": "Güvenlik ve Güven",
