@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import { DEFAULT_CHAIN_ID } from "@/lib/chainRegistry";
+import { DEFAULT_CHAIN_ID } from "@/lib/chains";
 
 // ChainGuard: silently switches to the default chain on connect.
 // Wrong-network UI feedback is handled by the nav banner (nav.tsx).

@@ -2,10 +2,10 @@
 
 import { use, useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { useAccount, useWriteContract } from "wagmi";
+import { useAccount, useWriteContract, useChainId } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatEther, createPublicClient, http } from "viem";
-import { blockdagTestnet } from "@/lib/contracts";
+import { blockdagMainnet, getRpcUrl, DEFAULT_CHAIN_ID } from "@/lib/chains";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -21,7 +21,8 @@ import { useSimpleEscrowRead, useSimpleEscrowWrite } from "@/lib/hooks/useSimple
 import { useMilestoneEscrowRead, useMilestoneEscrowWrite } from "@/lib/hooks/useMilestoneEscrow";
 import { useEscrowEvents } from "@/lib/hooks/useEscrowEvents";
 import { addViewedEscrow } from "@/lib/localStorage";
-import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ADDRESS, AI_ARBITER_ABI, SIMPLE_ESCROW_ABI } from "@/lib/contracts";
+import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ABI, SIMPLE_ESCROW_ABI } from "@/lib/contracts";
+import { getArbiterAddress } from "@/lib/contracts/addresses";
 import { cn } from "@/lib/utils";
 import { ShareEscrow } from "@/components/share-escrow";
 import { DownloadReceipt } from "@/components/download-receipt";
@@ -55,10 +56,12 @@ const ROLE_BADGE: Record<Role, string> = {
 
 // ─── Simple contract view ─────────────────────────────────────────────────────
 
-const rpcClient = createPublicClient({ chain: blockdagTestnet, transport: http("https://rpc.bdagscan.com") });
+const rpcClient = createPublicClient({ chain: blockdagMainnet, transport: http(getRpcUrl(DEFAULT_CHAIN_ID)) });
 
 function SimpleEscrowView({ address }: { address: Address }) {
   const { address: wallet } = useAccount();
+  const chainId = useChainId();
+  const arbiterAddress = getArbiterAddress(chainId);
   const { addToast, removeToast } = useToast();
   const queryClient = useQueryClient();
   const data = useSimpleEscrowRead(address);
@@ -145,7 +148,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
               {addr ? (
                 <div>
                   <AddressDisplay address={addr} />
-                  {label === "Arbiter" && AI_ARBITER_ADDRESS && addr.toLowerCase() === AI_ARBITER_ADDRESS.toLowerCase() && (
+                  {label === "Arbiter" && arbiterAddress && addr.toLowerCase() === arbiterAddress.toLowerCase() && (
                     <span className="inline-flex items-center gap-1 mt-1 text-xs text-violet-300 bg-violet-400/10 border border-violet-400/20 rounded-full px-2 py-0.5">
                       🤖 AI Arbiter
                     </span>
@@ -161,7 +164,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
 
       {/* Evidence panel for AI arbiter disputes */}
       {stateNum === SimpleEscrowState.DISPUTED &&
-        data.arbiter?.toLowerCase() === AI_ARBITER_ADDRESS?.toLowerCase() && (
+        data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase() && (
         <EvidencePanel escrowAddress={address} />
       )}
 
@@ -208,7 +211,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
                   beneficiary: data.beneficiary ?? "",
                   arbiter: data.arbiter ?? "",
                   amount: data.amount ?? 0n,
-                  isAIArbiter: data.arbiter?.toLowerCase() === AI_ARBITER_ADDRESS?.toLowerCase(),
+                  isAIArbiter: data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase(),
                 }} />
               )}
             </div>
@@ -418,8 +421,10 @@ function EvidencePanel({ escrowAddress }: { escrowAddress: Address }) {
   const [submitting, setSubmitting] = useState(false);
   const { addToast, removeToast } = useToast();
   const { writeContractAsync } = useWriteContract();
+  const chainId = useChainId();
+  const arbiterAddress = getArbiterAddress(chainId);
 
-  const isAIArbiter = !!AI_ARBITER_ADDRESS;
+  const isAIArbiter = !!arbiterAddress;
 
   async function submitEvidence() {
     if (!evidenceText.trim()) return;
@@ -427,7 +432,7 @@ function EvidencePanel({ escrowAddress }: { escrowAddress: Address }) {
     const pid = addToast({ type: "pending", message: "Submitting evidence…" });
     try {
       const hash = await writeContractAsync({
-        address: AI_ARBITER_ADDRESS,
+        address: arbiterAddress,
         abi: AI_ARBITER_ABI,
         functionName: "submitEvidence",
         args: [escrowAddress, evidenceText.trim()],

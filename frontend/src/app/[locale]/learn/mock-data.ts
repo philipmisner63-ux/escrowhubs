@@ -1,4 +1,5 @@
 // ─── Mock data for sandbox — no real blockchain calls ─────────────────────────
+import { DEFAULT_CHAIN_ID, getRpcUrl } from "@/lib/chains";
 
 export const MOCK_SIMPLE_ESCROW = {
   address: "0xDeAdBeEf1234567890AbCdEf1234567890aBcDeF",
@@ -67,7 +68,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "Can I use any wallet?",
-    a: "Yes — any WalletConnect-compatible wallet works. Trust Wallet and MetaMask have been tested. Make sure your wallet is connected to BlockDAG (Chain ID 1404, RPC: https://rpc.bdagscan.com).",
+    a: `Yes — any WalletConnect-compatible wallet works. Trust Wallet and MetaMask have been tested. Make sure your wallet is connected to BlockDAG (Chain ID ${DEFAULT_CHAIN_ID}, RPC: ${getRpcUrl(DEFAULT_CHAIN_ID)}).`,
   },
   {
     q: "Is the code audited?",
@@ -94,7 +95,7 @@ export const ONBOARDING_STEPS = [
   {
     step: 2,
     title: "Switch to BlockDAG Network",
-    description: "Make sure your wallet is on BlockDAG (Chain ID 1404). The app will prompt you to switch automatically.",
+    description: `Make sure your wallet is on BlockDAG (Chain ID ${DEFAULT_CHAIN_ID}). The app will prompt you to switch automatically.`,
     icon: "🌐",
     states: ["wrong_network", "switching", "correct_network"],
   },

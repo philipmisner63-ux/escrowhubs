@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { parseEther, createPublicClient, http } from "viem";
-import { useWriteContract } from "wagmi";
+import { blockdagMainnet, getRpcUrl, DEFAULT_CHAIN_ID } from "@/lib/chains";
+import { useWriteContract, useChainId } from "wagmi";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { PageWrapper } from "@/components/page-wrapper";
@@ -13,11 +14,11 @@ import { useToast } from "@/components/toast";
 import { triggerDeployConfetti } from "@/lib/confetti";
 import {
   ESCROW_FACTORY_ABI,
-  FACTORY_ADDRESS,
   EXPLORER_TX_URL,
-  AI_ARBITER_ADDRESS,
 } from "@/lib/contracts";
+import { getFactoryAddress, getArbiterAddress } from "@/lib/contracts/addresses";
 import { cn } from "@/lib/utils";
+import { GAS_LIMITS } from "@/lib/gasConfig";
 import { useTranslations } from "next-intl";
 
 type EscrowType = "simple" | "milestone";
@@ -31,10 +32,11 @@ export default function CreateEscrowPage() {
   const t = useTranslations("create");
   const router = useRouter();
   const { addToast, removeToast } = useToast();
+  const chainId = useChainId();
   const { writeContractAsync } = useWriteContract();
   const publicClient = createPublicClient({
-    chain: { id: 1404, name: "BlockDAG", nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 }, rpcUrls: { default: { http: ["https://rpc.bdagscan.com"] } } },
-    transport: http("https://rpc.bdagscan.com"),
+    chain: blockdagMainnet,
+    transport: http(getRpcUrl(DEFAULT_CHAIN_ID)),
   });
 
   const [type, setType] = useState<EscrowType>("simple");
@@ -56,8 +58,9 @@ export default function CreateEscrowPage() {
     const pendingId = addToast({ type: "pending", message: t("waitingConfirmation") });
 
     try {
+      const factoryAddress = getFactoryAddress(chainId);
       const resolvedArbiter = useAIArbiter
-        ? AI_ARBITER_ADDRESS
+        ? getArbiterAddress(chainId)
         : form.arbiter as `0x${string}`;
 
       let txHash: `0x${string}`;
@@ -69,12 +72,12 @@ export default function CreateEscrowPage() {
         const totalValue = escrowAmount + protocolFee + aiArbiterFee;
 
         txHash = await writeContractAsync({
-          address: FACTORY_ADDRESS,
+          address: factoryAddress,
           abi: ESCROW_FACTORY_ABI,
           functionName: "createSimpleEscrow",
           args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter],
           value: totalValue,
-          gas: 500_000n,
+          gas: GAS_LIMITS.deploySimpleEscrow,
         });
       } else {
         const descriptions = milestones.map(m => m.description);
@@ -85,12 +88,12 @@ export default function CreateEscrowPage() {
         const totalValue = netTotal + protocolFee + aiArbiterFee;
 
         txHash = await writeContractAsync({
-          address: FACTORY_ADDRESS,
+          address: factoryAddress,
           abi: ESCROW_FACTORY_ABI,
           functionName: "createMilestoneEscrow",
           args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter],
           value: totalValue,
-          gas: 1_000_000n,
+          gas: GAS_LIMITS.deployMilestoneEscrow,
         });
       }
 
@@ -100,13 +103,13 @@ export default function CreateEscrowPage() {
 
       try {
         const rpcClient = createPublicClient({
-          chain: { id: 1404, name: "BlockDAG", nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 }, rpcUrls: { default: { http: ["https://rpc.bdagscan.com"] } } } as const,
-          transport: http("https://rpc.bdagscan.com"),
+          chain: blockdagMainnet,
+          transport: http(getRpcUrl(DEFAULT_CHAIN_ID)),
         });
         const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
         let contractAddress: `0x${string}` | null = null;
         for (const log of receipt.logs) {
-          if (log.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics[1]) {
+          if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics[1]) {
             const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
             if (/^0x[0-9a-fA-F]{40}$/.test(addr)) { contractAddress = addr; break; }
           }
@@ -238,8 +241,8 @@ export default function CreateEscrowPage() {
                     <div className="rounded-xl border border-violet-400/20 bg-violet-400/5 p-3 text-xs text-violet-300 space-y-1">
                       <p className="font-semibold">🤖 {t("aiArbiterEnabled")}</p>
                       <p className="text-violet-400/70">{t("aiArbiterEnabledDesc")}</p>
-                      {AI_ARBITER_ADDRESS ? (
-                        <p className="font-mono text-violet-400/50 break-all">{AI_ARBITER_ADDRESS}</p>
+                      {getArbiterAddress(chainId) ? (
+                        <p className="font-mono text-violet-400/50 break-all">{getArbiterAddress(chainId)}</p>
                       ) : (
                         <p className="text-yellow-400/70">{t("aiArbiterNotDeployed")}</p>
                       )}

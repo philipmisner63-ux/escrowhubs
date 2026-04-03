@@ -3,16 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { createPublicClient, http, formatEther } from "viem";
-import { ESCROW_FACTORY_ABI, FACTORY_ADDRESS } from "@/lib/contracts";
+import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
+import { blockdagMainnet, getRpcUrl, DEFAULT_CHAIN_ID } from "@/lib/chains";
+import { getFactoryAddress } from "@/lib/contracts/addresses";
 
 const CACHE_KEY = "escrowhubs_stats_cache";
-const RPC_URL = "https://rpc.bdagscan.com";
-const CHAIN = {
-  id: 1404,
-  name: "BlockDAG",
-  nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 },
-  rpcUrls: { default: { http: [RPC_URL] } },
-} as const;
 
 // Admin ABI for accumulatedFees (not in main ABI)
 const ADMIN_ABI = [
@@ -140,17 +135,17 @@ export function LiveStats() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const client = createPublicClient({ chain: CHAIN, transport: http(RPC_URL) });
+      const client = createPublicClient({ chain: blockdagMainnet, transport: http(getRpcUrl(DEFAULT_CHAIN_ID)) });
 
       const [countResult, balanceResult, feesResult] = await Promise.allSettled([
         client.readContract({
-          address: FACTORY_ADDRESS as `0x${string}`,
+          address: getFactoryAddress(DEFAULT_CHAIN_ID),
           abi: ESCROW_FACTORY_ABI,
           functionName: "escrowCount",
         }),
-        client.getBalance({ address: FACTORY_ADDRESS as `0x${string}` }),
+        client.getBalance({ address: getFactoryAddress(DEFAULT_CHAIN_ID) }),
         client.readContract({
-          address: FACTORY_ADDRESS as `0x${string}`,
+          address: getFactoryAddress(DEFAULT_CHAIN_ID),
           abi: ADMIN_ABI,
           functionName: "accumulatedFees",
         }),
@@ -214,7 +209,7 @@ export function LiveStats() {
         loading={loading}
       />
       {/* Static stats */}
-      <StatCard label={t("chainId")} value={1404} />
+      <StatCard label={t("chainId")} value={DEFAULT_CHAIN_ID} />
       <StatCard label={t("exploits")} value={0} />
     </div>
   );

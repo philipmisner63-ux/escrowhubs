@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { useAccount, useReadContracts } from "wagmi";
+import { useAccount, useReadContracts, useChainId } from "wagmi";
 import { Nav } from "@/components/nav";
 import { ShareButton } from "@/components/share-escrow";
 import { Footer } from "@/components/footer";
@@ -14,7 +14,8 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AddressDisplay } from "@/components/ui/address-display";
 import { useWalletEscrows } from "@/lib/hooks/useEscrowFactory";
-import { ESCROW_FACTORY_ABI, FACTORY_ADDRESS } from "@/lib/contracts";
+import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
+import { getFactoryAddress } from "@/lib/contracts/addresses";
 import { getViewedEscrows, type ViewedEscrow } from "@/lib/localStorage";
 
 function isValidAddress(addr: string) {
@@ -33,6 +34,8 @@ export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const router = useRouter();
   const { address: wallet } = useAccount();
+  const chainId = useChainId();
+  const factoryAddress = getFactoryAddress(chainId);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [viewed, setViewed] = useState<ViewedEscrow[]>([]);
@@ -44,7 +47,7 @@ export default function DashboardPage() {
 
   const { data: escrowData, isLoading: recordsLoading } = useReadContracts({
     contracts: myIndices.map(i => ({
-      address: FACTORY_ADDRESS as `0x${string}`,
+      address: factoryAddress,
       abi: ESCROW_FACTORY_ABI,
       functionName: "escrows" as const,
       args: [BigInt(i)],

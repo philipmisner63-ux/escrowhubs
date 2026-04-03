@@ -20,12 +20,13 @@ export function useEscrowEvents(
 ) {
   const [events, setEvents] = useState<EscrowEvent[]>([]);
 
-  const addEvent = useCallback((name: string, args: Record<string, unknown>, log: { blockNumber?: bigint; transactionHash?: `0x${string}` }) => {
+  const addEvent = useCallback((name: string, log: unknown) => {
+    const l = log as { args?: Record<string, unknown>; blockNumber?: bigint | null; transactionHash?: `0x${string}` | null };
     const ev: EscrowEvent = {
       name,
-      args,
-      blockNumber: log.blockNumber ?? undefined,
-      transactionHash: log.transactionHash ?? undefined,
+      args: l.args ?? {},
+      blockNumber: l.blockNumber ?? undefined,
+      transactionHash: l.transactionHash ?? undefined,
       timestamp: Date.now(),
     };
     setEvents(prev => [ev, ...prev].slice(0, 50));
@@ -38,7 +39,7 @@ export function useEscrowEvents(
     address,
     abi: SIMPLE_ESCROW_ABI,
     eventName: "Deposited",
-    onLogs: logs => logs.forEach(l => addEvent("Deposited", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("Deposited", l)),
     enabled: !!address && isSimple,
   });
 
@@ -46,7 +47,7 @@ export function useEscrowEvents(
     address,
     abi: SIMPLE_ESCROW_ABI,
     eventName: "Released",
-    onLogs: logs => logs.forEach(l => addEvent("Released", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("Released", l)),
     enabled: !!address && isSimple,
   });
 
@@ -54,7 +55,7 @@ export function useEscrowEvents(
     address,
     abi: SIMPLE_ESCROW_ABI,
     eventName: "Refunded",
-    onLogs: logs => logs.forEach(l => addEvent("Refunded", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("Refunded", l)),
     enabled: !!address && isSimple,
   });
 
@@ -62,7 +63,7 @@ export function useEscrowEvents(
     address,
     abi: SIMPLE_ESCROW_ABI,
     eventName: "Disputed",
-    onLogs: logs => logs.forEach(l => addEvent("Disputed", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("Disputed", l)),
     enabled: !!address && isSimple,
   });
 
@@ -70,7 +71,7 @@ export function useEscrowEvents(
     address,
     abi: MILESTONE_ESCROW_ABI,
     eventName: "Funded",
-    onLogs: logs => logs.forEach(l => addEvent("Funded", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("Funded", l)),
     enabled: !!address && isMilestone,
   });
 
@@ -78,7 +79,7 @@ export function useEscrowEvents(
     address,
     abi: MILESTONE_ESCROW_ABI,
     eventName: "MilestoneReleased",
-    onLogs: logs => logs.forEach(l => addEvent("MilestoneReleased", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("MilestoneReleased", l)),
     enabled: !!address && isMilestone,
   });
 
@@ -86,7 +87,7 @@ export function useEscrowEvents(
     address,
     abi: MILESTONE_ESCROW_ABI,
     eventName: "MilestoneDisputed",
-    onLogs: logs => logs.forEach(l => addEvent("MilestoneDisputed", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("MilestoneDisputed", l)),
     enabled: !!address && isMilestone,
   });
 
@@ -94,7 +95,7 @@ export function useEscrowEvents(
     address,
     abi: MILESTONE_ESCROW_ABI,
     eventName: "MilestoneRefunded",
-    onLogs: logs => logs.forEach(l => addEvent("MilestoneRefunded", l.args as Record<string, unknown>, l)),
+    onLogs: logs => logs.forEach(l => addEvent("MilestoneRefunded", l)),
     enabled: !!address && isMilestone,
   });
 

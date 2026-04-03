@@ -1,57 +1,68 @@
 "use client";
 
 /**
- * Chain Registry — single source of truth for all chain-specific config.
- * Add new chains here; no other files need to change for multi-chain support.
+ * Chain Registry — backward-compat shim.
+ *
+ * Canonical chain definitions now live in @/lib/chains/registry.
+ * Contract addresses now live in @/lib/contracts/addresses.
+ * This file re-exports everything + adds the legacy ChainConfig shape
+ * used by contracts.ts and older components.
  */
 
-export const DEFAULT_CHAIN_ID = 1404;
+export {
+  DEFAULT_CHAIN_ID,
+  blockdagMainnet,
+  SUPPORTED_CHAINS,
+  getChainName,
+  getExplorerTxUrl,
+  getExplorerAddressUrl,
+  getRpcUrl,
+  isChainSupported,
+} from "@/lib/chains/registry";
+
+import {
+  DEFAULT_CHAIN_ID,
+  blockdagMainnet,
+  getRpcUrl,
+} from "@/lib/chains/registry";
+import { getContractAddresses } from "@/lib/contracts/addresses";
+
+// ─── Legacy ChainConfig shape ─────────────────────────────────────────────────
+// Kept for contracts.ts and any code that calls getChain() / getDefaultChain()
 
 export interface ChainConfig {
-  chain: {
-    id: number;
-    name: string;
-    nativeCurrency: { name: string; symbol: string; decimals: number };
-    rpcUrls: { default: { http: string[] } };
-    blockExplorers: { default: { name: string; url: string } };
-    testnet: boolean;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chain: any;
   rpcUrl: string;
   explorerUrl: string;
   explorerTxUrl: (hash: string) => string;
   contractAddresses: {
-    factory: `0x${string}`;
-    aiArbiter: `0x${string}`;
-    oracle: `0x${string}`;
+    factory:    `0x${string}`;
+    aiArbiter:  `0x${string}`;
+    oracle:     `0x${string}`;
   };
   nativeSymbol: string;
 }
 
-const blockdagRpc =
-  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BLOCKDAG_RPC) ||
-  "https://rpc.bdagscan.com";
+function buildChainConfig(): Record<number, ChainConfig> {
+  const addr = getContractAddresses(DEFAULT_CHAIN_ID);
+  return {
+    [DEFAULT_CHAIN_ID]: {
+      chain:        blockdagMainnet,
+      rpcUrl:       getRpcUrl(DEFAULT_CHAIN_ID),
+      explorerUrl:  "https://bdagscan.com",
+      explorerTxUrl: (hash: string) => `https://bdagscan.com/tx/${hash}`,
+      nativeSymbol: "BDAG",
+      contractAddresses: {
+        factory:   addr.factory,
+        aiArbiter: addr.arbiter,
+        oracle:    addr.trustOracle,
+      },
+    },
+  };
+}
 
-export const chainRegistry: Record<number, ChainConfig> = {
-  1404: {
-    chain: {
-      id: 1404,
-      name: "BlockDAG",
-      nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 },
-      rpcUrls: { default: { http: [blockdagRpc] } },
-      blockExplorers: { default: { name: "BDAGScan", url: "https://bdagscan.com" } },
-      testnet: false,
-    },
-    rpcUrl: blockdagRpc,
-    explorerUrl: "https://bdagscan.com",
-    explorerTxUrl: (hash: string) => `https://bdagscan.com/tx/${hash}`,
-    nativeSymbol: "BDAG",
-    contractAddresses: {
-      factory:   (process.env.NEXT_PUBLIC_FACTORY_ADDRESS    ?? "0x8a9001c28c4cc1e0952ae5ca2a8366f1c1ac6724") as `0x${string}`,
-      aiArbiter: (process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS ?? "0x8ee119999d87dcf9e9bf80a876c18f9c85d8b4c1") as `0x${string}`,
-      oracle:    (process.env.NEXT_PUBLIC_ORACLE_ADDRESS     ?? "0x5ee4939ff22501ba53428e23004fa7b6f271a7d0") as `0x${string}`,
-    },
-  },
-};
+export const chainRegistry: Record<number, ChainConfig> = buildChainConfig();
 
 export function getChain(chainId: number): ChainConfig {
   return chainRegistry[chainId] ?? chainRegistry[DEFAULT_CHAIN_ID];

@@ -11,7 +11,10 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: false },
+    queries: {
+      retry: 3,
+      staleTime: 10_000,
+    },
   },
 });
 

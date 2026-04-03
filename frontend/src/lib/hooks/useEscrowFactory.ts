@@ -1,9 +1,11 @@
 "use client";
 
-import { useReadContracts, useWriteContract, useWatchContractEvent } from "wagmi";
+import { useReadContracts, useWriteContract, useWatchContractEvent, useChainId } from "wagmi";
 import { useState, useCallback } from "react";
 import { parseEther } from "viem";
-import { ESCROW_FACTORY_ABI, FACTORY_ADDRESS } from "@/lib/contracts";
+import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
+import { getFactoryAddress } from "@/lib/contracts/addresses";
+import { DEFAULT_CHAIN_ID } from "@/lib/chains";
 import { computeTrustScore } from "@/lib/trustScore";
 
 type Address = `0x${string}`;
@@ -20,8 +22,10 @@ export interface FactoryEscrowRecord {
 }
 
 export function useEscrowFactory() {
-  const contract = { address: FACTORY_ADDRESS, abi: ESCROW_FACTORY_ABI } as const;
-  const enabled = FACTORY_ADDRESS.length > 2;
+  const chainId = useChainId();
+  const factoryAddress = getFactoryAddress(chainId);
+  const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI } as const;
+  const enabled = factoryAddress.length > 2;
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
@@ -39,12 +43,14 @@ export function useEscrowFactory() {
 }
 
 export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
-  const enabled = FACTORY_ADDRESS.length > 2;
+  const chainId = useChainId();
+  const factoryAddress = getFactoryAddress(chainId);
+  const enabled = factoryAddress.length > 2;
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
       {
-        address: FACTORY_ADDRESS,
+        address: factoryAddress,
         abi: ESCROW_FACTORY_ABI,
         functionName: "getEscrows",
         args: [offset, limit],
@@ -59,8 +65,10 @@ export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
 }
 
 export function useWalletEscrows(walletAddress: Address | undefined) {
-  const enabled = FACTORY_ADDRESS.length > 2 && !!walletAddress;
-  const contract = { address: FACTORY_ADDRESS, abi: ESCROW_FACTORY_ABI } as const;
+  const chainId = useChainId();
+  const factoryAddress = getFactoryAddress(chainId);
+  const enabled = factoryAddress.length > 2 && !!walletAddress;
+  const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI } as const;
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
@@ -79,6 +87,7 @@ export function useWalletEscrows(walletAddress: Address | undefined) {
 }
 
 export function useFactoryDeploy() {
+  const chainId = useChainId();
   const { writeContractAsync, isPending, data: hash, error } = useWriteContract();
 
   const deploySimple = async (
@@ -88,6 +97,7 @@ export function useFactoryDeploy() {
     walletAddress?: Address,
     useAIArbiter = false,
   ) => {
+    const factoryAddress = getFactoryAddress(chainId);
     const trust = computeTrustScore({
       walletAddress,
       amountEth: parseFloat(amountEth),
@@ -95,7 +105,7 @@ export function useFactoryDeploy() {
     });
 
     return writeContractAsync({
-      address: FACTORY_ADDRESS,
+      address: factoryAddress,
       abi: ESCROW_FACTORY_ABI,
       functionName: "createSimpleEscrow",
       args: [beneficiary, arbiter, trust.tier, useAIArbiter],
@@ -111,6 +121,7 @@ export function useFactoryDeploy() {
     walletAddress?: Address,
     useAIArbiter = false,
   ) => {
+    const factoryAddress = getFactoryAddress(chainId);
     const totalEth = parseFloat(
       (amounts.reduce((a, b) => a + b, 0n) / BigInt(1e18)).toString()
     );
@@ -122,7 +133,7 @@ export function useFactoryDeploy() {
     const total = amounts.reduce((a, b) => a + b, 0n);
 
     return writeContractAsync({
-      address: FACTORY_ADDRESS,
+      address: factoryAddress,
       abi: ESCROW_FACTORY_ABI,
       functionName: "createMilestoneEscrow",
       args: [beneficiary, arbiter, descriptions, amounts, trust.tier, useAIArbiter],
@@ -134,26 +145,28 @@ export function useFactoryDeploy() {
 }
 
 export function useFactoryEvents() {
+  const chainId = useChainId();
+  const factoryAddress = getFactoryAddress(chainId);
   const [events, setEvents] = useState<Array<{ name: string; args: Record<string, unknown>; timestamp: number }>>([]);
-  const enabled = FACTORY_ADDRESS.length > 2;
+  const enabled = factoryAddress.length > 2;
 
   const add = useCallback((name: string, args: Record<string, unknown>) => {
     setEvents(prev => [{ name, args, timestamp: Date.now() }, ...prev].slice(0, 50));
   }, []);
 
   useWatchContractEvent({
-    address: FACTORY_ADDRESS,
+    address: factoryAddress,
     abi: ESCROW_FACTORY_ABI,
     eventName: "SimpleEscrowCreated",
-    onLogs: logs => logs.forEach(l => add("SimpleEscrowCreated", l.args as Record<string, unknown>)),
+    onLogs: logs => logs.forEach(l => add("SimpleEscrowCreated", (l as unknown as { args: Record<string, unknown> }).args ?? {})),
     enabled,
   });
 
   useWatchContractEvent({
-    address: FACTORY_ADDRESS,
+    address: factoryAddress,
     abi: ESCROW_FACTORY_ABI,
     eventName: "MilestoneEscrowCreated",
-    onLogs: logs => logs.forEach(l => add("MilestoneEscrowCreated", l.args as Record<string, unknown>)),
+    onLogs: logs => logs.forEach(l => add("MilestoneEscrowCreated", (l as unknown as { args: Record<string, unknown> }).args ?? {})),
     enabled,
   });
 

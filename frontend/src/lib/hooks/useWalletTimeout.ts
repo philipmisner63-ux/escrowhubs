@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-const TIMEOUT_MS = 5 * 60 * 1_000; // 5 minutes
+const TIMEOUT_MS = 30 * 60 * 1_000; // 30 minutes
 
 interface UseWalletTimeoutOptions {
   isConnected: boolean;
@@ -12,8 +12,8 @@ interface UseWalletTimeoutOptions {
 
 /**
  * Auto-disconnects the wallet after TIMEOUT_MS of inactivity.
- * Resets on: clicks, keydown, scroll, pathname changes, and contract writes.
- * Also disconnects on tab close (beforeunload).
+ * Resets on: clicks, keydown, scroll, and touchstart events.
+ * Wallet providers handle session persistence across tab close/refresh natively.
  */
 export function useWalletTimeout({ isConnected, disconnect, addToast }: UseWalletTimeoutOptions) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,18 +57,9 @@ export function useWalletTimeout({ isConnected, disconnect, addToast }: UseWalle
     const activityEvents = ["click", "keydown", "scroll", "touchstart"] as const;
     activityEvents.forEach(ev => window.addEventListener(ev, resetTimer, { passive: true }));
 
-    // Disconnect on tab close
-    function onBeforeUnload() {
-      if (isConnectedRef.current) {
-        disconnect();
-      }
-    }
-    window.addEventListener("beforeunload", onBeforeUnload);
-
     return () => {
       clearTimer();
       activityEvents.forEach(ev => window.removeEventListener(ev, resetTimer));
-      window.removeEventListener("beforeunload", onBeforeUnload);
     };
   }, [isConnected, resetTimer, clearTimer, disconnect]);
 }

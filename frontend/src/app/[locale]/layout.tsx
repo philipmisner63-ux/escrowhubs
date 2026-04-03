@@ -30,7 +30,6 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(APP_URL),
     ...base,
-    robots: { index: true, follow: true },
   };
 }
 

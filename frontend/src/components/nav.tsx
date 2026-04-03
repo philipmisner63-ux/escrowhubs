@@ -6,7 +6,7 @@ import { WalletConnectButton } from "@/components/connect-button";
 import { LanguagePicker } from "@/components/language-picker";
 import { LanguagePickerMobile } from "@/components/language-picker-mobile";
 import { cn } from "@/lib/utils";
-import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chainRegistry";
+import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chains";
 function WalletWarningBanner() {
   const t = useTranslations("nav");
   const { isConnected } = useAccount();

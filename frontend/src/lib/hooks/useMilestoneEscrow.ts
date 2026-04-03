@@ -2,6 +2,7 @@
 
 import { useReadContracts, useWriteContract } from "wagmi";
 import { MILESTONE_ESCROW_ABI } from "@/lib/contracts";
+import { GAS_LIMITS } from "@/lib/gasConfig";
 
 type Address = `0x${string}`;
 
@@ -70,16 +71,16 @@ export function useMilestoneEscrowWrite() {
         abi: MILESTONE_ESCROW_ABI,
         functionName: "fund",
         value,
-        gas: 100_000n,
+        gas: GAS_LIMITS.depositMilestone,
       }),
     releaseMilestone: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "releaseMilestone", args: [index], gas: 100_000n }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "releaseMilestone", args: [index], gas: GAS_LIMITS.approveMilestone }),
     disputeMilestone: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "disputeMilestone", args: [index], gas: 100_000n }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "disputeMilestone", args: [index], gas: GAS_LIMITS.disputeMilestone }),
     resolveRelease: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRelease", args: [index], gas: 100_000n }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRelease", args: [index], gas: GAS_LIMITS.resolveMilestoneDispute }),
     resolveRefund: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRefund", args: [index], gas: 100_000n }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRefund", args: [index], gas: GAS_LIMITS.resolveMilestoneDispute }),
     isPending,
     hash,
     error,

@@ -3,6 +3,7 @@
 import { useReadContracts, useWriteContract } from "wagmi";
 import { parseEther } from "viem";
 import { SIMPLE_ESCROW_ABI } from "@/lib/contracts";
+import { GAS_LIMITS } from "@/lib/gasConfig";
 
 type Address = `0x${string}`;
 
@@ -43,13 +44,13 @@ export function useSimpleEscrowWrite() {
         value: parseEther(value),
       }),
     release: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "release", gas: 100_000n }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "release", gas: GAS_LIMITS.release }),
     dispute: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "dispute", gas: 100_000n }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "dispute", gas: GAS_LIMITS.raiseDispute }),
     resolveRelease: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRelease", gas: 100_000n }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRelease", gas: GAS_LIMITS.resolveDispute }),
     resolveRefund: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRefund", gas: 100_000n }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRefund", gas: GAS_LIMITS.resolveDispute }),
     isPending,
     hash,
     error,

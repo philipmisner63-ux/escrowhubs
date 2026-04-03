@@ -1,5 +1,6 @@
 // Client-side PDF receipt generator using jsPDF
 // All generation happens in the browser — no server calls needed.
+import { DEFAULT_CHAIN_ID, getChainName, getExplorerTxUrl } from "@/lib/chains";
 
 export interface MilestoneItem {
   description: string;
@@ -187,11 +188,11 @@ export async function generateReceipt(data: ReceiptData): Promise<void> {
 
   // ── Blockchain verification ───────────────────────────────────────────────
   section("Blockchain Verification");
-  row("Network", "BlockDAG Mainnet (Chain ID: 1404)");
+  row("Network", `${getChainName(DEFAULT_CHAIN_ID)} (Chain ID: ${DEFAULT_CHAIN_ID})`);
   row("Contract Address", data.escrowAddress, true);
   if (data.txHash) {
     row("Transaction Hash", data.txHash, true);
-    row("Explorer URL", `https://bdagscan.com/tx/${data.txHash}`, true);
+    row("Explorer URL", getExplorerTxUrl(DEFAULT_CHAIN_ID, data.txHash), true);
   }
   row("Factory Contract", "0x8a9001c28c4cc1e0952ae5ca2a8366f1c1ac6724", true);
 

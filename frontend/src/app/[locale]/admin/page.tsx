@@ -1,20 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useReadContracts, useWriteContract, useWaitForTransactionReceipt, useChainId } from "wagmi";
 import { formatEther, parseEther, isAddress } from "viem";
 import { Nav } from "@/components/nav";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { AddressDisplay } from "@/components/ui/address-display";
-import { ESCROW_FACTORY_ABI, FACTORY_ADDRESS, EXPLORER_TX_URL } from "@/lib/contracts";
+import { ESCROW_FACTORY_ABI, EXPLORER_TX_URL } from "@/lib/contracts";
+import { getFactoryAddress } from "@/lib/contracts/addresses";
 
 const OWNER_ADDRESS = "0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA";
-
-const contract = {
-  address: FACTORY_ADDRESS as `0x${string}`,
-  abi: ESCROW_FACTORY_ABI,
-} as const;
 
 // ─── Admin fee functions not in the shared ABI — extend locally ───────────────
 const ADMIN_ABI = [
@@ -28,10 +24,7 @@ const ADMIN_ABI = [
   { type: "function", name: "setTreasury",      inputs: [{ name: "_treasury", type: "address" }], outputs: [], stateMutability: "nonpayable" },
 ] as const;
 
-const adminContract = {
-  address: FACTORY_ADDRESS as `0x${string}`,
-  abi: ADMIN_ABI,
-} as const;
+
 
 function TxStatus({ hash }: { hash?: `0x${string}` }) {
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -50,6 +43,10 @@ function TxStatus({ hash }: { hash?: `0x${string}` }) {
 
 export default function AdminPage() {
   const { address: wallet, isConnected } = useAccount();
+  const chainId = useChainId();
+  const factoryAddress = getFactoryAddress(chainId);
+  const contract      = { address: factoryAddress, abi: ESCROW_FACTORY_ABI } as const;
+  const adminContract = { address: factoryAddress, abi: ADMIN_ABI } as const;
 
   // Fee form state
   const [feeBps, setFeeBps]         = useState("");
