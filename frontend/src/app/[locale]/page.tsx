@@ -6,6 +6,7 @@ import { Nav } from "@/components/nav";
 import { useTranslations } from "next-intl";
 import { Footer } from "@/components/footer";
 import { OnboardingTour } from "@/components/onboarding-tour";
+import { LiveStats } from "@/components/live-stats";
 
 export default function LandingPage() {
   const t = useTranslations("landing");
@@ -23,12 +24,7 @@ export default function LandingPage() {
     { step: "04", title: t("aiStep4Title"), desc: t("aiStep4Desc") },
   ];
 
-  const stats = [
-    { value: "0.5%", label: t("statFee") },
-    { value: "1404", label: t("statChain") },
-    { value: "0",    label: t("statExploits") },
-    { value: "100%", label: t("statOnChain") },
-  ];
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -174,19 +170,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Protocol Stats ───────────────────────────────────────── */}
-        <section data-tour="stats" className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          {stats.map(s => (
-            <div key={s.label} className="card-glow-stats rounded-xl border border-white/8 bg-white/3 p-5">
-              <p
-                className="text-4xl sm:text-5xl font-bold font-mono text-cyan-400"
-                style={{ textShadow: "0 0 20px rgba(0,245,255,0.4), 0 0 10px rgba(59,130,246,0.3)" }}
-              >
-                {s.value}
-              </p>
-              <p className="mt-2 text-xs text-slate-500 uppercase tracking-widest">{s.label}</p>
-            </div>
-          ))}
+        {/* ── Live Protocol Stats ──────────────────────────────────── */}
+        <section data-tour="stats">
+          <LiveStats />
         </section>
 
       </main>

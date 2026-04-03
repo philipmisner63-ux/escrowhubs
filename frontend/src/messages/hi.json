@@ -278,5 +278,12 @@
     "done": "हो गया ✓",
     "skip": "टूर छोड़ें",
     "takeTour": "टूर लें"
+  },
+  "stats": {
+    "totalEscrows": "कुल एस्क्रो",
+    "bdagLocked": "BDAG लॉक्ड",
+    "successRate": "सफलता दर",
+    "chainId": "Chain ID",
+    "exploits": "उल्लंघन"
   }
 }

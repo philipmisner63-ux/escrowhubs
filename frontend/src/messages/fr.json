@@ -278,5 +278,12 @@
     "done": "Terminé ✓",
     "skip": "Passer la Visite",
     "takeTour": "Faire la Visite"
+  },
+  "stats": {
+    "totalEscrows": "Séquestres Totaux",
+    "bdagLocked": "BDAG Verrouillé",
+    "successRate": "Taux de Succès",
+    "chainId": "Chain ID",
+    "exploits": "Exploits"
   }
 }

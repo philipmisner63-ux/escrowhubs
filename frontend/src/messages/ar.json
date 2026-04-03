@@ -278,5 +278,12 @@
     "done": "تم ✓",
     "skip": "تخطي الجولة",
     "takeTour": "خذ جولة"
+  },
+  "stats": {
+    "totalEscrows": "إجمالي الضمانات",
+    "bdagLocked": "BDAG مقفل",
+    "successRate": "معدل النجاح",
+    "chainId": "Chain ID",
+    "exploits": "ثغرات"
   }
 }

@@ -278,5 +278,12 @@
     "done": "Listo ✓",
     "skip": "Omitir Tour",
     "takeTour": "Hacer el Tour"
+  },
+  "stats": {
+    "totalEscrows": "Custodias Totales",
+    "bdagLocked": "BDAG Bloqueado",
+    "successRate": "Tasa de Éxito",
+    "chainId": "Chain ID",
+    "exploits": "Exploits"
   }
 }

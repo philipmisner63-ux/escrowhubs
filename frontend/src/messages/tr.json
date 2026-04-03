@@ -278,5 +278,12 @@
     "done": "Tamamlandı ✓",
     "skip": "Turu Atla",
     "takeTour": "Tur Yap"
+  },
+  "stats": {
+    "totalEscrows": "Toplam Emanet",
+    "bdagLocked": "BDAG Kilitli",
+    "successRate": "Başarı Oranı",
+    "chainId": "Chain ID",
+    "exploits": "Exploit"
   }
 }

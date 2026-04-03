@@ -278,5 +278,12 @@
     "done": "완료 ✓",
     "skip": "투어 건너뛰기",
     "takeTour": "투어 시작"
+  },
+  "stats": {
+    "totalEscrows": "총 에스크로",
+    "bdagLocked": "BDAG 잠금",
+    "successRate": "성공률",
+    "chainId": "Chain ID",
+    "exploits": "취약점"
   }
 }

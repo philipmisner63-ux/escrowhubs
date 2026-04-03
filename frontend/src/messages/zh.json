@@ -278,5 +278,12 @@
     "done": "完成 ✓",
     "skip": "跳过导览",
     "takeTour": "开始导览"
+  },
+  "stats": {
+    "totalEscrows": "托管总数",
+    "bdagLocked": "BDAG 锁定",
+    "successRate": "成功率",
+    "chainId": "Chain ID",
+    "exploits": "漏洞"
   }
 }

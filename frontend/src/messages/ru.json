@@ -278,5 +278,12 @@
     "done": "Готово ✓",
     "skip": "Пропустить тур",
     "takeTour": "Пройти тур"
+  },
+  "stats": {
+    "totalEscrows": "Всего эскроу",
+    "bdagLocked": "BDAG заблокировано",
+    "successRate": "Процент успеха",
+    "chainId": "Chain ID",
+    "exploits": "Взломов"
   }
 }

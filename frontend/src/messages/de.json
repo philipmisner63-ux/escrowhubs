@@ -278,5 +278,12 @@
     "done": "Fertig ✓",
     "skip": "Tour überspringen",
     "takeTour": "Tour machen"
+  },
+  "stats": {
+    "totalEscrows": "Gesamt Escrows",
+    "bdagLocked": "BDAG Gesperrt",
+    "successRate": "Erfolgsrate",
+    "chainId": "Chain ID",
+    "exploits": "Exploits"
   }
 }

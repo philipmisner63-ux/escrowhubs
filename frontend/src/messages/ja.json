@@ -278,5 +278,12 @@
     "done": "完了 ✓",
     "skip": "ツアーをスキップ",
     "takeTour": "ツアーを始める"
+  },
+  "stats": {
+    "totalEscrows": "総エスクロー数",
+    "bdagLocked": "BDAG ロック",
+    "successRate": "成功率",
+    "chainId": "Chain ID",
+    "exploits": "エクスプロイト"
   }
 }
