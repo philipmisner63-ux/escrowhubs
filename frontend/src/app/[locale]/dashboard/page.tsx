@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useAccount, useReadContracts } from "wagmi";
 import { Nav } from "@/components/nav";
+import { ShareButton } from "@/components/share-escrow";
 import { Footer } from "@/components/footer";
 import { useTranslations } from "next-intl";
 import { PageWrapper } from "@/components/page-wrapper";
@@ -130,6 +131,7 @@ export default function DashboardPage() {
                           <span className="text-xs text-slate-500">
                             {e.escrowType === 0 ? t("simple") : t("milestone")}
                           </span>
+                          <ShareButton address={e.contractAddress} />
                         </div>
                         <p className="text-xs font-mono text-slate-300 truncate">
                           {e.contractAddress.slice(0, 10)}…{e.contractAddress.slice(-6)}

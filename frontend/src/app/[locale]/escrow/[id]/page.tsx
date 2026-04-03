@@ -23,6 +23,7 @@ import { useEscrowEvents } from "@/lib/hooks/useEscrowEvents";
 import { addViewedEscrow } from "@/lib/localStorage";
 import { EXPLORER_TX_URL, SIMPLE_STATE_LABEL, MILESTONE_STATE_LABEL, SimpleEscrowState, MilestoneState, AI_ARBITER_ADDRESS, AI_ARBITER_ABI, SIMPLE_ESCROW_ABI } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
+import { ShareEscrow } from "@/components/share-escrow";
 
 type Address = `0x${string}`;
 
@@ -486,6 +487,9 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ id: str
             {contractType === "unknown" && <LoadingState />}
             {contractType === "simple" && <SimpleEscrowView address={id} />}
             {contractType === "milestone" && <MilestoneEscrowView address={id} />}
+
+            {/* Share */}
+            <ShareEscrow address={id} />
 
             {/* Event log */}
             {events.length > 0 && (
