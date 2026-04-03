@@ -17,6 +17,7 @@ import {
   AI_ARBITER_ADDRESS,
 } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type EscrowType = "simple" | "milestone";
 
@@ -26,6 +27,7 @@ interface MilestoneInput {
 }
 
 export default function CreateEscrowPage() {
+  const t = useTranslations("create");
   const router = useRouter();
   const { addToast, removeToast } = useToast();
   const { writeContractAsync } = useWriteContract();
@@ -50,7 +52,7 @@ export default function CreateEscrowPage() {
     e.preventDefault();
     setSubmitting(true);
 
-    const pendingId = addToast({ type: "pending", message: "Waiting for wallet confirmation… (may take 30–60s)" });
+    const pendingId = addToast({ type: "pending", message: t("waitingConfirmation") });
 
     try {
       const resolvedArbiter = useAIArbiter
@@ -92,7 +94,7 @@ export default function CreateEscrowPage() {
       }
 
       // Wait for receipt and extract escrow address from logs
-      addToast({ type: "success", message: "Transaction submitted! Waiting for confirmation…", txHash });
+      addToast({ type: "success", message: t("submitted"), txHash });
       triggerDeployConfetti();
 
       try {
@@ -151,38 +153,36 @@ export default function CreateEscrowPage() {
           <div className="space-y-8">
             {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold text-white">Create Escrow</h1>
-              <p className="mt-1 text-sm text-slate-400">Deploy a new escrow contract on BlockDAG</p>
+              <h1 className="text-3xl font-bold text-white">{t("title")}</h1>
+              <p className="mt-1 text-sm text-slate-400">{t("subtitle")}</p>
             </div>
 
             {/* Network banner */}
             <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-xs text-cyan-300">
-              <strong>BlockDAG Mainnet.</strong> Connect your wallet to BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) before deploying.
+              <strong>BlockDAG Mainnet.</strong> {t("networkBanner")}
             </div>
 
             {/* Type selector */}
             <div className="grid grid-cols-2 gap-4">
-              {(["simple", "milestone"] as const).map(t => (
+              {(["simple", "milestone"] as const).map(t2 => (
                 <button
-                  key={t}
+                  key={t2}
                   type="button"
-                  onClick={() => setType(t)}
+                  onClick={() => setType(t2)}
                   className={cn(
                     "relative rounded-2xl border p-5 text-left transition-all duration-200",
-                    type === t
+                    type === t2
                       ? "border-cyan-400/40 bg-cyan-400/5 shadow-[0_0_30px_rgba(0,245,255,0.1)]"
                       : "border-white/10 bg-white/5 hover:border-white/20"
                   )}
                 >
-                  {type === t && (
+                  {type === t2 && (
                     <div className="absolute top-3 right-3 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,245,255,0.8)]" />
                   )}
-                  <div className="text-2xl mb-2">{t === "simple" ? "⬡" : "◈"}</div>
-                  <h3 className="font-semibold text-white capitalize">{t} Escrow</h3>
+                  <div className="text-2xl mb-2">{t2 === "simple" ? "⬡" : "◈"}</div>
+                  <h3 className="font-semibold text-white">{t2 === "simple" ? t("simpleEscrow") : t("milestoneEscrow")}</h3>
                   <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                    {t === "simple"
-                      ? "Single-release. Funds released on delivery or arbiter decision."
-                      : "Phased payments with per-milestone releases."}
+                    {t2 === "simple" ? t("simpleEscrowDesc") : t("milestoneEscrowDesc")}
                   </p>
                 </button>
               ))}
@@ -191,11 +191,11 @@ export default function CreateEscrowPage() {
             {/* Form */}
             <form onSubmit={handleSubmit}>
               <GlassCard className="p-6 space-y-5">
-                <Field label="Title" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="e.g. Smart Contract Audit" />
-                <Field label="Beneficiary Address" value={form.beneficiary} onChange={v => setForm(f => ({ ...f, beneficiary: v }))} placeholder="0x..." mono />
+                <Field label={t("titleLabel")} value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder={t("titlePlaceholder")} />
+                <Field label={t("beneficiaryLabel")} value={form.beneficiary} onChange={v => setForm(f => ({ ...f, beneficiary: v }))} placeholder={t("beneficiaryPlaceholder")} mono />
                 {/* Arbiter selector */}
                 <div className="space-y-3">
-                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">Arbiter</label>
+                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("arbiterLabel")}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -211,8 +211,8 @@ export default function CreateEscrowPage() {
                         <div className="float-right h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,245,255,0.8)]" />
                       )}
                       <div className="text-lg mb-1">👤</div>
-                      <p className="text-xs font-semibold text-white">Manual Arbiter</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Paste any wallet address</p>
+                      <p className="text-xs font-semibold text-white">{t("manualArbiter")}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{t("manualArbiterDesc")}</p>
                     </button>
                     <button
                       type="button"
@@ -228,23 +228,23 @@ export default function CreateEscrowPage() {
                         <div className="float-right h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.8)]" />
                       )}
                       <div className="text-lg mb-1">🤖</div>
-                      <p className="text-xs font-semibold text-white">AI Arbiter</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Automated dispute resolution</p>
+                      <p className="text-xs font-semibold text-white">{t("aiArbiter")}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{t("aiArbiterDesc")}</p>
                     </button>
                   </div>
 
                   {useAIArbiter ? (
                     <div className="rounded-xl border border-violet-400/20 bg-violet-400/5 p-3 text-xs text-violet-300 space-y-1">
-                      <p className="font-semibold">🤖 AI Arbiter enabled</p>
-                      <p className="text-violet-400/70">Disputes are resolved automatically by an AI oracle. Both parties submit evidence on-chain; the AI reviews and executes the decision.</p>
+                      <p className="font-semibold">🤖 {t("aiArbiterEnabled")}</p>
+                      <p className="text-violet-400/70">{t("aiArbiterEnabledDesc")}</p>
                       {AI_ARBITER_ADDRESS ? (
                         <p className="font-mono text-violet-400/50 break-all">{AI_ARBITER_ADDRESS}</p>
                       ) : (
-                        <p className="text-yellow-400/70">⚠ AI Arbiter contract not yet deployed — set <code className="bg-black/30 px-1 rounded">NEXT_PUBLIC_AI_ARBITER_ADDRESS</code> in .env</p>
+                        <p className="text-yellow-400/70">{t("aiArbiterNotDeployed")}</p>
                       )}
                     </div>
                   ) : (
-                    <Field label="" value={form.arbiter} onChange={v => setForm(f => ({ ...f, arbiter: v }))} placeholder="0x arbiter address..." mono />
+                    <Field label="" value={form.arbiter} onChange={v => setForm(f => ({ ...f, arbiter: v }))} placeholder={t("arbiterPlaceholder")} mono />
                   )}
                 </div>
 
@@ -253,7 +253,7 @@ export default function CreateEscrowPage() {
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium uppercase tracking-widest text-slate-500">Milestones</label>
+                      <label className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("milestones")}</label>
                       <button type="button" onClick={addMilestone} className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
                         + Add Milestone
                       </button>
@@ -266,7 +266,7 @@ export default function CreateEscrowPage() {
                         <div className="flex-1 grid grid-cols-3 gap-2">
                           <input
                             className="col-span-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50 transition-colors"
-                            placeholder="Description"
+                            placeholder={t("descriptionPlaceholder")}
                             value={ms.description}
                             onChange={e => updateMilestone(i, "description", e.target.value)}
                             required
@@ -288,7 +288,7 @@ export default function CreateEscrowPage() {
                       </div>
                     ))}
                     <div className="flex justify-between text-xs text-slate-500 pt-1">
-                      <span>Total</span>
+                      <span>{t("total")}</span>
                       <span className="text-cyan-400 font-semibold" style={{ fontFamily: "var(--font-mono)" }}>
                         {milestoneTotal.toFixed(3)} BDAG
                       </span>
@@ -312,16 +312,16 @@ export default function CreateEscrowPage() {
                     </p>
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-slate-400">
-                        <span>Escrow amount</span>
+                        <span>{t("escrowAmount")}</span>
                         <span className="font-mono">{escrowNet.toFixed(4)} BDAG</span>
                       </div>
                       <div className="flex justify-between text-slate-500">
-                        <span>Protocol fee (0.5%)</span>
+                        <span>{t("protocolFee")}</span>
                         <span className="font-mono">+{protocolFee.toFixed(4)} BDAG</span>
                       </div>
                       {useAIArbiter && (
                         <div className="flex justify-between text-violet-400">
-                          <span>🤖 AI Arbiter fee</span>
+                          <span>🤖 {t("aiArbiterFee")}</span>
                           <span className="font-mono">+{aiArbiterFee.toFixed(4)} BDAG</span>
                         </div>
                       )}
@@ -329,7 +329,7 @@ export default function CreateEscrowPage() {
                         "flex justify-between font-semibold pt-1 border-t",
                         useAIArbiter ? "border-violet-400/20 text-violet-300" : "border-white/8 text-white"
                       )}>
-                        <span>Total to send</span>
+                        <span>{t("totalToSend")}</span>
                         <span className="font-mono">{totalSend.toFixed(4)} BDAG</span>
                       </div>
                     </div>
@@ -337,7 +337,7 @@ export default function CreateEscrowPage() {
                 )}
 
                 <GlowButton type="submit" variant="primary" loading={submitting} className="w-full py-3 text-base">
-                  {submitting ? "Deploying…" : "Deploy Escrow Contract"}
+                  {submitting ? t("deploying") : t("deploy")}
                 </GlowButton>
               </GlassCard>
             </form>

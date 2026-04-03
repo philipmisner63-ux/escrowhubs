@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useAccount, useReadContracts } from "wagmi";
 import { Nav } from "@/components/nav";
+import { useTranslations } from "next-intl";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -27,6 +28,7 @@ function stateToStatus(stateNum: number): "pending" | "active" | "complete" | "d
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const { address: wallet } = useAccount();
   const [input, setInput] = useState("");
@@ -73,7 +75,7 @@ export default function DashboardPage() {
   function handleLoad() {
     const addr = input.trim();
     if (!isValidAddress(addr)) {
-      setError("Enter a valid contract address (0x + 40 hex chars)");
+      setError(t("invalidAddress"));
       return;
     }
     setError("");
@@ -91,11 +93,11 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-                <p className="mt-1 text-sm text-slate-400">Manage your escrow contracts on BlockDAG</p>
+                <h1 className="text-3xl font-bold text-white">{t("title")}</h1>
+                <p className="mt-1 text-sm text-slate-400">{t("subtitle")}</p>
               </div>
               <Link href="/create">
-                <GlowButton variant="primary">+ New Escrow</GlowButton>
+                <GlowButton variant="primary">{t("newEscrow")}</GlowButton>
               </Link>
             </div>
 
@@ -106,16 +108,16 @@ export default function DashboardPage() {
               </h2>
               {!wallet ? (
                 <GlassCard className="p-8 text-center">
-                  <p className="text-slate-500 text-sm">Connect your wallet to see your escrows.</p>
+                  <p className="text-slate-500 text-sm">{t("connectWalletPrompt")}</p>
                 </GlassCard>
               ) : isLoading ? (
                 <GlassCard className="p-8 text-center">
-                  <p className="text-slate-500 text-sm animate-pulse">Loading escrows…</p>
+                  <p className="text-slate-500 text-sm animate-pulse">{t("loading")}</p>
                 </GlassCard>
               ) : myEscrows.length === 0 ? (
                 <GlassCard className="p-8 text-center">
-                  <p className="text-slate-500 text-sm">No escrows found for your wallet.</p>
-                  <p className="text-slate-600 text-xs mt-1">Create one or paste an address below.</p>
+                  <p className="text-slate-500 text-sm">{t("noEscrows")}</p>
+                  <p className="text-slate-600 text-xs mt-1">{t("noEscrowsHint")}</p>
                 </GlassCard>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,14 +127,14 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between mb-2">
                           <StatusBadge status={e.depositor?.toLowerCase() === wallet?.toLowerCase() ? "active" : "pending"} />
                           <span className="text-xs text-slate-500">
-                            {e.escrowType === 0 ? "Simple" : "Milestone"}
+                            {e.escrowType === 0 ? t("simple") : t("milestone")}
                           </span>
                         </div>
                         <p className="text-xs font-mono text-slate-300 truncate">
                           {e.contractAddress.slice(0, 10)}…{e.contractAddress.slice(-6)}
                         </p>
                         <p className="text-xs text-slate-500 mt-1">
-                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · tap to open →
+                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · {t("tapToOpen")}
                         </p>
                       </GlassCard>
                     </Link>
@@ -154,7 +156,7 @@ export default function DashboardPage() {
                   placeholder="0x..."
                   className="flex-1 rounded-lg bg-white/5 border border-white/10 px-4 py-2.5 text-sm font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/30 transition-colors"
                 />
-                <GlowButton variant="primary" onClick={handleLoad}>Load</GlowButton>
+                <GlowButton variant="primary" onClick={handleLoad}>{t("load")}</GlowButton>
               </div>
               {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
             </GlassCard>

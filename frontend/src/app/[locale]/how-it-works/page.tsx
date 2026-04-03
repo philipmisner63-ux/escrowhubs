@@ -1,15 +1,14 @@
+"use client";
+
 import { Nav } from "@/components/nav";
+import { useTranslations } from "next-intl";
 import { PageWrapper } from "@/components/page-wrapper";
 import { SimpleFlow } from "@/components/how-it-works/SimpleFlow";
 import { MilestoneFlow } from "@/components/how-it-works/MilestoneFlow";
 import { AIArbiterFlow } from "@/components/how-it-works/AIArbiterFlow";
 
-export const metadata = {
-  title: "How It Works | BlockDAG Escrow",
-  description: "Learn how simple, milestone, and AI-arbiter escrow flows work on BlockDAG.",
-};
-
 export default function HowItWorksPage() {
+  const t = useTranslations("howItWorks");
   return (
     <div className="flex flex-col min-h-screen">
       <Nav />
@@ -18,10 +17,8 @@ export default function HowItWorksPage() {
           <div className="space-y-12">
             {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold text-white">How It Works</h1>
-              <p className="mt-2 text-slate-400">
-                Three ways to use escrow on BlockDAG — simple release, milestone-based payments, or AI-powered dispute resolution.
-              </p>
+              <h1 className="text-3xl font-bold text-white">{t("title")}</h1>
+              <p className="mt-2 text-slate-400">{t("subtitle")}</p>
             </div>
 
             <SimpleFlow />
