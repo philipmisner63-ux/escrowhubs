@@ -60,7 +60,7 @@ export function LanguagePicker() {
   }, [focused, open]);
 
   return (
-    <div ref={containerRef} className="relative hidden md:block">
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         aria-haspopup="listbox"
@@ -93,7 +93,8 @@ export function LanguagePicker() {
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => switchLocale(loc)}
-                className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
+                style={{ touchAction: "manipulation" }}
+                className={`flex items-center gap-3 px-3 py-3 cursor-pointer text-sm transition-colors ${
                   i === focused ? "bg-cyan-400/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"
                 } ${isSelected ? "text-cyan-400" : ""}`}
               >

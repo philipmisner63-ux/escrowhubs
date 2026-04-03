@@ -29,9 +29,11 @@ export function LanguagePickerMobile() {
         type="button"
         aria-label={t("language")}
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+        style={{ touchAction: "manipulation" }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all border border-transparent hover:border-white/10"
       >
-        <span className="text-base leading-none">{current.flag}</span>
+        <span className="text-base leading-none select-none">{current.flag}</span>
+        <span className="text-xs font-medium">{current.nativeName}</span>
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="6 9 12 15 18 9" />
         </svg>
