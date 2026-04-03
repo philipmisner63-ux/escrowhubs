@@ -45,8 +45,8 @@ export default function AdminPage() {
   const { address: wallet, isConnected } = useAccount();
   const chainId = useChainId();
   const factoryAddress = getFactoryAddress(chainId);
-  const contract      = { address: factoryAddress, abi: ESCROW_FACTORY_ABI } as const;
-  const adminContract = { address: factoryAddress, abi: ADMIN_ABI } as const;
+  const contract      = { address: factoryAddress, abi: ESCROW_FACTORY_ABI, chainId } as const;
+  const adminContract = { address: factoryAddress, abi: ADMIN_ABI,          chainId } as const;
 
   // Fee form state
   const [feeBps, setFeeBps]         = useState("");

@@ -5,7 +5,6 @@ import { useState, useCallback } from "react";
 import { parseEther } from "viem";
 import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
-import { DEFAULT_CHAIN_ID } from "@/lib/chains";
 import { computeTrustScore } from "@/lib/trustScore";
 
 type Address = `0x${string}`;
@@ -21,10 +20,11 @@ export interface FactoryEscrowRecord {
   createdAt: bigint;
 }
 
-export function useEscrowFactory() {
-  const chainId = useChainId();
-  const factoryAddress = getFactoryAddress(chainId);
-  const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI } as const;
+export function useEscrowFactory(chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
+  const factoryAddress = getFactoryAddress(resolvedChainId);
+  const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI, chainId: resolvedChainId } as const;
   const enabled = factoryAddress.length > 2;
 
   const { data, isLoading, refetch } = useReadContracts({
@@ -42,9 +42,10 @@ export function useEscrowFactory() {
   };
 }
 
-export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
-  const chainId = useChainId();
-  const factoryAddress = getFactoryAddress(chainId);
+export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n, chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
+  const factoryAddress = getFactoryAddress(resolvedChainId);
   const enabled = factoryAddress.length > 2;
 
   const { data, isLoading, refetch } = useReadContracts({
@@ -54,6 +55,7 @@ export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
         abi: ESCROW_FACTORY_ABI,
         functionName: "getEscrows",
         args: [offset, limit],
+        chainId: resolvedChainId,
       },
     ],
     query: { enabled, refetchInterval: 5_000 },
@@ -64,11 +66,12 @@ export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n) {
   return { records, isLoading, refetch };
 }
 
-export function useWalletEscrows(walletAddress: Address | undefined) {
-  const chainId = useChainId();
-  const factoryAddress = getFactoryAddress(chainId);
+export function useWalletEscrows(walletAddress: Address | undefined, chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
+  const factoryAddress = getFactoryAddress(resolvedChainId);
   const enabled = factoryAddress.length > 2 && !!walletAddress;
-  const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI } as const;
+  const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI, chainId: resolvedChainId } as const;
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
@@ -86,8 +89,9 @@ export function useWalletEscrows(walletAddress: Address | undefined) {
   };
 }
 
-export function useFactoryDeploy() {
-  const chainId = useChainId();
+export function useFactoryDeploy(chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
   const { writeContractAsync, isPending, data: hash, error } = useWriteContract();
 
   const deploySimple = async (
@@ -97,7 +101,7 @@ export function useFactoryDeploy() {
     walletAddress?: Address,
     useAIArbiter = false,
   ) => {
-    const factoryAddress = getFactoryAddress(chainId);
+    const factoryAddress = getFactoryAddress(resolvedChainId);
     const trust = computeTrustScore({
       walletAddress,
       amountEth: parseFloat(amountEth),
@@ -110,6 +114,7 @@ export function useFactoryDeploy() {
       functionName: "createSimpleEscrow",
       args: [beneficiary, arbiter, trust.tier, useAIArbiter],
       value: parseEther(amountEth),
+      chainId: resolvedChainId,
     });
   };
 
@@ -121,7 +126,7 @@ export function useFactoryDeploy() {
     walletAddress?: Address,
     useAIArbiter = false,
   ) => {
-    const factoryAddress = getFactoryAddress(chainId);
+    const factoryAddress = getFactoryAddress(resolvedChainId);
     const totalEth = parseFloat(
       (amounts.reduce((a, b) => a + b, 0n) / BigInt(1e18)).toString()
     );
@@ -138,15 +143,17 @@ export function useFactoryDeploy() {
       functionName: "createMilestoneEscrow",
       args: [beneficiary, arbiter, descriptions, amounts, trust.tier, useAIArbiter],
       value: total,
+      chainId: resolvedChainId,
     });
   };
 
   return { deploySimple, deployMilestone, isPending, hash, error };
 }
 
-export function useFactoryEvents() {
-  const chainId = useChainId();
-  const factoryAddress = getFactoryAddress(chainId);
+export function useFactoryEvents(chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
+  const factoryAddress = getFactoryAddress(resolvedChainId);
   const [events, setEvents] = useState<Array<{ name: string; args: Record<string, unknown>; timestamp: number }>>([]);
   const enabled = factoryAddress.length > 2;
 
@@ -158,6 +165,7 @@ export function useFactoryEvents() {
     address: factoryAddress,
     abi: ESCROW_FACTORY_ABI,
     eventName: "SimpleEscrowCreated",
+    chainId: resolvedChainId,
     onLogs: logs => logs.forEach(l => add("SimpleEscrowCreated", (l as unknown as { args: Record<string, unknown> }).args ?? {})),
     enabled,
   });
@@ -166,6 +174,7 @@ export function useFactoryEvents() {
     address: factoryAddress,
     abi: ESCROW_FACTORY_ABI,
     eventName: "MilestoneEscrowCreated",
+    chainId: resolvedChainId,
     onLogs: logs => logs.forEach(l => add("MilestoneEscrowCreated", (l as unknown as { args: Record<string, unknown> }).args ?? {})),
     enabled,
   });

@@ -1,14 +1,16 @@
 "use client";
 
-import { useReadContracts, useWriteContract } from "wagmi";
+import { useReadContracts, useWriteContract, useChainId } from "wagmi";
 import { parseEther } from "viem";
 import { SIMPLE_ESCROW_ABI } from "@/lib/contracts";
 import { GAS_LIMITS } from "@/lib/gasConfig";
 
 type Address = `0x${string}`;
 
-export function useSimpleEscrowRead(address: Address | undefined) {
-  const contract = { address, abi: SIMPLE_ESCROW_ABI } as const;
+export function useSimpleEscrowRead(address: Address | undefined, chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
+  const contract = { address, abi: SIMPLE_ESCROW_ABI, chainId: resolvedChainId } as const;
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
@@ -32,7 +34,9 @@ export function useSimpleEscrowRead(address: Address | undefined) {
   };
 }
 
-export function useSimpleEscrowWrite() {
+export function useSimpleEscrowWrite(chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
   const { writeContractAsync, isPending, data: hash, error } = useWriteContract();
 
   return {
@@ -42,15 +46,16 @@ export function useSimpleEscrowWrite() {
         abi: SIMPLE_ESCROW_ABI,
         functionName: "deposit",
         value: parseEther(value),
+        chainId: resolvedChainId,
       }),
     release: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "release", gas: GAS_LIMITS.release }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "release", gas: GAS_LIMITS.release, chainId: resolvedChainId }),
     dispute: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "dispute", gas: GAS_LIMITS.raiseDispute }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "dispute", gas: GAS_LIMITS.raiseDispute, chainId: resolvedChainId }),
     resolveRelease: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRelease", gas: GAS_LIMITS.resolveDispute }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRelease", gas: GAS_LIMITS.resolveDispute, chainId: resolvedChainId }),
     resolveRefund: (address: Address) =>
-      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRefund", gas: GAS_LIMITS.resolveDispute }),
+      writeContractAsync({ address, abi: SIMPLE_ESCROW_ABI, functionName: "resolveRefund", gas: GAS_LIMITS.resolveDispute, chainId: resolvedChainId }),
     isPending,
     hash,
     error,

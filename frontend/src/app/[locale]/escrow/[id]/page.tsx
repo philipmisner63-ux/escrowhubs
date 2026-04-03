@@ -64,8 +64,8 @@ function SimpleEscrowView({ address }: { address: Address }) {
   const arbiterAddress = getArbiterAddress(chainId);
   const { addToast, removeToast } = useToast();
   const queryClient = useQueryClient();
-  const data = useSimpleEscrowRead(address);
-  const writes = useSimpleEscrowWrite();
+  const data = useSimpleEscrowRead(address, chainId);
+  const writes = useSimpleEscrowWrite(chainId);
 
   const role = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
   const stateNum = data.state ?? 0;
@@ -232,10 +232,11 @@ function SimpleEscrowView({ address }: { address: Address }) {
 
 function MilestoneEscrowView({ address }: { address: Address }) {
   const { address: wallet } = useAccount();
+  const chainId = useChainId();
   const { addToast, removeToast } = useToast();
   const queryClient = useQueryClient();
-  const data = useMilestoneEscrowRead(address);
-  const writes = useMilestoneEscrowWrite();
+  const data = useMilestoneEscrowRead(address, chainId);
+  const writes = useMilestoneEscrowWrite(chainId);
 
   const role = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
   const releasedCount = data.milestones.filter(m => m.state === MilestoneState.RELEASED).length;
@@ -488,8 +489,9 @@ function EvidencePanel({ escrowAddress }: { escrowAddress: Address }) {
 
 export default function EscrowDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const contractType = useContractType(isAddress(id) ? id : undefined);
-  const { events } = useEscrowEvents(isAddress(id) ? id : undefined, contractType);
+  const chainId = useChainId();
+  const contractType = useContractType(isAddress(id) ? id : undefined, chainId);
+  const { events } = useEscrowEvents(isAddress(id) ? id : undefined, contractType, chainId);
 
   if (!isAddress(id)) {
     return (

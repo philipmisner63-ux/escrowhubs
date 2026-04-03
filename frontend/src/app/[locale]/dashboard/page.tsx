@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [viewed, setViewed] = useState<ViewedEscrow[]>([]);
 
-  const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(wallet);
+  const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(wallet, chainId);
 
   // Get escrow addresses directly from factory using raw index lookup
   const myIndices = Array.from(new Set([...asDepositor, ...asBeneficiary].map(n => Number(n))));
@@ -51,6 +51,7 @@ export default function DashboardPage() {
       abi: ESCROW_FACTORY_ABI,
       functionName: "escrows" as const,
       args: [BigInt(i)],
+      chainId,
     })),
     query: { enabled: myIndices.length > 0, refetchInterval: 5_000 },
   });

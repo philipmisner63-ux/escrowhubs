@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadContracts, useWriteContract } from "wagmi";
+import { useReadContracts, useWriteContract, useChainId } from "wagmi";
 import { MILESTONE_ESCROW_ABI } from "@/lib/contracts";
 import { GAS_LIMITS } from "@/lib/gasConfig";
 
@@ -12,8 +12,10 @@ export interface MilestoneData {
   state: number;
 }
 
-export function useMilestoneEscrowRead(address: Address | undefined) {
-  const contract = { address, abi: MILESTONE_ESCROW_ABI } as const;
+export function useMilestoneEscrowRead(address: Address | undefined, chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
+  const contract = { address, abi: MILESTONE_ESCROW_ABI, chainId: resolvedChainId } as const;
 
   // Base reads
   const { data: baseData, isLoading: baseLoading, refetch: refetchBase } = useReadContracts({
@@ -61,7 +63,9 @@ export function useMilestoneEscrowRead(address: Address | undefined) {
   };
 }
 
-export function useMilestoneEscrowWrite() {
+export function useMilestoneEscrowWrite(chainId?: number) {
+  const activeChainId = useChainId();
+  const resolvedChainId = chainId ?? activeChainId;
   const { writeContractAsync, isPending, data: hash, error } = useWriteContract();
 
   return {
@@ -72,15 +76,16 @@ export function useMilestoneEscrowWrite() {
         functionName: "fund",
         value,
         gas: GAS_LIMITS.depositMilestone,
+        chainId: resolvedChainId,
       }),
     releaseMilestone: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "releaseMilestone", args: [index], gas: GAS_LIMITS.approveMilestone }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "releaseMilestone", args: [index], gas: GAS_LIMITS.approveMilestone, chainId: resolvedChainId }),
     disputeMilestone: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "disputeMilestone", args: [index], gas: GAS_LIMITS.disputeMilestone }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "disputeMilestone", args: [index], gas: GAS_LIMITS.disputeMilestone, chainId: resolvedChainId }),
     resolveRelease: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRelease", args: [index], gas: GAS_LIMITS.resolveMilestoneDispute }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRelease", args: [index], gas: GAS_LIMITS.resolveMilestoneDispute, chainId: resolvedChainId }),
     resolveRefund: (address: Address, index: bigint) =>
-      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRefund", args: [index], gas: GAS_LIMITS.resolveMilestoneDispute }),
+      writeContractAsync({ address, abi: MILESTONE_ESCROW_ABI, functionName: "resolveRefund", args: [index], gas: GAS_LIMITS.resolveMilestoneDispute, chainId: resolvedChainId }),
     isPending,
     hash,
     error,
