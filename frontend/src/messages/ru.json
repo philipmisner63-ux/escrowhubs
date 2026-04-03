@@ -328,5 +328,29 @@
     "downloadReceipt": "Скачать квитанцию",
     "receipt": "Квитанция",
     "generating": "Создание…"
+  },
+  "feedback": {
+    "button": "Обратная связь",
+    "title": "Предложить функцию",
+    "subtitle": "Помогите нам улучшить EscrowHubs.",
+    "categoryLabel": "Категория",
+    "categories": {
+      "featureRequest": "Запрос функции",
+      "bugReport": "Отчёт об ошибке",
+      "uxImprovement": "Улучшение UX",
+      "integrationIdea": "Идея интеграции",
+      "other": "Другое"
+    },
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "Краткое описание вашей идеи",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Расскажите подробнее о вашем предложении...",
+    "walletLabel": "Кошелёк",
+    "notConnected": "Не подключён",
+    "send": "Отправить отзыв",
+    "sending": "Отправка...",
+    "success": "Спасибо! Ваше предложение получено.",
+    "error": "Что-то пошло не так. Попробуйте ещё раз.",
+    "charCount": "{count}/{max}"
   }
 }

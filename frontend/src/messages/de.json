@@ -328,5 +328,29 @@
     "downloadReceipt": "Quittung Herunterladen",
     "receipt": "Quittung",
     "generating": "Wird erstellt…"
+  },
+  "feedback": {
+    "button": "Feedback",
+    "title": "Funktion vorschlagen",
+    "subtitle": "Helfen Sie uns, EscrowHubs zu verbessern.",
+    "categoryLabel": "Kategorie",
+    "categories": {
+      "featureRequest": "Funktionsanfrage",
+      "bugReport": "Fehlerbericht",
+      "uxImprovement": "UX-Verbesserung",
+      "integrationIdea": "Integrationsidee",
+      "other": "Sonstiges"
+    },
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Kurze Zusammenfassung Ihrer Idee",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Erzählen Sie uns mehr über Ihren Vorschlag...",
+    "walletLabel": "Wallet",
+    "notConnected": "Nicht verbunden",
+    "send": "Feedback senden",
+    "sending": "Wird gesendet...",
+    "success": "Danke! Ihr Vorschlag wurde empfangen.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+    "charCount": "{count}/{max}"
   }
 }

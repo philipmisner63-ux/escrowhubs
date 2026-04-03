@@ -328,5 +328,29 @@
     "downloadReceipt": "領収書をダウンロード",
     "receipt": "領収書",
     "generating": "生成中…"
+  },
+  "feedback": {
+    "button": "フィードバック",
+    "title": "機能を提案する",
+    "subtitle": "EscrowHubsの改善にご協力ください。",
+    "categoryLabel": "カテゴリー",
+    "categories": {
+      "featureRequest": "機能リクエスト",
+      "bugReport": "バグ報告",
+      "uxImprovement": "UX改善",
+      "integrationIdea": "統合アイデア",
+      "other": "その他"
+    },
+    "titleLabel": "タイトル",
+    "titlePlaceholder": "アイデアの簡単な要約",
+    "descriptionLabel": "説明",
+    "descriptionPlaceholder": "提案についてもっと教えてください...",
+    "walletLabel": "ウォレット",
+    "notConnected": "未接続",
+    "send": "フィードバックを送信",
+    "sending": "送信中...",
+    "success": "ありがとうございます！ご提案を受け取りました。",
+    "error": "問題が発生しました。もう一度お試しください。",
+    "charCount": "{count}/{max}"
   }
 }

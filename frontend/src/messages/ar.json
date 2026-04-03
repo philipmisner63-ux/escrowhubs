@@ -328,5 +328,29 @@
     "downloadReceipt": "تحميل الإيصال",
     "receipt": "إيصال",
     "generating": "جارٍ الإنشاء…"
+  },
+  "feedback": {
+    "button": "اقتراحات",
+    "title": "اقترح ميزة",
+    "subtitle": "ساعدنا في تحسين EscrowHubs.",
+    "categoryLabel": "الفئة",
+    "categories": {
+      "featureRequest": "طلب ميزة",
+      "bugReport": "تقرير خطأ",
+      "uxImprovement": "تحسين تجربة المستخدم",
+      "integrationIdea": "فكرة تكامل",
+      "other": "أخرى"
+    },
+    "titleLabel": "العنوان",
+    "titlePlaceholder": "ملخص قصير لفكرتك",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "أخبرنا المزيد عن اقتراحك...",
+    "walletLabel": "المحفظة",
+    "notConnected": "غير متصل",
+    "send": "إرسال الاقتراح",
+    "sending": "جارٍ الإرسال...",
+    "success": "شكراً! تم استلام اقتراحك.",
+    "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "charCount": "{count}/{max}"
   }
 }

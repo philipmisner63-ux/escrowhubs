@@ -328,5 +328,29 @@
     "downloadReceipt": "Makbuzu İndir",
     "receipt": "Makbuz",
     "generating": "Oluşturuluyor…"
+  },
+  "feedback": {
+    "button": "Geri Bildirim",
+    "title": "Özellik Öner",
+    "subtitle": "EscrowHubs'ı geliştirmemize yardım edin.",
+    "categoryLabel": "Kategori",
+    "categories": {
+      "featureRequest": "Özellik İsteği",
+      "bugReport": "Hata Raporu",
+      "uxImprovement": "UX İyileştirme",
+      "integrationIdea": "Entegrasyon Fikri",
+      "other": "Diğer"
+    },
+    "titleLabel": "Başlık",
+    "titlePlaceholder": "Fikrinizin kısa özeti",
+    "descriptionLabel": "Açıklama",
+    "descriptionPlaceholder": "Öneriniz hakkında daha fazla bilgi verin...",
+    "walletLabel": "Cüzdan",
+    "notConnected": "Bağlı değil",
+    "send": "Geri Bildirimi Gönder",
+    "sending": "Gönderiliyor...",
+    "success": "Teşekkürler! Öneriniz alındı.",
+    "error": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
+    "charCount": "{count}/{max}"
   }
 }

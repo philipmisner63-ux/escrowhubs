@@ -328,5 +328,29 @@
     "downloadReceipt": "Télécharger le Reçu",
     "receipt": "Reçu",
     "generating": "Génération…"
+  },
+  "feedback": {
+    "button": "Suggestions",
+    "title": "Suggérer une Fonctionnalité",
+    "subtitle": "Aidez-nous à améliorer EscrowHubs.",
+    "categoryLabel": "Catégorie",
+    "categories": {
+      "featureRequest": "Demande de Fonctionnalité",
+      "bugReport": "Rapport de Bug",
+      "uxImprovement": "Amélioration UX",
+      "integrationIdea": "Idée d'Intégration",
+      "other": "Autre"
+    },
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Résumé court de votre idée",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Parlez-nous davantage de votre suggestion...",
+    "walletLabel": "Portefeuille",
+    "notConnected": "Non connecté",
+    "send": "Envoyer la Suggestion",
+    "sending": "Envoi en cours...",
+    "success": "Merci ! Votre suggestion a été reçue.",
+    "error": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "charCount": "{count}/{max}"
   }
 }

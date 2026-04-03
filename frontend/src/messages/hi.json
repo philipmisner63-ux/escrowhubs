@@ -328,5 +328,29 @@
     "downloadReceipt": "रसीद डाउनलोड करें",
     "receipt": "रसीद",
     "generating": "बन रहा है…"
+  },
+  "feedback": {
+    "button": "सुझाव",
+    "title": "सुविधा सुझाएं",
+    "subtitle": "EscrowHubs को बेहतर बनाने में हमारी मदद करें।",
+    "categoryLabel": "श्रेणी",
+    "categories": {
+      "featureRequest": "सुविधा अनुरोध",
+      "bugReport": "बग रिपोर्ट",
+      "uxImprovement": "UX सुधार",
+      "integrationIdea": "एकीकरण विचार",
+      "other": "अन्य"
+    },
+    "titleLabel": "शीर्षक",
+    "titlePlaceholder": "अपने विचार का संक्षिप्त सारांश",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "अपने सुझाव के बारे में अधिक बताएं...",
+    "walletLabel": "वॉलेट",
+    "notConnected": "कनेक्ट नहीं",
+    "send": "सुझाव भेजें",
+    "sending": "भेजा जा रहा है...",
+    "success": "धन्यवाद! आपका सुझाव प्राप्त हो गया।",
+    "error": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+    "charCount": "{count}/{max}"
   }
 }

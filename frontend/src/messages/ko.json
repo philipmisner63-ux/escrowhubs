@@ -328,5 +328,29 @@
     "downloadReceipt": "영수증 다운로드",
     "receipt": "영수증",
     "generating": "생성 중…"
+  },
+  "feedback": {
+    "button": "피드백",
+    "title": "기능 제안",
+    "subtitle": "EscrowHubs 개선에 도움을 주세요.",
+    "categoryLabel": "카테고리",
+    "categories": {
+      "featureRequest": "기능 요청",
+      "bugReport": "버그 신고",
+      "uxImprovement": "UX 개선",
+      "integrationIdea": "통합 아이디어",
+      "other": "기타"
+    },
+    "titleLabel": "제목",
+    "titlePlaceholder": "아이디어의 간단한 요약",
+    "descriptionLabel": "설명",
+    "descriptionPlaceholder": "제안에 대해 더 자세히 알려주세요...",
+    "walletLabel": "지갑",
+    "notConnected": "연결되지 않음",
+    "send": "피드백 제출",
+    "sending": "제출 중...",
+    "success": "감사합니다! 제안이 접수되었습니다.",
+    "error": "문제가 발생했습니다. 다시 시도해주세요.",
+    "charCount": "{count}/{max}"
   }
 }

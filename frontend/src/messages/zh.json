@@ -328,5 +328,29 @@
     "downloadReceipt": "下载收据",
     "receipt": "收据",
     "generating": "生成中…"
+  },
+  "feedback": {
+    "button": "反馈",
+    "title": "建议功能",
+    "subtitle": "帮助我们改善 EscrowHubs。",
+    "categoryLabel": "类别",
+    "categories": {
+      "featureRequest": "功能请求",
+      "bugReport": "错误报告",
+      "uxImprovement": "用户体验改进",
+      "integrationIdea": "集成想法",
+      "other": "其他"
+    },
+    "titleLabel": "标题",
+    "titlePlaceholder": "简短描述您的想法",
+    "descriptionLabel": "描述",
+    "descriptionPlaceholder": "告诉我们更多关于您建议的信息...",
+    "walletLabel": "钱包",
+    "notConnected": "未连接",
+    "send": "提交反馈",
+    "sending": "提交中...",
+    "success": "感谢！您的建议已收到。",
+    "error": "出了点问题。请再试一次。",
+    "charCount": "{count}/{max}"
   }
 }
