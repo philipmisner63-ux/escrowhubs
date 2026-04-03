@@ -43,10 +43,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
-  // Prevent WalletConnect's idb-keyval (which touches indexedDB) from being
-  // bundled for SSR — it's browser-only and causes harmless but noisy errors
-  // during static page generation.
-  serverExternalPackages: ["@walletconnect/core", "@walletconnect/universal-provider", "idb-keyval"],
   experimental: {
     optimizePackageImports: ["@rainbow-me/rainbowkit", "wagmi", "viem"],
   },
