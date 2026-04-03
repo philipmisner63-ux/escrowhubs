@@ -5,7 +5,8 @@
     "learn": "Lernen",
     "admin": "Admin",
     "connectWallet": "Wallet verbinden",
-    "wrongNetwork": "Deine Wallet ist im falschen Netzwerk. Wechsle zu {name} (Chain ID {chainId}), um diese App zu nutzen."
+    "wrongNetwork": "Deine Wallet ist im falschen Netzwerk. Wechsle zu {name} (Chain ID {chainId}), um diese App zu nutzen.",
+    "security": "Sicherheit"
   },
   "landing": {
     "badge": "Vorgestellt auf BlockDAG Academy",
@@ -228,6 +229,37 @@
     "discord": "Discord",
     "builtOn": "Gebaut auf BlockDAG",
     "terms": "Nutzungsbedingungen",
-    "privacy": "Datenschutzrichtlinie"
+    "privacy": "Datenschutzrichtlinie",
+    "security": "Sicherheit"
+  },
+  "security": {
+    "title": "Sicherheit & Vertrauen",
+    "subtitle": "Wie EscrowHubs deine Vermögenswerte auf BlockDAG schützt",
+    "smartContractTitle": "Smart-Contract-Sicherheit",
+    "sc1": "100% On-Chain-Escrow-Logik — keine Custodial-Wallets, keine Mittelsmänner",
+    "sc2": "Unveränderliche Smart Contracts auf BlockDAG deployiert (Chain ID 1404)",
+    "sc3": "Alle Escrow-Gelder werden vom Vertrag gehalten, nicht von EscrowHubs",
+    "sc4": "0 Exploits seit dem Launch",
+    "protectionTitle": "Wie deine Gelder geschützt werden",
+    "p1": "Gelder sind im Smart Contract gesperrt, bis beide Parteien zustimmen oder der AI Arbiter den Streit löst",
+    "p2": "Keine einzelne Partei — einschließlich EscrowHubs — kann Gelder einseitig abheben",
+    "p3": "Alle Transaktionen sind im BlockDAG-Explorer öffentlich überprüfbar",
+    "aiTitle": "AI Arbiter Transparenz",
+    "ai1": "Der AI Arbiter bewertet Streitigkeiten basierend auf von beiden Parteien eingereichten Beweisen",
+    "ai2": "Alle Schiedsrichterentscheidungen werden On-Chain aufgezeichnet und sind prüfbar",
+    "ai3": "Der Schiedsrichter kann nicht auf Gelder zugreifen oder sie bewegen — er signalisiert dem Vertrag nur die Freigabe",
+    "platformTitle": "Plattformsicherheit",
+    "pl1": "Ende-zu-Ende-verschlüsselte Kommunikation",
+    "pl2": "Keine privaten Schlüssel auf unseren Servern gespeichert",
+    "pl3": "Open Source — überprüfe unseren Code auf GitHub",
+    "viewGithub": "Auf GitHub ansehen →",
+    "auditTitle": "Auditstatus",
+    "au1": "Smart-Contract-Audit: In Bearbeitung",
+    "au2": "Wir sind Drittanbieter-Sicherheitsaudits verpflichtet und werden Ergebnisse hier veröffentlichen",
+    "au3": "Wenn du eine Schwachstelle entdeckst, kontaktiere uns unter security@escrowhubs.io",
+    "ctaTitle": "Bereit, ein sicheres Escrow zu erstellen?",
+    "ctaButton": "Escrow Erstellen →",
+    "metaTitle": "Sicherheit & Vertrauen — EscrowHubs",
+    "metaDesc": "Erfahre, wie EscrowHubs deine Vermögenswerte mit On-Chain-Escrow-Logik, unveränderlichen Smart Contracts und KI-Streitbeilegung auf BlockDAG schützt."
   }
 }

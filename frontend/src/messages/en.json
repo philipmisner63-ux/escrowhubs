@@ -5,7 +5,8 @@
     "learn": "Learn",
     "admin": "Admin",
     "connectWallet": "Connect Wallet",
-    "wrongNetwork": "Your wallet is on the wrong network. Switch to {name} (Chain ID {chainId}) to use this app."
+    "wrongNetwork": "Your wallet is on the wrong network. Switch to {name} (Chain ID {chainId}) to use this app.",
+    "security": "Security"
   },
   "landing": {
     "badge": "Featured on BlockDAG Academy",
@@ -228,6 +229,37 @@
     "discord": "Discord",
     "builtOn": "Built on BlockDAG",
     "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "security": "Security"
+  },
+  "security": {
+    "title": "Security & Trust",
+    "subtitle": "How EscrowHubs protects your assets on BlockDAG",
+    "smartContractTitle": "Smart Contract Security",
+    "sc1": "100% on-chain escrow logic — no custodial wallets, no middlemen",
+    "sc2": "Immutable smart contracts deployed on BlockDAG (Chain ID 1404)",
+    "sc3": "All escrow funds are held by the contract, not by EscrowHubs",
+    "sc4": "0 exploits since launch",
+    "protectionTitle": "How Your Funds Are Protected",
+    "p1": "Funds are locked in the smart contract until both parties agree or the AI Arbiter resolves a dispute",
+    "p2": "No single party — including EscrowHubs — can withdraw funds unilaterally",
+    "p3": "All transactions are publicly verifiable on the BlockDAG explorer",
+    "aiTitle": "AI Arbiter Transparency",
+    "ai1": "The AI Arbiter evaluates disputes based on evidence submitted by both parties",
+    "ai2": "All arbiter decisions are recorded on-chain and auditable",
+    "ai3": "The arbiter cannot access or move funds — it only signals the contract to release",
+    "platformTitle": "Platform Security",
+    "pl1": "End-to-end encrypted communications",
+    "pl2": "No private keys stored on our servers",
+    "pl3": "Open source — verify our code on GitHub",
+    "viewGithub": "View on GitHub →",
+    "auditTitle": "Audit Status",
+    "au1": "Smart contract audit: In progress",
+    "au2": "We are committed to third-party security audits and will publish results here",
+    "au3": "If you discover a vulnerability, contact us at security@escrowhubs.io",
+    "ctaTitle": "Ready to create a secure escrow?",
+    "ctaButton": "Create Escrow →",
+    "metaTitle": "Security & Trust — EscrowHubs",
+    "metaDesc": "Learn how EscrowHubs protects your assets with on-chain escrow logic, immutable smart contracts, and AI-powered dispute resolution on BlockDAG."
   }
 }

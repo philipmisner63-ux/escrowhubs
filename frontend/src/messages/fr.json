@@ -5,7 +5,8 @@
     "learn": "Apprendre",
     "admin": "Admin",
     "connectWallet": "Connecter le portefeuille",
-    "wrongNetwork": "Votre portefeuille est sur le mauvais réseau. Passez à {name} (Chain ID {chainId}) pour utiliser cette application."
+    "wrongNetwork": "Votre portefeuille est sur le mauvais réseau. Passez à {name} (Chain ID {chainId}) pour utiliser cette application.",
+    "security": "Sécurité"
   },
   "landing": {
     "badge": "Mis en avant sur BlockDAG Academy",
@@ -228,6 +229,37 @@
     "discord": "Discord",
     "builtOn": "Construit sur BlockDAG",
     "terms": "Conditions d'Utilisation",
-    "privacy": "Politique de Confidentialité"
+    "privacy": "Politique de Confidentialité",
+    "security": "Sécurité"
+  },
+  "security": {
+    "title": "Sécurité et Confiance",
+    "subtitle": "Comment EscrowHubs protège vos actifs sur BlockDAG",
+    "smartContractTitle": "Sécurité des Contrats Intelligents",
+    "sc1": "Logique de séquestre 100% on-chain — pas de portefeuilles de garde, pas d'intermédiaires",
+    "sc2": "Contrats intelligents immuables déployés sur BlockDAG (Chain ID 1404)",
+    "sc3": "Tous les fonds de séquestre sont détenus par le contrat, pas par EscrowHubs",
+    "sc4": "0 exploit depuis le lancement",
+    "protectionTitle": "Comment Vos Fonds Sont Protégés",
+    "p1": "Les fonds sont verrouillés dans le contrat intelligent jusqu'à ce que les deux parties s'accordent ou que l'AI Arbiter résolve le litige",
+    "p2": "Aucune partie — y compris EscrowHubs — ne peut retirer des fonds unilatéralement",
+    "p3": "Toutes les transactions sont vérifiables publiquement sur l'explorateur BlockDAG",
+    "aiTitle": "Transparence de l'AI Arbiter",
+    "ai1": "L'AI Arbiter évalue les litiges sur la base des preuves soumises par les deux parties",
+    "ai2": "Toutes les décisions de l'arbitre sont enregistrées on-chain et auditables",
+    "ai3": "L'arbitre ne peut pas accéder aux fonds ni les déplacer — il signale uniquement au contrat de libérer",
+    "platformTitle": "Sécurité de la Plateforme",
+    "pl1": "Communications chiffrées de bout en bout",
+    "pl2": "Aucune clé privée stockée sur nos serveurs",
+    "pl3": "Open source — vérifiez notre code sur GitHub",
+    "viewGithub": "Voir sur GitHub →",
+    "auditTitle": "Statut d'Audit",
+    "au1": "Audit du contrat intelligent : En cours",
+    "au2": "Nous nous engageons à des audits de sécurité tiers et publierons les résultats ici",
+    "au3": "Si vous découvrez une vulnérabilité, contactez-nous à security@escrowhubs.io",
+    "ctaTitle": "Prêt à créer un séquestre sécurisé ?",
+    "ctaButton": "Créer un Séquestre →",
+    "metaTitle": "Sécurité et Confiance — EscrowHubs",
+    "metaDesc": "Découvrez comment EscrowHubs protège vos actifs grâce à une logique de séquestre on-chain, des contrats intelligents immuables et une résolution des litiges par IA sur BlockDAG."
   }
 }

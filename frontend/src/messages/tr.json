@@ -5,7 +5,8 @@
     "learn": "Öğren",
     "admin": "Admin",
     "connectWallet": "Cüzdanı Bağla",
-    "wrongNetwork": "Cüzdanınız yanlış ağda. Bu uygulamayı kullanmak için {name} ağına geçin (Chain ID {chainId})."
+    "wrongNetwork": "Cüzdanınız yanlış ağda. Bu uygulamayı kullanmak için {name} ağına geçin (Chain ID {chainId}).",
+    "security": "Güvenlik"
   },
   "landing": {
     "badge": "BlockDAG Academy'de Öne Çıkan",
@@ -228,6 +229,37 @@
     "discord": "Discord",
     "builtOn": "BlockDAG üzerine inşa edildi",
     "terms": "Kullanım Şartları",
-    "privacy": "Gizlilik Politikası"
+    "privacy": "Gizlilik Politikası",
+    "security": "Güvenlik"
+  },
+  "security": {
+    "title": "Güvenlik ve Güven",
+    "subtitle": "EscrowHubs'ın BlockDAG'da varlıklarınızı nasıl koruduğu",
+    "smartContractTitle": "Akıllı Sözleşme Güvenliği",
+    "sc1": "100% zincir üzeri emanet mantığı — velayet cüzdanı yok, aracı yok",
+    "sc2": "BlockDAG'da dağıtılan değiştirilemez akıllı sözleşmeler (Chain ID 1404)",
+    "sc3": "Tüm emanet fonları, EscrowHubs değil, sözleşme tarafından tutulur",
+    "sc4": "Başlatmadan bu yana 0 exploit",
+    "protectionTitle": "Fonlarınız Nasıl Korunur",
+    "p1": "Fonlar, her iki taraf anlaşana veya AI Arbiter anlaşmazlığı çözene kadar akıllı sözleşmede kilitli kalır",
+    "p2": "EscrowHubs dahil hiçbir taraf fonları tek taraflı olarak çekemez",
+    "p3": "Tüm işlemler BlockDAG gezgininde kamuya açık olarak doğrulanabilir",
+    "aiTitle": "AI Arbiter Şeffaflığı",
+    "ai1": "AI Arbiter, her iki tarafça sunulan kanıtlara dayanarak anlaşmazlıkları değerlendirir",
+    "ai2": "Tüm hakem kararları zincire kaydedilir ve denetlenebilir",
+    "ai3": "Hakem fonlara erişemez veya taşıyamaz — yalnızca sözleşmeye serbest bırakma sinyali verir",
+    "platformTitle": "Platform Güvenliği",
+    "pl1": "Uçtan uca şifreli iletişim",
+    "pl2": "Sunucularımızda özel anahtar saklanmaz",
+    "pl3": "Açık kaynak — kodumuzu GitHub'da doğrulayın",
+    "viewGithub": "GitHub'da Görüntüle →",
+    "auditTitle": "Denetim Durumu",
+    "au1": "Akıllı sözleşme denetimi: Devam ediyor",
+    "au2": "Üçüncü taraf güvenlik denetimlerine bağlıyız ve sonuçları burada yayınlayacağız",
+    "au3": "Bir güvenlik açığı keşfederseniz security@escrowhubs.io adresinden bize ulaşın",
+    "ctaTitle": "Güvenli bir emanet oluşturmaya hazır mısınız?",
+    "ctaButton": "Emanet Oluştur →",
+    "metaTitle": "Güvenlik ve Güven — EscrowHubs",
+    "metaDesc": "EscrowHubs'ın BlockDAG'da zincir üzeri emanet mantığı, değiştirilemez akıllı sözleşmeler ve AI destekli anlaşmazlık çözümüyle varlıklarınızı nasıl koruduğunu öğrenin."
   }
 }

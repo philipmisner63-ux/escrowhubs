@@ -6,7 +6,7 @@ export const APP_URL = "https://app.escrowhubs.io";
 export const SITE_NAME = "EscrowHubs";
 
 // Map next-intl locale → OG locale format
-const OG_LOCALE: Record<Locale, string> = {
+export const OG_LOCALE_MAP: Record<string, string> = {
   en:      "en_US",
   ar:      "ar_SA",
   es:      "es_ES",
@@ -40,7 +40,7 @@ export async function buildMetadata(
   const title = t(`${namespace}.title`);
   const description = t(`${namespace}.description`);
   const url = `${APP_URL}/${locale}${path}`;
-  const ogLocale = OG_LOCALE[locale as Locale] ?? "en_US";
+  const ogLocale = OG_LOCALE_MAP[locale] ?? "en_US";
   const alternates = buildAlternates(path);
 
   return {

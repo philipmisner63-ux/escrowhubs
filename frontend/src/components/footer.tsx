@@ -15,6 +15,7 @@ export function Footer() {
 
   const resourceLinks = [
     { label: t("faq"),           href: "/learn/faq",   external: false },
+    { label: t("security"),      href: "/security",    external: false },
     { label: t("github"),        href: "https://github.com/philipmisner63-ux/blockdag-escrow", external: true },
     { label: t("documentation"), href: "#",            external: false },
   ];

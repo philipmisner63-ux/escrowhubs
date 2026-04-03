@@ -32,6 +32,7 @@ export function Nav() {
     { href: "/dashboard", label: t("dashboard") },
     { href: "/create",    label: t("create")    },
     { href: "/learn",     label: t("learn")     },
+    { href: "/security",  label: t("security")  },
   ];
   return (
     <nav className="sticky top-0 z-40 border-white/8 bg-black/50 backdrop-blur-xl">

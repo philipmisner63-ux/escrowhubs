@@ -5,7 +5,8 @@
     "learn": "学ぶ",
     "admin": "管理",
     "connectWallet": "ウォレットを接続",
-    "wrongNetwork": "ウォレットが間違ったネットワークに接続されています。{name}（Chain ID {chainId}）に切り替えてください。"
+    "wrongNetwork": "ウォレットが間違ったネットワークに接続されています。{name}（Chain ID {chainId}）に切り替えてください。",
+    "security": "セキュリティ"
   },
   "landing": {
     "badge": "BlockDAG Academyで紹介",
@@ -228,6 +229,37 @@
     "discord": "Discord",
     "builtOn": "BlockDAG上で構築",
     "terms": "利用規約",
-    "privacy": "プライバシーポリシー"
+    "privacy": "プライバシーポリシー",
+    "security": "セキュリティ"
+  },
+  "security": {
+    "title": "セキュリティと信頼",
+    "subtitle": "EscrowHubsがBlockDAG上でどのように資産を保護するか",
+    "smartContractTitle": "スマートコントラクトのセキュリティ",
+    "sc1": "100%オンチェーンのエスクローロジック — カストディアルウォレットなし、仲介者なし",
+    "sc2": "BlockDAGにデプロイされた不変のスマートコントラクト（Chain ID 1404）",
+    "sc3": "すべてのエスクロー資金はEscrowHubsではなくコントラクトが保管",
+    "sc4": "ローンチ以来0件のエクスプロイト",
+    "protectionTitle": "資金がどのように保護されるか",
+    "p1": "双方が合意するかAI Arbiterが紛争を解決するまで、資金はスマートコントラクトにロックされます",
+    "p2": "EscrowHubsを含むいかなる当事者も一方的に資金を引き出すことはできません",
+    "p3": "すべての取引はBlockDAGエクスプローラーで公開確認できます",
+    "aiTitle": "AI Arbiterの透明性",
+    "ai1": "AI Arbiterは両当事者が提出した証拠に基づいて紛争を評価します",
+    "ai2": "すべての仲裁決定はオンチェーンに記録され、監査可能です",
+    "ai3": "仲裁人は資金にアクセスしたり移動させたりできません — コントラクトにリリース信号を送るだけです",
+    "platformTitle": "プラットフォームセキュリティ",
+    "pl1": "エンドツーエンド暗号化通信",
+    "pl2": "サーバーに秘密鍵を保存しない",
+    "pl3": "オープンソース — GitHubでコードを確認",
+    "viewGithub": "GitHubで見る →",
+    "auditTitle": "監査状況",
+    "au1": "スマートコントラクト監査：進行中",
+    "au2": "第三者セキュリティ監査に取り組んでおり、結果をここに公開します",
+    "au3": "脆弱性を発見した場合はsecurity@escrowhubs.ioにご連絡ください",
+    "ctaTitle": "安全なエスクローを作成する準備はできましたか？",
+    "ctaButton": "エスクロー作成 →",
+    "metaTitle": "セキュリティと信頼 — EscrowHubs",
+    "metaDesc": "EscrowHubsがオンチェーンエスクローロジック、不変のスマートコントラクト、BlockDAGのAI紛争解決で資産を保護する方法をご覧ください。"
   }
 }

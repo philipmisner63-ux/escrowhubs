@@ -5,7 +5,8 @@
     "learn": "Aprender",
     "admin": "Admin",
     "connectWallet": "Conectar Billetera",
-    "wrongNetwork": "Tu billetera está en la red incorrecta. Cambia a {name} (Chain ID {chainId}) para usar esta app."
+    "wrongNetwork": "Tu billetera está en la red incorrecta. Cambia a {name} (Chain ID {chainId}) para usar esta app.",
+    "security": "Seguridad"
   },
   "landing": {
     "badge": "Destacado en BlockDAG Academy",
@@ -228,6 +229,37 @@
     "discord": "Discord",
     "builtOn": "Construido en BlockDAG",
     "terms": "Términos de Servicio",
-    "privacy": "Política de Privacidad"
+    "privacy": "Política de Privacidad",
+    "security": "Seguridad"
+  },
+  "security": {
+    "title": "Seguridad y Confianza",
+    "subtitle": "Cómo EscrowHubs protege tus activos en BlockDAG",
+    "smartContractTitle": "Seguridad del Contrato Inteligente",
+    "sc1": "Lógica de custodia 100% en cadena — sin billeteras custodiales, sin intermediarios",
+    "sc2": "Contratos inteligentes inmutables desplegados en BlockDAG (Chain ID 1404)",
+    "sc3": "Todos los fondos de custodia los retiene el contrato, no EscrowHubs",
+    "sc4": "0 exploits desde el lanzamiento",
+    "protectionTitle": "Cómo Se Protegen Tus Fondos",
+    "p1": "Los fondos están bloqueados en el contrato inteligente hasta que ambas partes acuerden o el AI Arbiter resuelva la disputa",
+    "p2": "Ninguna parte — incluido EscrowHubs — puede retirar fondos unilateralmente",
+    "p3": "Todas las transacciones son públicamente verificables en el explorador de BlockDAG",
+    "aiTitle": "Transparencia del AI Arbiter",
+    "ai1": "El AI Arbiter evalúa las disputas basándose en las pruebas presentadas por ambas partes",
+    "ai2": "Todas las decisiones del árbitro se registran en cadena y son auditables",
+    "ai3": "El árbitro no puede acceder ni mover fondos — solo señala al contrato para liberar",
+    "platformTitle": "Seguridad de la Plataforma",
+    "pl1": "Comunicaciones cifradas de extremo a extremo",
+    "pl2": "No almacenamos claves privadas en nuestros servidores",
+    "pl3": "Código abierto — verifica nuestro código en GitHub",
+    "viewGithub": "Ver en GitHub →",
+    "auditTitle": "Estado de Auditoría",
+    "au1": "Auditoría del contrato inteligente: En progreso",
+    "au2": "Estamos comprometidos con auditorías de seguridad de terceros y publicaremos los resultados aquí",
+    "au3": "Si descubres una vulnerabilidad, contáctanos en security@escrowhubs.io",
+    "ctaTitle": "¿Listo para crear una custodia segura?",
+    "ctaButton": "Crear Custodia →",
+    "metaTitle": "Seguridad y Confianza — EscrowHubs",
+    "metaDesc": "Descubre cómo EscrowHubs protege tus activos con lógica de custodia en cadena, contratos inteligentes inmutables y resolución de disputas con IA en BlockDAG."
   }
 }
