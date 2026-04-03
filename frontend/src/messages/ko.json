@@ -230,7 +230,8 @@
     "builtOn": "BlockDAG 위에 구축",
     "terms": "서비스 약관",
     "privacy": "개인정보 처리방침",
-    "security": "보안"
+    "security": "보안",
+    "takeTour": "투어 시작"
   },
   "security": {
     "title": "보안 및 신뢰",
@@ -261,5 +262,21 @@
     "ctaButton": "에스크로 만들기 →",
     "metaTitle": "보안 및 신뢰 — EscrowHubs",
     "metaDesc": "EscrowHubs가 온체인 에스크로 로직, 불변 스마트 컨트랙트, BlockDAG의 AI 분쟁 해결로 자산을 보호하는 방법을 알아보세요."
+  },
+  "tour": {
+    "step1Title": "EscrowHubs에 오신 것을 환영합니다! 👋",
+    "step1Body": "BlockDAG의 첫 번째 신뢰 없는 에스크로 플랫폼입니다. 안내해 드리겠습니다 — 30초면 충분합니다.",
+    "step2Title": "지갑을 연결하세요",
+    "step2Body": "BlockDAG 지갑을 연결하여 시작하세요. MetaMask와 WalletConnect를 지원합니다.",
+    "step3Title": "에스크로 유형 선택",
+    "step3Body": "일회성 거래에는 단순, 단계별 결제에는 마일스톤, 자동 분쟁 해결에는 AI Arbiter를 선택하세요.",
+    "step4Title": "첫 번째 에스크로 만들기",
+    "step4Body": "조건을 설정하고, 컨트랙트에 자금을 넣고, 상대방과 링크를 공유하세요. 1분 이내에 완료됩니다.",
+    "step5Title": "신뢰를 위해 구축됨",
+    "step5Body": "100% 온체인, 0건의 취약점 악용, 완전 감사 가능. 자금은 약속이 아닌 스마트 컨트랙트로 보호됩니다.",
+    "next": "다음 →",
+    "done": "완료 ✓",
+    "skip": "투어 건너뛰기",
+    "takeTour": "투어 시작"
   }
 }

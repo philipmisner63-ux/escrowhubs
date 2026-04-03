@@ -230,7 +230,8 @@
     "builtOn": "Construit sur BlockDAG",
     "terms": "Conditions d'Utilisation",
     "privacy": "Politique de Confidentialité",
-    "security": "Sécurité"
+    "security": "Sécurité",
+    "takeTour": "Faire la Visite"
   },
   "security": {
     "title": "Sécurité et Confiance",
@@ -261,5 +262,21 @@
     "ctaButton": "Créer un Séquestre →",
     "metaTitle": "Sécurité et Confiance — EscrowHubs",
     "metaDesc": "Découvrez comment EscrowHubs protège vos actifs grâce à une logique de séquestre on-chain, des contrats intelligents immuables et une résolution des litiges par IA sur BlockDAG."
+  },
+  "tour": {
+    "step1Title": "Bienvenue sur EscrowHubs ! 👋",
+    "step1Body": "La première plateforme de séquestre sans confiance sur BlockDAG. Laissez-nous vous montrer — ça prend 30 secondes.",
+    "step2Title": "Connectez Votre Portefeuille",
+    "step2Body": "Commencez par connecter votre portefeuille BlockDAG. Nous supportons MetaMask et WalletConnect.",
+    "step3Title": "Choisissez Votre Type de Séquestre",
+    "step3Body": "Simple pour les accords uniques, Par jalons pour les paiements échelonnés, ou AI Arbiter pour la résolution automatique des litiges.",
+    "step4Title": "Créez Votre Premier Séquestre",
+    "step4Body": "Définissez les conditions, financez le contrat et partagez le lien avec votre contrepartie. Fait en moins d'une minute.",
+    "step5Title": "Conçu pour la Confiance",
+    "step5Body": "100% on-chain, 0 exploit, entièrement auditable. Vos fonds sont protégés par des contrats intelligents, pas des promesses.",
+    "next": "Suivant →",
+    "done": "Terminé ✓",
+    "skip": "Passer la Visite",
+    "takeTour": "Faire la Visite"
   }
 }

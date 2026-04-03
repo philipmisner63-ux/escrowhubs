@@ -230,7 +230,8 @@
     "builtOn": "BlockDAG üzerine inşa edildi",
     "terms": "Kullanım Şartları",
     "privacy": "Gizlilik Politikası",
-    "security": "Güvenlik"
+    "security": "Güvenlik",
+    "takeTour": "Tur Yap"
   },
   "security": {
     "title": "Güvenlik ve Güven",
@@ -261,5 +262,21 @@
     "ctaButton": "Emanet Oluştur →",
     "metaTitle": "Güvenlik ve Güven — EscrowHubs",
     "metaDesc": "EscrowHubs'ın BlockDAG'da zincir üzeri emanet mantığı, değiştirilemez akıllı sözleşmeler ve AI destekli anlaşmazlık çözümüyle varlıklarınızı nasıl koruduğunu öğrenin."
+  },
+  "tour": {
+    "step1Title": "EscrowHubs'a Hoş Geldiniz! 👋",
+    "step1Body": "BlockDAG'da güvensiz emanet konusunda ilk platform. Size nasıl çalıştığını gösterelim — sadece 30 saniye.",
+    "step2Title": "Cüzdanınızı Bağlayın",
+    "step2Body": "BlockDAG cüzdanınızı bağlayarak başlayın. MetaMask ve WalletConnect'i destekliyoruz.",
+    "step3Title": "Emanet Türünüzü Seçin",
+    "step3Body": "Tek seferlik anlaşmalar için Basit, aşamalı ödemeler için Meilenstonn veya otomatik anlaşmazlık çözümü için AI Arbiter.",
+    "step4Title": "İlk Emanedinizi Oluşturun",
+    "step4Body": "Şartları belirleyin, sözleşmeyi finanse edin ve bağlantıyı karşı tarafınızla paylaşın. Bir dakikadan kısa sürede tamamlandı.",
+    "step5Title": "Güven İçin İnşa Edildi",
+    "step5Body": "100% zincir üzeri, 0 exploit, tamamen denetlenebilir. Fonlarınız sözler değil, akıllı sözleşmeler tarafından korunuyor.",
+    "next": "Sonraki →",
+    "done": "Tamamlandı ✓",
+    "skip": "Turu Atla",
+    "takeTour": "Tur Yap"
   }
 }

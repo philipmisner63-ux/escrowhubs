@@ -230,7 +230,8 @@
     "builtOn": "BlockDAG上で構築",
     "terms": "利用規約",
     "privacy": "プライバシーポリシー",
-    "security": "セキュリティ"
+    "security": "セキュリティ",
+    "takeTour": "ツアーを始める"
   },
   "security": {
     "title": "セキュリティと信頼",
@@ -261,5 +262,21 @@
     "ctaButton": "エスクロー作成 →",
     "metaTitle": "セキュリティと信頼 — EscrowHubs",
     "metaDesc": "EscrowHubsがオンチェーンエスクローロジック、不変のスマートコントラクト、BlockDAGのAI紛争解決で資産を保護する方法をご覧ください。"
+  },
+  "tour": {
+    "step1Title": "EscrowHubsへようこそ！👋",
+    "step1Body": "BlockDAG上で初めてのトラストレス・エスクロープラットフォームです。30秒でご案内します。",
+    "step2Title": "ウォレットを接続",
+    "step2Body": "BlockDAGウォレットを接続して始めましょう。MetaMaskとWalletConnectに対応しています。",
+    "step3Title": "エスクロータイプを選択",
+    "step3Body": "一回限りの取引にはシンプル、段階的な支払いにはマイルストーン、自動紛争解決にはAI Arbiterを選択。",
+    "step4Title": "最初のエスクローを作成",
+    "step4Body": "条件を設定し、コントラクトに資金を入れ、相手方とリンクを共有。1分以内に完了します。",
+    "step5Title": "信頼のために構築",
+    "step5Body": "100%オンチェーン、0件のエクスプロイト、完全に監査可能。資金は約束ではなくスマートコントラクトで保護されます。",
+    "next": "次へ →",
+    "done": "完了 ✓",
+    "skip": "ツアーをスキップ",
+    "takeTour": "ツアーを始める"
   }
 }

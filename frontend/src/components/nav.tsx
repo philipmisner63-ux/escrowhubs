@@ -71,7 +71,7 @@ export function Nav() {
             {/* Right side */}
             <div className="flex items-center gap-2">
               <LanguagePicker />
-              <WalletConnectButton />
+              <div data-tour="connect-wallet"><WalletConnectButton /></div>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { resetAndStartTour } from "@/components/onboarding-tour";
 import Link from "next/link";
 
 export function Footer() {
@@ -95,6 +96,15 @@ export function Footer() {
                   )}
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={resetAndStartTour}
+                  className="text-sm text-slate-500 hover:text-cyan-400 transition-colors"
+                >
+                  {t("takeTour")}
+                </button>
+              </li>
               {/* Support — triggers existing support button */}
               <li>
                 <button

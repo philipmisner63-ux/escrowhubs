@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Nav } from "@/components/nav";
 import { useTranslations } from "next-intl";
 import { Footer } from "@/components/footer";
+import { OnboardingTour } from "@/components/onboarding-tour";
 
 export default function LandingPage() {
   const t = useTranslations("landing");
@@ -98,7 +99,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Feature Cards ────────────────────────────────────────── */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <section data-tour="feature-cards" className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
@@ -165,6 +166,7 @@ export default function LandingPage() {
             </div>
             <Link
               href="/create"
+              data-tour="cta-create"
               className="btn-glow shrink-0 px-5 py-2 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/20 transition-all"
             >
               {t("createEscrow")}
@@ -173,7 +175,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Protocol Stats ───────────────────────────────────────── */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <section data-tour="stats" className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           {stats.map(s => (
             <div key={s.label} className="card-glow-stats rounded-xl border border-white/8 bg-white/3 p-5">
               <p
@@ -189,6 +191,7 @@ export default function LandingPage() {
 
       </main>
 
+      <OnboardingTour />
       <Footer />
     </div>
   );

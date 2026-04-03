@@ -230,7 +230,8 @@
     "builtOn": "基于 BlockDAG 构建",
     "terms": "服务条款",
     "privacy": "隐私政策",
-    "security": "安全"
+    "security": "安全",
+    "takeTour": "开始导览"
   },
   "security": {
     "title": "安全与信任",
@@ -261,5 +262,21 @@
     "ctaButton": "创建托管 →",
     "metaTitle": "安全与信任 — EscrowHubs",
     "metaDesc": "了解 EscrowHubs 如何通过链上托管逻辑、不可变智能合约和 BlockDAG 上的 AI 纠纷解决来保护您的资产。"
+  },
+  "tour": {
+    "step1Title": "欢迎来到 EscrowHubs！👋",
+    "step1Body": "BlockDAG 上第一个无信任托管平台。让我们带您参观一下 — 只需 30 秒。",
+    "step2Title": "连接您的钱包",
+    "step2Body": "从连接您的 BlockDAG 钱包开始。我们支持 MetaMask 和 WalletConnect。",
+    "step3Title": "选择您的托管类型",
+    "step3Body": "简单托管用于一次性交易，里程碑用于分阶段付款，或 AI Arbiter 用于自动解决纠纷。",
+    "step4Title": "创建您的第一个托管",
+    "step4Body": "设定条款，为合约充值，并与对方共享链接。不到一分钟即可完成。",
+    "step5Title": "为信任而生",
+    "step5Body": "100% 链上，0 次漏洞利用，完全可审计。您的资金受智能合约保护，而非承诺。",
+    "next": "下一步 →",
+    "done": "完成 ✓",
+    "skip": "跳过导览",
+    "takeTour": "开始导览"
   }
 }

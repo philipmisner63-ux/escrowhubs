@@ -230,7 +230,8 @@
     "builtOn": "Construido en BlockDAG",
     "terms": "Términos de Servicio",
     "privacy": "Política de Privacidad",
-    "security": "Seguridad"
+    "security": "Seguridad",
+    "takeTour": "Hacer el Tour"
   },
   "security": {
     "title": "Seguridad y Confianza",
@@ -261,5 +262,21 @@
     "ctaButton": "Crear Custodia →",
     "metaTitle": "Seguridad y Confianza — EscrowHubs",
     "metaDesc": "Descubre cómo EscrowHubs protege tus activos con lógica de custodia en cadena, contratos inteligentes inmutables y resolución de disputas con IA en BlockDAG."
+  },
+  "tour": {
+    "step1Title": "¡Bienvenido a EscrowHubs! 👋",
+    "step1Body": "La primera plataforma de custodia sin confianza en BlockDAG. Te mostramos cómo funciona — solo 30 segundos.",
+    "step2Title": "Conecta Tu Billetera",
+    "step2Body": "Empieza conectando tu billetera de BlockDAG. Soportamos MetaMask y WalletConnect.",
+    "step3Title": "Elige Tu Tipo de Custodia",
+    "step3Body": "Simple para acuerdos únicos, Por Hitos para pagos escalonados, o AI Arbiter para resolución automática de disputas.",
+    "step4Title": "Crea Tu Primera Custodia",
+    "step4Body": "Define los términos, financia el contrato y comparte el enlace con tu contraparte. Listo en menos de un minuto.",
+    "step5Title": "Construido para la Confianza",
+    "step5Body": "100% en cadena, 0 exploits, totalmente auditable. Tus fondos están protegidos por contratos inteligentes, no promesas.",
+    "next": "Siguiente →",
+    "done": "Listo ✓",
+    "skip": "Omitir Tour",
+    "takeTour": "Hacer el Tour"
   }
 }

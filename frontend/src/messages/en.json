@@ -230,7 +230,8 @@
     "builtOn": "Built on BlockDAG",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
-    "security": "Security"
+    "security": "Security",
+    "takeTour": "Take a Tour"
   },
   "security": {
     "title": "Security & Trust",
@@ -261,5 +262,21 @@
     "ctaButton": "Create Escrow →",
     "metaTitle": "Security & Trust — EscrowHubs",
     "metaDesc": "Learn how EscrowHubs protects your assets with on-chain escrow logic, immutable smart contracts, and AI-powered dispute resolution on BlockDAG."
+  },
+  "tour": {
+    "step1Title": "Welcome to EscrowHubs! 👋",
+    "step1Body": "The first trustless escrow platform on BlockDAG. Let us show you around — it takes 30 seconds.",
+    "step2Title": "Connect Your Wallet",
+    "step2Body": "Start by connecting your BlockDAG wallet. We support MetaMask and WalletConnect.",
+    "step3Title": "Choose Your Escrow Type",
+    "step3Body": "Simple for one-time deals, Milestone for staged payments, or AI Arbiter for automatic dispute resolution.",
+    "step4Title": "Create Your First Escrow",
+    "step4Body": "Set the terms, fund the contract, and share the link with your counterparty. Done in under a minute.",
+    "step5Title": "Built for Trust",
+    "step5Body": "100% on-chain, 0 exploits, fully auditable. Your funds are protected by smart contracts, not promises.",
+    "next": "Next →",
+    "done": "Done ✓",
+    "skip": "Skip Tour",
+    "takeTour": "Take a Tour"
   }
 }
