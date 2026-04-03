@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useAccount, useReadContracts } from "wagmi";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import { useTranslations } from "next-intl";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -188,6 +189,7 @@ export default function DashboardPage() {
           </div>
         </PageWrapper>
       </main>
+      <Footer />
     </div>
   );
 }

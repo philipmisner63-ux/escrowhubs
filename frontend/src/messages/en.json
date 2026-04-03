@@ -208,5 +208,26 @@
       "title": "How It Works — EscrowHubs",
       "description": "Learn how trustless escrow works on BlockDAG with step-by-step guides for all escrow types."
     }
+  },
+  "footer": {
+    "tagline": "Trustless escrow powered by BlockDAG",
+    "copyright": "© 2026 EscrowHubs. All rights reserved.",
+    "product": "Product",
+    "createEscrow": "Create Escrow",
+    "dashboard": "Dashboard",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "resources": "Resources",
+    "faq": "FAQ",
+    "github": "GitHub",
+    "documentation": "Documentation",
+    "support": "Support",
+    "community": "Community",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "Built on BlockDAG",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
   }
 }

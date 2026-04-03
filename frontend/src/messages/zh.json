@@ -208,5 +208,26 @@
       "title": "如何运作 — EscrowHubs",
       "description": "通过所有托管类型的分步指南了解 BlockDAG 上无信任托管的工作原理。"
     }
+  },
+  "footer": {
+    "tagline": "由 BlockDAG 驱动的无信任托管",
+    "copyright": "© 2026 EscrowHubs. 保留所有权利。",
+    "product": "产品",
+    "createEscrow": "创建托管",
+    "dashboard": "控制台",
+    "howItWorks": "如何运作",
+    "pricing": "定价",
+    "resources": "资源",
+    "faq": "常见问题",
+    "github": "GitHub",
+    "documentation": "文档",
+    "support": "支持",
+    "community": "社区",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "基于 BlockDAG 构建",
+    "terms": "服务条款",
+    "privacy": "隐私政策"
   }
 }

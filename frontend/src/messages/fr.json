@@ -208,5 +208,26 @@
       "title": "Comment Ça Marche — EscrowHubs",
       "description": "Apprenez comment fonctionne le séquestre sans confiance sur BlockDAG avec des guides étape par étape pour tous les types."
     }
+  },
+  "footer": {
+    "tagline": "Séquestre sans confiance propulsé par BlockDAG",
+    "copyright": "© 2026 EscrowHubs. Tous droits réservés.",
+    "product": "Produit",
+    "createEscrow": "Créer un Séquestre",
+    "dashboard": "Tableau de Bord",
+    "howItWorks": "Comment Ça Marche",
+    "pricing": "Tarifs",
+    "resources": "Ressources",
+    "faq": "FAQ",
+    "github": "GitHub",
+    "documentation": "Documentation",
+    "support": "Assistance",
+    "community": "Communauté",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "Construit sur BlockDAG",
+    "terms": "Conditions d'Utilisation",
+    "privacy": "Politique de Confidentialité"
   }
 }

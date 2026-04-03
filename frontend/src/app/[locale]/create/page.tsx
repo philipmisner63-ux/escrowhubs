@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { parseEther, createPublicClient, http } from "viem";
 import { useWriteContract } from "wagmi";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -344,6 +345,7 @@ export default function CreateEscrowPage() {
           </div>
         </PageWrapper>
       </main>
+      <Footer />
     </div>
   );
 }

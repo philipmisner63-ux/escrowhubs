@@ -208,5 +208,26 @@
       "title": "كيف يعمل — EscrowHubs",
       "description": "تعلم كيف يعمل الضمان بلا وسيط على BlockDAG مع أدلة خطوة بخطوة لجميع أنواع الضمان."
     }
+  },
+  "footer": {
+    "tagline": "ضمان بلا وسيط مدعوم بـ BlockDAG",
+    "copyright": "© 2026 EscrowHubs. جميع الحقوق محفوظة.",
+    "product": "المنتج",
+    "createEscrow": "إنشاء ضمان",
+    "dashboard": "لوحة التحكم",
+    "howItWorks": "كيف يعمل",
+    "pricing": "الأسعار",
+    "resources": "الموارد",
+    "faq": "الأسئلة الشائعة",
+    "github": "GitHub",
+    "documentation": "التوثيق",
+    "support": "الدعم",
+    "community": "المجتمع",
+    "twitter": "تويتر / X",
+    "telegram": "تيليغرام",
+    "discord": "ديسكورد",
+    "builtOn": "مبني على BlockDAG",
+    "terms": "شروط الخدمة",
+    "privacy": "سياسة الخصوصية"
   }
 }

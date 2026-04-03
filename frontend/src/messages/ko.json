@@ -208,5 +208,26 @@
       "title": "작동 방식 — EscrowHubs",
       "description": "모든 에스크로 유형에 대한 단계별 가이드로 BlockDAG에서 신뢰 없는 에스크로의 작동 원리를 알아보세요."
     }
+  },
+  "footer": {
+    "tagline": "BlockDAG이 지원하는 신뢰 없는 에스크로",
+    "copyright": "© 2026 EscrowHubs. 모든 권리 보유.",
+    "product": "제품",
+    "createEscrow": "에스크로 만들기",
+    "dashboard": "대시보드",
+    "howItWorks": "작동 방식",
+    "pricing": "가격",
+    "resources": "리소스",
+    "faq": "자주 묻는 질문",
+    "github": "GitHub",
+    "documentation": "문서",
+    "support": "지원",
+    "community": "커뮤니티",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "BlockDAG 위에 구축",
+    "terms": "서비스 약관",
+    "privacy": "개인정보 처리방침"
   }
 }

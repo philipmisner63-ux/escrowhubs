@@ -208,5 +208,26 @@
       "title": "Как это работает — EscrowHubs",
       "description": "Узнайте, как работает эскроу без посредников на BlockDAG, с пошаговыми руководствами для всех типов."
     }
+  },
+  "footer": {
+    "tagline": "Эскроу без посредников на BlockDAG",
+    "copyright": "© 2026 EscrowHubs. Все права защищены.",
+    "product": "Продукт",
+    "createEscrow": "Создать эскроу",
+    "dashboard": "Панель",
+    "howItWorks": "Как это работает",
+    "pricing": "Цены",
+    "resources": "Ресурсы",
+    "faq": "Частые вопросы",
+    "github": "GitHub",
+    "documentation": "Документация",
+    "support": "Поддержка",
+    "community": "Сообщество",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "Построено на BlockDAG",
+    "terms": "Условия использования",
+    "privacy": "Политика конфиденциальности"
   }
 }

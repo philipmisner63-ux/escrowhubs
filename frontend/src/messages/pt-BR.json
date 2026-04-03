@@ -208,5 +208,26 @@
       "title": "Como Funciona — EscrowHubs",
       "description": "Aprenda como funciona a custódia sem confiança na BlockDAG com guias passo a passo para todos os tipos."
     }
+  },
+  "footer": {
+    "tagline": "Custódia sem confiança impulsionada pela BlockDAG",
+    "copyright": "© 2026 EscrowHubs. Todos os direitos reservados.",
+    "product": "Produto",
+    "createEscrow": "Criar Custódia",
+    "dashboard": "Painel",
+    "howItWorks": "Como Funciona",
+    "pricing": "Preços",
+    "resources": "Recursos",
+    "faq": "Perguntas Frequentes",
+    "github": "GitHub",
+    "documentation": "Documentação",
+    "support": "Suporte",
+    "community": "Comunidade",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "Construído na BlockDAG",
+    "terms": "Termos de Serviço",
+    "privacy": "Política de Privacidade"
   }
 }

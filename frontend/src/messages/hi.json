@@ -208,5 +208,26 @@
       "title": "यह कैसे काम करता है — EscrowHubs",
       "description": "सभी एस्क्रो प्रकारों के लिए चरण-दर-चरण गाइड के साथ BlockDAG पर एस्क्रो कैसे काम करता है सीखें।"
     }
+  },
+  "footer": {
+    "tagline": "BlockDAG द्वारा संचालित बिना विश्वास का एस्क्रो",
+    "copyright": "© 2026 EscrowHubs. सर्वाधिकार सुरक्षित।",
+    "product": "उत्पाद",
+    "createEscrow": "एस्क्रो बनाएं",
+    "dashboard": "डैशबोर्ड",
+    "howItWorks": "यह कैसे काम करता है",
+    "pricing": "मूल्य निर्धारण",
+    "resources": "संसाधन",
+    "faq": "अक्सर पूछे जाने वाले प्रश्न",
+    "github": "GitHub",
+    "documentation": "दस्तावेज़ीकरण",
+    "support": "सहायता",
+    "community": "समुदाय",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "BlockDAG पर निर्मित",
+    "terms": "सेवा की शर्तें",
+    "privacy": "गोपनीयता नीति"
   }
 }

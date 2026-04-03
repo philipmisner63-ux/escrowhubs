@@ -1,6 +1,7 @@
 "use client";
 
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import { useTranslations } from "next-intl";
 import { PageWrapper } from "@/components/page-wrapper";
 import { SimpleFlow } from "@/components/how-it-works/SimpleFlow";
@@ -27,6 +28,7 @@ export default function HowItWorksPage() {
           </div>
         </PageWrapper>
       </main>
+      <Footer />
     </div>
   );
 }

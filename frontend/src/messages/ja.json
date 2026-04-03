@@ -208,5 +208,26 @@
       "title": "仕組み — EscrowHubs",
       "description": "すべてのエスクロータイプのステップバイステップガイドで、BlockDAGでのトラストレス・エスクローの仕組みを学ぶ。"
     }
+  },
+  "footer": {
+    "tagline": "BlockDAGが支えるトラストレス・エスクロー",
+    "copyright": "© 2026 EscrowHubs. All rights reserved.",
+    "product": "プロダクト",
+    "createEscrow": "エスクロー作成",
+    "dashboard": "ダッシュボード",
+    "howItWorks": "仕組み",
+    "pricing": "料金",
+    "resources": "リソース",
+    "faq": "よくある質問",
+    "github": "GitHub",
+    "documentation": "ドキュメント",
+    "support": "サポート",
+    "community": "コミュニティ",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "BlockDAG上で構築",
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー"
   }
 }

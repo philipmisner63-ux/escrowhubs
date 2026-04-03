@@ -208,5 +208,26 @@
       "title": "So Funktioniert Es — EscrowHubs",
       "description": "Lerne, wie Escrow ohne Vertrauen auf BlockDAG funktioniert, mit Schritt-für-Schritt-Anleitungen für alle Escrow-Typen."
     }
+  },
+  "footer": {
+    "tagline": "Treuhänder ohne Vertrauen, betrieben von BlockDAG",
+    "copyright": "© 2026 EscrowHubs. Alle Rechte vorbehalten.",
+    "product": "Produkt",
+    "createEscrow": "Escrow Erstellen",
+    "dashboard": "Dashboard",
+    "howItWorks": "So Funktioniert Es",
+    "pricing": "Preise",
+    "resources": "Ressourcen",
+    "faq": "FAQ",
+    "github": "GitHub",
+    "documentation": "Dokumentation",
+    "support": "Support",
+    "community": "Community",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "Gebaut auf BlockDAG",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutzrichtlinie"
   }
 }

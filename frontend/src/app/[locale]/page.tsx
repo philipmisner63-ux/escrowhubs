@@ -4,10 +4,10 @@ import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Nav } from "@/components/nav";
 import { useTranslations } from "next-intl";
+import { Footer } from "@/components/footer";
 
 export default function LandingPage() {
   const t = useTranslations("landing");
-  const tc = useTranslations("common");
 
   const features = [
     { icon: "🛡️", title: t("feature1Title"), desc: t("feature1Desc"), accent: "border-cyan-400/20 bg-cyan-400/5 text-cyan-400" },
@@ -170,12 +170,7 @@ export default function LandingPage() {
 
       </main>
 
-      <footer className="border-t border-white/8 py-6 text-center text-xs text-slate-600">
-        {t("footer")}{" "}
-        <a href="https://github.com/philipmisner63-ux/blockdag-escrow" className="hover:text-cyan-400 transition-colors" target="_blank" rel="noopener noreferrer">
-          {tc("github")}
-        </a>
-      </footer>
+      <Footer />
     </div>
   );
 }

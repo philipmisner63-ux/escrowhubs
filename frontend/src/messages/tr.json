@@ -208,5 +208,26 @@
       "title": "Nasıl Çalışır — EscrowHubs",
       "description": "Tüm emanet türleri için adım adım kılavuzlarla BlockDAG'da güvensiz emanetin nasıl çalıştığını öğrenin."
     }
+  },
+  "footer": {
+    "tagline": "BlockDAG ile desteklenen güvensiz emanet",
+    "copyright": "© 2026 EscrowHubs. Tüm hakları saklıdır.",
+    "product": "Ürün",
+    "createEscrow": "Emanet Oluştur",
+    "dashboard": "Panel",
+    "howItWorks": "Nasıl Çalışır",
+    "pricing": "Fiyatlandırma",
+    "resources": "Kaynaklar",
+    "faq": "Sıkça Sorulan Sorular",
+    "github": "GitHub",
+    "documentation": "Belgeler",
+    "support": "Destek",
+    "community": "Topluluk",
+    "twitter": "Twitter / X",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "builtOn": "BlockDAG üzerine inşa edildi",
+    "terms": "Kullanım Şartları",
+    "privacy": "Gizlilik Politikası"
   }
 }
