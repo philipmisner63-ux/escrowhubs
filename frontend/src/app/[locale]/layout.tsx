@@ -10,6 +10,7 @@ import { localeMetadata } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
 import { APP_URL, SITE_NAME, buildMetadata } from "@/lib/metadata";
 import { PWARegister } from "@/components/pwa-register";
+import { ChainGuard } from "@/components/chain-guard";
 import "../globals.css";
 
 const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
@@ -70,7 +71,9 @@ export default async function LocaleLayout({
             <PWARegister />
             <AnimatedBackground />
             <div className="relative min-h-screen">
-              {children}
+              <ChainGuard>
+                {children}
+              </ChainGuard>
             </div>
           </Providers>
         </NextIntlClientProvider>

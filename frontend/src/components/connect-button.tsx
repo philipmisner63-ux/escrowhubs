@@ -2,24 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import { DEFAULT_CHAIN_ID } from "@/lib/chains";
-
-// ChainGuard: silently switches to the default chain on connect.
-// Wrong-network UI feedback is handled by the nav banner (nav.tsx).
-function ChainGuard() {
-  const { isConnected } = useAccount();
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
-
-  useEffect(() => {
-    if (isConnected && chainId !== DEFAULT_CHAIN_ID) {
-      switchChain?.({ chainId: DEFAULT_CHAIN_ID });
-    }
-  }, [isConnected, chainId, switchChain]);
-
-  return null;
-}
 
 export function WalletConnectButton() {
   const [mounted, setMounted] = useState(false);
@@ -37,9 +19,6 @@ export function WalletConnectButton() {
   }
 
   return (
-    <>
-      <ChainGuard />
-      <ConnectButton chainStatus="icon" showBalance={false} accountStatus="avatar" />
-    </>
+    <ConnectButton chainStatus="icon" showBalance={false} accountStatus="avatar" />
   );
 }
