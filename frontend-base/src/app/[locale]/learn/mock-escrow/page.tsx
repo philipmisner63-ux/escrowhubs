@@ -180,7 +180,7 @@ export default function MockEscrowPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-white text-sm">{ms.description}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{ms.amount{ms.amount} ETH</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{ms.amount} ETH</p>
                   </div>
                   <span className={cn("text-xs px-2 py-1 rounded-full border shrink-0", STATE_COLORS[ms.stateLabel])}>
                     {ms.stateLabel}
