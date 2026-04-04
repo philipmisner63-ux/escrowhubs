@@ -176,7 +176,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
             <>
               <ActionRow
                 title="Release Funds"
-                desc={`Send ${data.amount ? formatEther(data.amount) : "?"} BDAG to beneficiary`}
+                desc={`Send ${data.amount ? formatEther(data.amount) : "?"} ETH to beneficiary`}
                 action={<GlowButton variant="primary" loading={writes.isPending} onClick={() => doWrite(() => writes.release(address), "Release")}>Release</GlowButton>}
               />
               <ActionRow

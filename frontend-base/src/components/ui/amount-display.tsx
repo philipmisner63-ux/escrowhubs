@@ -22,7 +22,7 @@ const symbolSizes = {
 
 export function AmountDisplay({
   amount,
-  symbol = "BDAG",
+  symbol = "ETH",
   size = "md",
   className,
 }: AmountDisplayProps) {

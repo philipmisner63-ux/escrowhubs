@@ -2,7 +2,10 @@ import { type HardhatUserConfig } from "hardhat/config";
 import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-verify";
 import { config as dotenvConfig } from "dotenv";
-dotenvConfig();
+import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenvConfig({ path: path.resolve(__dirname, ".env"), override: true });
 
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxViem],

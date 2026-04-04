@@ -4,9 +4,9 @@ import { motion } from "framer-motion";
 
 const steps = [
   { icon: "📄", title: "Create Milestone Escrow", desc: "Contract created with multiple milestones" },
-  { icon: "💰", title: "Fund Escrow",             desc: "Depositor funds total BDAG upfront" },
+  { icon: "💰", title: "Fund Escrow",             desc: "Depositor funds total ETH upfront" },
   { icon: "⏳", title: "Milestones Pending",      desc: "Escrow funded — milestones awaiting release" },
-  { icon: "🟩", title: "Release Milestone",       desc: "Depositor releases milestone BDAG to beneficiary" },
+  { icon: "🟩", title: "Release Milestone",       desc: "Depositor releases milestone ETH to beneficiary" },
   { icon: "⚠️", title: "Dispute Milestone",        desc: "Depositor disputes milestone — arbiter reviews" },
   { icon: "⚖️", title: "Arbiter Resolves",         desc: "Arbiter releases or refunds milestone" },
 ];

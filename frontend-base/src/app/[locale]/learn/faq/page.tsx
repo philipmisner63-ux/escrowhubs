@@ -11,7 +11,7 @@ export default function FAQPage() {
     <div className="max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Frequently Asked Questions</h1>
-        <p className="mt-1 text-slate-400 text-sm">Everything you need to know about EscrowHubs on BlockDAG.</p>
+        <p className="mt-1 text-slate-400 text-sm">Everything you need to know about EscrowHubs on Base.</p>
       </div>
 
       <div className="space-y-2">

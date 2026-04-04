@@ -17,7 +17,7 @@ export default function LearnIndexPage() {
       <div>
         <h1 className="text-3xl font-bold text-white">Learn EscrowHubs</h1>
         <p className="mt-2 text-slate-400">
-          Interactive guides, flow diagrams, and role-based demos to help you understand how escrow works on BlockDAG.
+          Interactive guides, flow diagrams, and role-based demos to help you understand how escrow works on Base.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">

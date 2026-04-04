@@ -23,7 +23,7 @@ export interface ReceiptData {
 
 function fmt(wei: bigint, decimals = 4): string {
   const eth = Number(wei) / 1e18;
-  return eth.toFixed(decimals) + " BDAG";
+  return eth.toFixed(decimals) + " ETH";
 }
 
 function shortAddr(addr: string): string {

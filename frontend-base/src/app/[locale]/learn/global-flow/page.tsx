@@ -68,7 +68,7 @@ export default function GlobalFlowPage() {
             {[
               { title: "Global Usage",    icon: "🌍", items: ["Any two parties worldwide", "No trusted middleman", "Funds locked in smart contract", "Transparent on-chain state"] },
               { title: "Trust Model",     icon: "🔐", items: ["Code is the arbiter", "No admin keys on escrow", "Factory owner only collects fees", "AI arbiter runs on-chain evidence"] },
-              { title: "Fee Structure",   icon: "💰", items: ["0.5% protocol fee at creation", "+1 BDAG flat for AI Arbiter", "Fees go to factory contract", "Owner can withdraw accumulated fees"] },
+              { title: "Fee Structure",   icon: "💰", items: ["0.5% protocol fee at creation", "+small ETH flat for AI Arbiter", "Fees go to factory contract", "Owner can withdraw accumulated fees"] },
               { title: "Supported Flows", icon: "🔀", items: ["Simple: single payment release", "Milestone: phased payments", "Dispute: human or AI arbiter", "Refund: if depositor wins dispute"] },
             ].map(({ title, icon, items }) => (
               <div key={title} className="rounded-xl border border-white/8 bg-white/3 p-4">
@@ -97,7 +97,7 @@ export default function GlobalFlowPage() {
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║  Step 1 ── DEPOSITOR calls createSimpleEscrow()             ║
-║            sends: BDAG amount + 0.5% fee                    ║
+║            sends: ETH amount + 0.5% fee                    ║
 ║            specifies: beneficiary, arbiter                   ║
 ║                         │                                    ║
 ║                         ▼                                    ║
@@ -149,7 +149,7 @@ export default function GlobalFlowPage() {
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║  Step 1 ── createMilestoneEscrow(beneficiary, arbiter,       ║
-║              ["M1","M2","M3"], [2.5, 3.0, 4.0 BDAG])        ║
+║              ["M1","M2","M3"], [2.5, 3.0, 4.0 ETH])        ║
 ║                         │                                    ║
 ║                         ▼                                    ║
 ║  Step 2 ── fund()  (depositor sends total)                  ║
@@ -165,7 +165,7 @@ export default function GlobalFlowPage() {
 ║       │               │             │                        ║
 ║       ▼               ▼             ▼                        ║
 ║  [RELEASED]      [RELEASED]     [DISPUTED]                  ║
-║  pays M1 BDAG    pays M2 BDAG   arbiter resolves             ║
+║  pays M1 ETH    pays M2 ETH   arbiter resolves             ║
 ║                                      │                       ║
 ║                               ┌──────┴──────┐               ║
 ║                               ▼              ▼               ║

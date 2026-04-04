@@ -53,10 +53,10 @@ export function computeTrustScore(params: {
   if (walletAddress && /^0x[0-9a-fA-F]{40}$/.test(walletAddress)) score += 10;
 
   // Amount-based scoring (inverse scale — larger amounts = more scrutiny)
-  // 0–0.1 BDAG:   +30 pts
-  // 0.1–1 BDAG:   +20 pts
-  // 1–10 BDAG:    +10 pts
-  // 10+ BDAG:     +0 pts
+  // 0–0.1 ETH:    +30 pts
+  // 0.1–1 ETH:    +20 pts
+  // 1–10 ETH:    +10 pts
+  // 10+ ETH:      +0 pts
   if (amountEth <= 0.1)      score += 30;
   else if (amountEth <= 1.0) score += 20;
   else if (amountEth <= 10)  score += 10;

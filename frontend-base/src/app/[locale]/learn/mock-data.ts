@@ -7,7 +7,7 @@ export const MOCK_SIMPLE_ESCROW = {
   state: 1, // AWAITING_DELIVERY
   stateLabel: "Awaiting Delivery",
   amount: "5.0000",
-  symbol: "BDAG",
+  symbol: "ETH",
   depositor:   "0xAAA1111111111111111111111111111111111111",
   beneficiary: "0xBBB2222222222222222222222222222222222222",
   arbiter:     "0xCCC3333333333333333333333333333333333333",
@@ -24,7 +24,7 @@ export const MOCK_MILESTONE_ESCROW = {
   type: "milestone" as const,
   funded: true,
   totalDeposited: "12.5000",
-  symbol: "BDAG",
+  symbol: "ETH",
   depositor:   "0xAAA1111111111111111111111111111111111111",
   beneficiary: "0xBBB2222222222222222222222222222222222222",
   arbiter:     "0xCCC3333333333333333333333333333333333333",
@@ -64,11 +64,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: "What fees are charged?",
-    a: "A 0.5% protocol fee is charged on the escrow amount at creation. If the AI Arbiter is selected, an additional flat fee of 1 BDAG is charged. These fees accumulate in the factory contract and are withdrawable by the owner.",
+    a: "A 0.5% protocol fee is charged on the escrow amount at creation. If the AI Arbiter is selected, an additional flat fee of small ETH fee is charged. These fees accumulate in the factory contract and are withdrawable by the owner.",
   },
   {
     q: "Can I use any wallet?",
-    a: `Yes — any WalletConnect-compatible wallet works. Trust Wallet and MetaMask have been tested. Make sure your wallet is connected to BlockDAG (Chain ID ${DEFAULT_CHAIN_ID}, RPC: ${getRpcUrl(DEFAULT_CHAIN_ID)}).`,
+    a: `Yes — any WalletConnect-compatible wallet works. Trust Wallet and MetaMask have been tested. Make sure your wallet is connected to Base (Chain ID ${DEFAULT_CHAIN_ID}, RPC: ${getRpcUrl(DEFAULT_CHAIN_ID)}).`,
   },
   {
     q: "Is the code audited?",
@@ -76,7 +76,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "What happens if confirmation takes a long time?",
-    a: "BlockDAG can take 60-120 seconds to confirm transactions. The app will wait up to 120 seconds for a receipt and actively polls for state changes after confirmation. If it times out, your escrow will still appear on the dashboard once the chain catches up.",
+    a: "Base confirms in ~2 seconds to confirm transactions. The app will wait up to 120 seconds for a receipt and actively polls for state changes after confirmation. If it times out, your escrow will still appear on the dashboard once the chain catches up.",
   },
   {
     q: "Can I use this on mobile?",
@@ -94,8 +94,8 @@ export const ONBOARDING_STEPS = [
   },
   {
     step: 2,
-    title: "Switch to BlockDAG Network",
-    description: `Make sure your wallet is on BlockDAG (Chain ID ${DEFAULT_CHAIN_ID}). The app will prompt you to switch automatically.`,
+    title: "Switch to Base Network",
+    description: `Make sure your wallet is on Base (Chain ID ${DEFAULT_CHAIN_ID}). The app will prompt you to switch automatically.`,
     icon: "🌐",
     states: ["wrong_network", "switching", "correct_network"],
   },

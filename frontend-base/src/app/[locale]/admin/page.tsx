@@ -162,9 +162,9 @@ export default function AdminPage() {
             {/* Stats row */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
-                { label: "Accumulated Fees",  value: `${formatEther(accumulatedFees)} BDAG` },
+                { label: "Accumulated Fees",  value: `${formatEther(accumulatedFees)} ETH` },
                 { label: "Protocol Fee",       value: `${(protocolFeeBps / 100).toFixed(2)}%` },
-                { label: "AI Arbiter Fee",     value: `${formatEther(aiArbiterFee)} BDAG` },
+                { label: "AI Arbiter Fee",     value: `${formatEther(aiArbiterFee)} ETH` },
                 { label: "Total Escrows",      value: escrowCount.toString() },
                 { label: "Owner",              value: owner ? <AddressDisplay address={owner} /> : "—" },
                 { label: "Treasury",           value: treasury ? <AddressDisplay address={treasury} /> : "—" },
@@ -180,7 +180,7 @@ export default function AdminPage() {
             <GlassCard className="p-6">
               <h2 className="text-sm font-semibold text-white mb-1">Withdraw Fees</h2>
               <p className="text-xs text-slate-500 mb-4">
-                Sends <span className="text-cyan-400">{formatEther(accumulatedFees)} BDAG</span> to treasury
+                Sends <span className="text-cyan-400">{formatEther(accumulatedFees)} ETH</span> to treasury
               </p>
               <GlowButton
                 onClick={handleWithdraw}
@@ -195,7 +195,7 @@ export default function AdminPage() {
             {/* Set Fees */}
             <GlassCard className="p-6">
               <h2 className="text-sm font-semibold text-white mb-1">Update Fee Parameters</h2>
-              <p className="text-xs text-slate-500 mb-4">Current: {(protocolFeeBps / 100).toFixed(2)}% protocol / {formatEther(aiArbiterFee)} BDAG arbiter</p>
+              <p className="text-xs text-slate-500 mb-4">Current: {(protocolFeeBps / 100).toFixed(2)}% protocol / {formatEther(aiArbiterFee)} ETH arbiter</p>
               <div className="flex flex-col sm:flex-row gap-3 mb-3">
                 <div className="flex-1">
                   <label className="block text-xs text-slate-400 mb-1">Protocol Fee (bps, max 500)</label>
@@ -210,7 +210,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs text-slate-400 mb-1">AI Arbiter Fee (BDAG)</label>
+                  <label className="block text-xs text-slate-400 mb-1">AI Arbiter Fee (ETH)</label>
                   <input
                     type="number"
                     min={0}

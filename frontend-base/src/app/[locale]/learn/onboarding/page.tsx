@@ -15,8 +15,8 @@ const WALLET_STATE_LABELS: Record<WalletState, { label: string; color: string; d
 
 const NETWORK_STATE_LABELS: Record<NetworkState, { label: string; color: string; dot: string }> = {
   wrong_network:   { label: "Wrong Network (ETH Mainnet)", color: "text-red-400",    dot: "bg-red-400"    },
-  switching:       { label: "Switching to BlockDAG…",      color: "text-yellow-400", dot: "bg-yellow-400 animate-pulse" },
-  correct_network: { label: "BlockDAG (Chain 1404)",        color: "text-green-400",  dot: "bg-green-400"  },
+  switching:       { label: "Switching to Base…",           color: "text-yellow-400", dot: "bg-yellow-400 animate-pulse" },
+  correct_network: { label: "Base (Chain 8453)",             color: "text-green-400",  dot: "bg-green-400"  },
 };
 
 export default function OnboardingPage() {
@@ -155,13 +155,13 @@ export default function OnboardingPage() {
                                                        "border-green-500/20 bg-green-500/5"
                 )}>
                   {networkState === "wrong_network" && (
-                    <p className="text-red-300">⚠️ Your wallet is on the wrong network. Switch to <strong>BlockDAG (Chain ID 1404)</strong> to use this app.</p>
+                    <p className="text-red-300">⚠️ Your wallet is on the wrong network. Switch to <strong>Base (Chain ID 8453)</strong> to use this app.</p>
                   )}
                   {networkState === "switching" && (
-                    <p className="text-yellow-300">🔄 Switching to BlockDAG… approve in your wallet.</p>
+                    <p className="text-yellow-300">🔄 Switching to Base… approve in your wallet.</p>
                   )}
                   {networkState === "correct_network" && (
-                    <p className="text-green-300">✅ Connected to BlockDAG Mainnet (Chain ID 1404)</p>
+                    <p className="text-green-300">✅ Connected to Base Mainnet (Chain ID 8453)</p>
                   )}
                 </div>
               </div>
@@ -183,11 +183,11 @@ export default function OnboardingPage() {
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-white/3 border border-white/8">
                   <span className="text-slate-500 text-xs w-24 shrink-0">Amount</span>
-                  <span className="text-cyan-400 font-semibold">5.0000 BDAG</span>
+                  <span className="text-cyan-400 font-semibold">5.0000 ETH</span>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-white/3 border border-white/8">
                   <span className="text-slate-500 text-xs w-24 shrink-0">Fee</span>
-                  <span className="text-slate-400 text-xs">0.5% protocol fee = 0.0250 BDAG</span>
+                  <span className="text-slate-400 text-xs">0.5% protocol fee = 0.0250 ETH</span>
                 </div>
                 <div className="mt-2 flex justify-end">
                   <div className="px-6 py-2.5 rounded-xl bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-semibold">

@@ -84,7 +84,7 @@ export default function CreateEscrowPage() {
         } else {
           const escrowAmount = parseEther(form.amount);
           const protocolFee = escrowAmount * 50n / 10000n;
-          const aiArbiterFee = useAIArbiter ? parseEther("1") : 0n;
+          const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
           const totalValue = escrowAmount + protocolFee + aiArbiterFee;
           txHash = await writeContractAsync({
             address: factoryAddress,
@@ -113,7 +113,7 @@ export default function CreateEscrowPage() {
           const amounts = milestones.map(m => parseEther(m.amount));
           const netTotal = amounts.reduce((a, b) => a + b, 0n);
           const protocolFee = netTotal * 50n / 10000n;
-          const aiArbiterFee = useAIArbiter ? parseEther("1") : 0n;
+          const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
           const totalValue = netTotal + protocolFee + aiArbiterFee;
           txHash = await writeContractAsync({
             address: factoryAddress,
@@ -169,7 +169,7 @@ export default function CreateEscrowPage() {
 
   // Fee preview (client-side approximation matching contract logic)
   const PROTOCOL_FEE_BPS = 50; // 0.5%
-  const AI_ARBITER_FLAT  = 1;  // 1 BDAG
+  const AI_ARBITER_FLAT  = 0.001;  // ~0.001 ETH flat fee on Base
   const escrowNet = type === "simple"
     ? parseFloat(form.amount) || 0
     : milestoneTotal;
@@ -192,7 +192,7 @@ export default function CreateEscrowPage() {
 
             {/* Network banner */}
             <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-xs text-cyan-300">
-              <strong>BlockDAG Mainnet.</strong> {t("networkBanner")}
+              <strong>Base Mainnet.</strong> {t("networkBanner")}
             </div>
 
             {/* Type selector */}
@@ -313,7 +313,7 @@ export default function CreateEscrowPage() {
                           />
                           <input
                             className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50 transition-colors"
-                            placeholder="BDAG"
+                            placeholder="ETH"
                             type="number"
                             step="0.001"
                             min="0"
@@ -330,7 +330,7 @@ export default function CreateEscrowPage() {
                     <div className="flex justify-between text-xs text-slate-500 pt-1">
                       <span>{t("total")}</span>
                       <span className="text-cyan-400 font-semibold" style={{ fontFamily: "var(--font-mono)" }}>
-                        {milestoneTotal.toFixed(3)} BDAG
+                        {milestoneTotal.toFixed(3)} ETH
                       </span>
                     </div>
                   </div>
@@ -353,16 +353,16 @@ export default function CreateEscrowPage() {
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-slate-400">
                         <span>{t("escrowAmount")}</span>
-                        <span className="font-mono">{escrowNet.toFixed(4)} BDAG</span>
+                        <span className="font-mono">{escrowNet.toFixed(4)} ETH</span>
                       </div>
                       <div className="flex justify-between text-slate-500">
                         <span>{t("protocolFee")}</span>
-                        <span className="font-mono">+{protocolFee.toFixed(4)} BDAG</span>
+                        <span className="font-mono">+{protocolFee.toFixed(4)} ETH</span>
                       </div>
                       {useAIArbiter && (
                         <div className="flex justify-between text-violet-400">
                           <span>🤖 {t("aiArbiterFee")}</span>
-                          <span className="font-mono">+{aiArbiterFee.toFixed(4)} BDAG</span>
+                          <span className="font-mono">+{aiArbiterFee.toFixed(4)} ETH</span>
                         </div>
                       )}
                       <div className={cn(
@@ -370,7 +370,7 @@ export default function CreateEscrowPage() {
                         useAIArbiter ? "border-violet-400/20 text-violet-300" : "border-white/8 text-white"
                       )}>
                         <span>{t("totalToSend")}</span>
-                        <span className="font-mono">{totalSend.toFixed(4)} BDAG</span>
+                        <span className="font-mono">{totalSend.toFixed(4)} ETH</span>
                       </div>
                     </div>
                   </div>

@@ -94,7 +94,7 @@ export default function MockEscrowPage() {
               <div className="flex items-center justify-between rounded-xl bg-white/3 border border-white/8 p-4">
                 <div>
                   <p className="text-sm font-medium text-white">Release Funds</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Send {MOCK_SIMPLE_ESCROW.amount} BDAG to beneficiary</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Send {MOCK_SIMPLE_ESCROW.amount} ETH to beneficiary</p>
                 </div>
                 <button disabled className="px-4 py-2 rounded-xl bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm opacity-50 cursor-not-allowed">
                   Release
@@ -180,7 +180,7 @@ export default function MockEscrowPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-white text-sm">{ms.description}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{ms.amount} BDAG</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{ms.amount{ms.amount} ETH</p>
                   </div>
                   <span className={cn("text-xs px-2 py-1 rounded-full border shrink-0", STATE_COLORS[ms.stateLabel])}>
                     {ms.stateLabel}

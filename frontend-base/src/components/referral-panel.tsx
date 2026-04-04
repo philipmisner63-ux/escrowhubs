@@ -86,7 +86,7 @@ export function ReferralPanel() {
         chainId,
       });
       setClaimHash(hash);
-      addToast({ type: "pending", message: "Claiming BDAG…", txHash: hash });
+      addToast({ type: "pending", message: "Claiming ETH…", txHash: hash });
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message.slice(0, 100) : "Claim failed" });
     }
@@ -136,8 +136,8 @@ export function ReferralPanel() {
         <p className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("stats")}</p>
         <div className="grid grid-cols-3 gap-3">
           <StatCard label={t("referrals")}    value={String(referralCount)} />
-          <StatCard label={t("totalEarned")}  value={`${parseFloat(totalEarned).toFixed(4)} BDAG`} />
-          <StatCard label={t("claimable")}    value={`${parseFloat(formatEther(claimable)).toFixed(4)} BDAG`} accent={claimable > 0n} />
+          <StatCard label={t("totalEarned")}  value={`${parseFloat(totalEarned).toFixed(4)} ETH`} />
+          <StatCard label={t("claimable")}    value={`${parseFloat(formatEther(claimable)).toFixed(4)} ETH`} accent={claimable > 0n} />
         </div>
       </div>
 
@@ -149,7 +149,7 @@ export function ReferralPanel() {
           loading={isClaiming || isConfirming}
           className="w-full py-2.5"
         >
-          {isClaiming || isConfirming ? t("claiming") : `${t("claim")} (${parseFloat(formatEther(claimable)).toFixed(4)} BDAG)`}
+          {isClaiming || isConfirming ? t("claiming") : `${t("claim")} (${parseFloat(formatEther(claimable)).toFixed(4)} ETH)`}
         </GlowButton>
       )}
     </div>

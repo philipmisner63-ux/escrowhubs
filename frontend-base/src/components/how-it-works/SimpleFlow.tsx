@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const steps = [
   { icon: "📄", title: "Create Escrow",                 desc: "Contract created with roles & terms" },
-  { icon: "💰", title: "Deposit Funds",                 desc: "Depositor locks BDAG into contract" },
+  { icon: "💰", title: "Deposit Funds",                 desc: "Depositor locks ETH into contract" },
   { icon: "🧾", title: "Work or Transaction Completed", desc: "Beneficiary completes work or transaction" },
   { icon: "⚖️", title: "Release or Dispute",             desc: "Parties choose outcome or escalate to arbiter" },
   { icon: "🔓", title: "Funds Released",                desc: "Smart contract settles on-chain" },

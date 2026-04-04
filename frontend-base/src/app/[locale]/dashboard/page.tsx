@@ -142,7 +142,7 @@ export default function DashboardPage() {
                           {e.contractAddress.slice(0, 10)}…{e.contractAddress.slice(-6)}
                         </p>
                         <p className="text-xs text-slate-500 mt-1">
-                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · {t("tapToOpen")}
+                          {(Number(e.totalAmount) / 1e18).toFixed(4)} ETH · {t("tapToOpen")}
                         </p>
                       </GlassCard>
                     </Link>

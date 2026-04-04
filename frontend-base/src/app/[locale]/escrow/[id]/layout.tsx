@@ -9,7 +9,7 @@ export async function generateMetadata({
   const { locale, id } = await params;
   const short = id.length >= 10 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
   const title = `Escrow ${short} — EscrowHubs`;
-  const description = `View and interact with escrow contract ${short} on BlockDAG via EscrowHubs.`;
+  const description = `View and interact with escrow contract ${short} on Base via EscrowHubs.`;
   const url = `${APP_URL}/${locale}/escrow/${id}`;
 
   return {

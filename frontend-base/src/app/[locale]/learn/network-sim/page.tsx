@@ -8,9 +8,9 @@ type SimState = "disconnected" | "wrong_network" | "connected" | "pending_tx" | 
 const SIM_STATES: { id: SimState; label: string; icon: string; desc: string }[] = [
   { id: "disconnected",  label: "Wallet Disconnected",  icon: "🔌", desc: "No wallet connected to the app" },
   { id: "wrong_network", label: "Wrong Network",         icon: "⚠️",  desc: "Wallet connected but on Ethereum Mainnet" },
-  { id: "connected",     label: "Wallet Connected",      icon: "✅", desc: "Wallet connected on BlockDAG (Chain 1404)" },
+  { id: "connected",     label: "Wallet Connected",      icon: "✅", desc: "Wallet connected on Base (Chain 8453)" },
   { id: "pending_tx",    label: "Transaction Pending",   icon: "⏳", desc: "Transaction submitted, waiting for confirmation" },
-  { id: "confirmed",     label: "Transaction Confirmed", icon: "🎉", desc: "Transaction confirmed on BlockDAG" },
+  { id: "confirmed",     label: "Transaction Confirmed", icon: "🎉", desc: "Transaction confirmed on Base" },
 ];
 
 function NavBarSim({ state }: { state: SimState }) {
@@ -18,13 +18,13 @@ function NavBarSim({ state }: { state: SimState }) {
     <div className="rounded-xl border border-white/10 overflow-hidden">
       {state === "wrong_network" && (
         <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 text-center text-xs text-yellow-300">
-          ⚠️ Your wallet is on the wrong network. Switch to <strong>BlockDAG (Chain ID 1404)</strong> to use this app.
+          ⚠️ Your wallet is on the wrong network. Switch to <strong>Base (Chain ID 8453)</strong> to use this app.
         </div>
       )}
       <div className="bg-black/50 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-6 w-6 rounded bg-gradient-to-br from-cyan-400 to-blue-600" />
-          <span className="font-bold text-sm text-white">BlockDAG Escrow</span>
+          <span className="font-bold text-sm text-white">Base Escrow</span>
         </div>
         <div>
           {state === "disconnected" && (
@@ -64,7 +64,7 @@ function ActionAreaSim({ state }: { state: SimState }) {
       )}
       {state === "wrong_network" && (
         <div className="text-center py-8">
-          <p className="text-yellow-300 text-sm">Switch to BlockDAG to take actions.</p>
+          <p className="text-yellow-300 text-sm">Switch to Base to take actions.</p>
           <div className="mt-4 inline-flex px-6 py-2.5 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-300 text-sm">
             Switch Network
           </div>
@@ -75,7 +75,7 @@ function ActionAreaSim({ state }: { state: SimState }) {
           <div className="flex items-center justify-between rounded-xl bg-white/3 border border-white/8 p-4">
             <div>
               <p className="text-sm font-medium text-white">Release Funds</p>
-              <p className="text-xs text-slate-500">Send 5.0 BDAG to beneficiary</p>
+              <p className="text-xs text-slate-500">Send 5.0 ETH to beneficiary</p>
             </div>
             <div className="px-4 py-2 rounded-xl bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm cursor-pointer">
               Release
@@ -88,7 +88,7 @@ function ActionAreaSim({ state }: { state: SimState }) {
           <div className="animate-spin inline-block h-8 w-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full" />
           <p className="text-cyan-300 text-sm">Waiting for confirmation…</p>
           <p className="text-slate-500 text-xs font-mono">0xabc123def456…</p>
-          <p className="text-slate-600 text-xs">BlockDAG can take 60–120 seconds</p>
+          <p className="text-slate-600 text-xs">Base confirms in ~2 seconds</p>
         </div>
       )}
       {state === "confirmed" && (
