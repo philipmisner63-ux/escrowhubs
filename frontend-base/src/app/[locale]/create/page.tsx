@@ -132,10 +132,26 @@ export default function CreateEscrowPage() {
         });
         const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
         let contractAddress: `0x${string}` | null = null;
+        // Topic 0 of the factory's SimpleEscrowCreated/MilestoneEscrowCreated event
+        // has the escrow address as topic 1. Also check logs from the factory address.
         for (const log of receipt.logs) {
           if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics[1]) {
             const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
-            if (/^0x[0-9a-fA-F]{40}$/.test(addr)) { contractAddress = addr; break; }
+            if (/^0x[0-9a-fA-F]{40}$/.test(addr) && addr.toLowerCase() !== factoryAddress.toLowerCase()) {
+              contractAddress = addr; break;
+            }
+          }
+        }
+        // Fallback: check all logs for a topic pointing back to factory
+        if (!contractAddress) {
+          for (const log of receipt.logs) {
+            if (log.topics[1]) {
+              const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
+              if (/^0x[0-9a-fA-F]{40}$/.test(addr) && addr.toLowerCase() === factoryAddress.toLowerCase()) {
+                // This log's address is the escrow contract pointing to factory
+                contractAddress = log.address as `0x${string}`; break;
+              }
+            }
           }
         }
         removeToast(pendingId);
