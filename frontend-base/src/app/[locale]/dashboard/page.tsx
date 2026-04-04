@@ -59,18 +59,19 @@ export default function DashboardPage() {
 
   const myEscrows = (escrowData ?? [])
     .map((r) => {
-      const raw = r?.result;
+      const raw = r?.result as Record<string, unknown> | unknown[] | null | undefined;
       if (!raw) return null;
-      // Result may be array-like or object depending on wagmi version
-      const arr = Array.isArray(raw) ? raw : Object.values(raw);
-      const contractAddress = arr[0] as `0x${string}`;
+      // Handle both named-key objects and positional arrays
+      const get = (key: string, idx: number) =>
+        Array.isArray(raw) ? raw[idx] : (raw as Record<string, unknown>)[key];
+      const contractAddress = get('contractAddress', 0) as `0x${string}`;
       if (!contractAddress || typeof contractAddress !== 'string') return null;
       return {
         contractAddress,
-        escrowType: arr[1] as number,
-        depositor: arr[2] as `0x${string}`,
-        beneficiary: arr[3] as `0x${string}`,
-        totalAmount: arr[5] as bigint,
+        escrowType:      get('escrowType', 1) as number,
+        depositor:       get('depositor', 2) as `0x${string}`,
+        beneficiary:     get('beneficiary', 3) as `0x${string}`,
+        totalAmount:     get('totalAmount', 5) as bigint,
       };
     })
     .filter((e): e is { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } => !!e);
