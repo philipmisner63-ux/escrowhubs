@@ -27,7 +27,7 @@ import {
   formatEther,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { notifyParties } from "./notify.js";
+import { notifyParties, startTelegramBot } from "./notify.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -713,3 +713,10 @@ for (const chain of CHAINS) {
     // Continue starting other chains
   }
 }
+
+// Start Telegram bot long-poll loop (runs alongside chain listeners)
+startTelegramBot();
+
+// Graceful shutdown
+process.on("SIGTERM", () => { console.log("Oracle shutting down…"); process.exit(0); });
+process.on("SIGINT",  () => { console.log("Oracle shutting down…"); process.exit(0); });

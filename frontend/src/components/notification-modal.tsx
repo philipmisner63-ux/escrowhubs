@@ -27,15 +27,13 @@ const ALL_EVENTS: EventKey[] = [
 const TELEGRAM_BOT = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "EscrowHubsBot";
 
 interface NotificationPrefs {
-  email:           string;
-  emailEnabled:    Record<EventKey, boolean>;
   telegramChatId:  string | null;
   telegramEnabled: Record<EventKey, boolean>;
 }
 
 function defaultPrefs(): NotificationPrefs {
   const enabled = Object.fromEntries(ALL_EVENTS.map(e => [e, true])) as Record<EventKey, boolean>;
-  return { email: "", emailEnabled: enabled, telegramChatId: null, telegramEnabled: { ...enabled } };
+  return { telegramChatId: null, telegramEnabled: enabled };
 }
 
 interface NotificationModalProps {
@@ -49,11 +47,9 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
   const { address: wallet } = useAccount();
   const { addToast }        = useToast();
   const backdropRef         = useRef<HTMLDivElement>(null);
-  const firstRef            = useRef<HTMLInputElement>(null);
 
   const [prefs,      setPrefs]      = useState<NotificationPrefs>(defaultPrefs());
   const [submitting, setSubmitting] = useState(false);
-  const [loaded,     setLoaded]     = useState(false);
 
   // Load saved prefs
   useEffect(() => {
@@ -63,21 +59,13 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
       .then(data => {
         if (data) {
           setPrefs({
-            email:           data.email ?? "",
-            emailEnabled:    { ...defaultPrefs().emailEnabled, ...(data.emailEnabled ?? {}) },
             telegramChatId:  data.telegramChatId ?? null,
             telegramEnabled: { ...defaultPrefs().telegramEnabled, ...(data.telegramEnabled ?? {}) },
           });
         }
-        setLoaded(true);
       })
-      .catch(() => setLoaded(true));
+      .catch(() => {});
   }, [open, wallet]);
-
-  // Focus first field on open
-  useEffect(() => {
-    if (open) setTimeout(() => firstRef.current?.focus(), 60);
-  }, [open]);
 
   // Escape + focus trap
   useEffect(() => {
@@ -88,7 +76,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
         const modal = backdropRef.current?.querySelector("[data-modal]");
         if (!modal) return;
         const els = Array.from(modal.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), input:not([disabled]), a, [tabindex]:not([tabindex="-1"])'
         ));
         if (!els.length) return;
         if (e.shiftKey && document.activeElement === els[0]) { e.preventDefault(); els[els.length - 1].focus(); }
@@ -99,10 +87,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  function toggleEmailEvent(ev: EventKey) {
-    setPrefs(p => ({ ...p, emailEnabled: { ...p.emailEnabled, [ev]: !p.emailEnabled[ev] } }));
-  }
-  function toggleTelegramEvent(ev: EventKey) {
+  function toggleEvent(ev: EventKey) {
     setPrefs(p => ({ ...p, telegramEnabled: { ...p.telegramEnabled, [ev]: !p.telegramEnabled[ev] } }));
   }
 
@@ -116,8 +101,6 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           wallet,
-          email:           prefs.email.trim() || null,
-          emailEnabled:    prefs.emailEnabled,
           telegramChatId:  prefs.telegramChatId,
           telegramEnabled: prefs.telegramEnabled,
         }),
@@ -134,12 +117,6 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
 
   if (!open) return null;
 
-  const labelClass = "text-xs font-medium uppercase tracking-widest text-slate-500";
-  const inputClass = cn(
-    "w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-white",
-    "placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50 transition-colors"
-  );
-
   return (
     <div
       ref={backdropRef}
@@ -151,10 +128,10 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
     >
       <div
         data-modal
-        className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-xl max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔔</span>
             <div>
@@ -168,51 +145,20 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
         </div>
 
         {!wallet ? (
-          <div className="px-6 py-10 text-center text-slate-500 text-sm">Connect your wallet to manage notifications.</div>
+          <div className="px-6 py-10 text-center text-slate-500 text-sm">
+            Connect your wallet to manage notifications.
+          </div>
         ) : (
           <form onSubmit={handleSave} className="p-6 space-y-6">
-
-            {/* ── Email Section ─────────────────────────────────── */}
-            <section className="space-y-4">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-cyan-400/70 flex items-center gap-2">
-                <span>📧</span> {t("emailSection")}
-              </h3>
-              <div className="space-y-1.5">
-                <label htmlFor={`${uid}-email`} className={labelClass}>{t("emailLabel")}</label>
-                <input
-                  id={`${uid}-email`}
-                  ref={firstRef}
-                  type="email"
-                  value={prefs.email}
-                  onChange={e => setPrefs(p => ({ ...p, email: e.target.value }))}
-                  placeholder={t("emailPlaceholder")}
-                  className={inputClass}
-                />
-              </div>
-              <div className="space-y-2">
-                {ALL_EVENTS.map(ev => (
-                  <label key={ev} className="flex items-center justify-between gap-3 cursor-pointer group">
-                    <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">
-                      {t(`events.${ev}`)}
-                    </span>
-                    <ToggleSwitch
-                      checked={!!prefs.emailEnabled[ev]}
-                      onChange={() => toggleEmailEvent(ev)}
-                      disabled={!prefs.email.trim()}
-                    />
-                  </label>
-                ))}
-              </div>
-            </section>
-
-            <div className="h-px bg-white/8" />
 
             {/* ── Telegram Section ──────────────────────────────── */}
             <section className="space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-cyan-400/70 flex items-center gap-2">
                 <span>✈️</span> {t("telegramSection")}
               </h3>
-              <div className="flex items-center gap-3">
+
+              {/* Link button + status */}
+              <div className="flex items-center gap-3 flex-wrap">
                 <a
                   href={`https://t.me/${TELEGRAM_BOT}?start=${wallet}`}
                   target="_blank"
@@ -221,28 +167,42 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
                     "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
                     prefs.telegramChatId
                       ? "bg-green-400/10 text-green-400 border border-green-400/30"
-                      : "bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 hover:bg-cyan-400/20"
+                      : "bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 hover:bg-cyan-400/20 hover:border-cyan-400/60"
                   )}
                 >
-                  {prefs.telegramChatId ? t("telegramLinked") : t("telegramLink")}
+                  {prefs.telegramChatId ? (
+                    <><span>✓</span> {t("telegramLinked")}</>
+                  ) : (
+                    <><span>✈️</span> {t("telegramLink")}</>
+                  )}
                 </a>
-                <p className="text-xs text-slate-600">{t("telegramHint")}</p>
+                {!prefs.telegramChatId && (
+                  <p className="text-xs text-slate-600 flex-1 min-w-0">{t("telegramHint")}</p>
+                )}
               </div>
+
+              {/* Status badge when linked */}
               {prefs.telegramChatId && (
-                <div className="space-y-2">
-                  {ALL_EVENTS.map(ev => (
-                    <label key={ev} className="flex items-center justify-between gap-3 cursor-pointer group">
-                      <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">
-                        {t(`events.${ev}`)}
-                      </span>
-                      <ToggleSwitch
-                        checked={!!prefs.telegramEnabled[ev]}
-                        onChange={() => toggleTelegramEvent(ev)}
-                      />
-                    </label>
-                  ))}
+                <div className="rounded-xl bg-green-400/5 border border-green-400/15 px-4 py-2.5 text-xs text-green-400/80">
+                  ✓ Telegram notifications active for this wallet
                 </div>
               )}
+
+              {/* Per-event toggles — always shown so user can configure before linking */}
+              <div className="space-y-3">
+                <p className="text-xs text-slate-600 uppercase tracking-widest">Notify me when</p>
+                {ALL_EVENTS.map(ev => (
+                  <label key={ev} className="flex items-center justify-between gap-3 cursor-pointer group">
+                    <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">
+                      {t(`events.${ev}`)}
+                    </span>
+                    <ToggleSwitch
+                      checked={!!prefs.telegramEnabled[ev]}
+                      onChange={() => toggleEvent(ev)}
+                    />
+                  </label>
+                ))}
+              </div>
             </section>
 
             {/* Submit */}
@@ -259,18 +219,16 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
   );
 }
 
-function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       onClick={onChange}
-      disabled={disabled}
       className={cn(
-        "relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 transition-colors duration-200",
+        "relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 transition-colors duration-200 cursor-pointer",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
-        disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
         checked ? "bg-cyan-400 border-cyan-400" : "bg-white/10 border-white/20"
       )}
     >

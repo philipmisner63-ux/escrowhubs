@@ -13,12 +13,10 @@ export type EventKey =
   | "milestone_completed";
 
 export interface NotificationPrefs {
-  wallet:  string;
-  email:   string | null;
-  emailEnabled: Partial<Record<EventKey, boolean>>;
-  telegramChatId: string | null;
+  wallet:          string;
+  telegramChatId:  string | null;
   telegramEnabled: Partial<Record<EventKey, boolean>>;
-  updatedAt: string;
+  updatedAt:       string;
 }
 
 function loadAll(): Record<string, NotificationPrefs> {
@@ -26,9 +24,7 @@ function loadAll(): Record<string, NotificationPrefs> {
     if (!fs.existsSync(PREFS_FILE)) return {};
     const raw = fs.readFileSync(PREFS_FILE, "utf-8").trim();
     return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+  } catch { return {}; }
 }
 
 function saveAll(data: Record<string, NotificationPrefs>) {
@@ -38,8 +34,7 @@ function saveAll(data: Record<string, NotificationPrefs>) {
 export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get("wallet")?.toLowerCase();
   if (!wallet) return NextResponse.json({ error: "wallet required" }, { status: 400 });
-  const all = loadAll();
-  return NextResponse.json(all[wallet] ?? null);
+  return NextResponse.json(loadAll()[wallet] ?? null);
 }
 
 export async function POST(req: NextRequest) {
@@ -50,9 +45,7 @@ export async function POST(req: NextRequest) {
     const all = loadAll();
     all[key] = {
       wallet:          key,
-      email:           body.email ?? all[key]?.email ?? null,
-      emailEnabled:    body.emailEnabled ?? all[key]?.emailEnabled ?? {},
-      telegramChatId:  body.telegramChatId ?? all[key]?.telegramChatId ?? null,
+      telegramChatId:  body.telegramChatId  ?? all[key]?.telegramChatId  ?? null,
       telegramEnabled: body.telegramEnabled ?? all[key]?.telegramEnabled ?? {},
       updatedAt:       new Date().toISOString(),
     };
