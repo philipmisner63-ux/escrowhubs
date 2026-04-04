@@ -224,39 +224,38 @@ contract EscrowFactory is ReentrancyGuard {
         uint8   trustTier,
         bool    useAIArbiter,
         address referrer
-    ) external payable returns (address) {
+    ) external payable returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
         require(msg.value > 0, "Must send BDAG");
 
-        address resolvedArbiter = useAIArbiter ? aiArbiterAddress : arbiter;
-        require(resolvedArbiter != address(0), "Arbiter not set");
-
-        // Allocate record in memory — single pointer on stack
         EscrowRecord memory rec;
         rec.escrowType  = EscrowType.SIMPLE;
         rec.depositor   = msg.sender;
         rec.beneficiary = beneficiary;
-        rec.arbiter     = resolvedArbiter;
         rec.trustTier   = trustTier;
         rec.aiArbiter   = useAIArbiter;
         rec.referrer    = referrer;
         rec.createdAt   = block.timestamp;
 
         {
-            (uint256 netAmount, uint256 fee) = _computeFee(msg.value, useAIArbiter);
-            accumulatedFees += fee;
-            rec.totalAmount = netAmount;
-            rec.fee         = fee;
+            address ra = useAIArbiter ? aiArbiterAddress : arbiter;
+            require(ra != address(0), "Arbiter not set");
+            rec.arbiter = ra;
 
-            SimpleEscrow escrow = new SimpleEscrow(msg.sender, beneficiary, resolvedArbiter);
-            escrow.deposit{ value: netAmount }();
-            rec.contractAddress = address(escrow);
+            (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
+            accumulatedFees += fee;
+            rec.totalAmount = net;
+            rec.fee = fee;
+
+            SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra);
+            esc.deposit{ value: net }();
+            rec.contractAddress = address(esc);
 
             _applyReferral(referrer, msg.value, fee, rec.contractAddress);
         }
 
         _registerEscrow(rec);
-        emit SimpleEscrowCreated(rec.contractAddress, msg.sender, beneficiary, resolvedArbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter);
+        emit SimpleEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter);
         return rec.contractAddress;
     }
 
@@ -270,46 +269,42 @@ contract EscrowFactory is ReentrancyGuard {
         uint8            trustTier,
         bool             useAIArbiter,
         address          referrer
-    ) external payable returns (address) {
+    ) external payable returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
 
-        address resolvedArbiter = useAIArbiter ? aiArbiterAddress : arbiter;
-        require(resolvedArbiter != address(0), "Arbiter not set");
-
-        // Allocate record in memory — single pointer on stack
         EscrowRecord memory rec;
         rec.escrowType  = EscrowType.MILESTONE;
         rec.depositor   = msg.sender;
         rec.beneficiary = beneficiary;
-        rec.arbiter     = resolvedArbiter;
         rec.trustTier   = trustTier;
         rec.aiArbiter   = useAIArbiter;
         rec.referrer    = referrer;
         rec.createdAt   = block.timestamp;
 
         {
+            address ra = useAIArbiter ? aiArbiterAddress : arbiter;
+            require(ra != address(0), "Arbiter not set");
+            rec.arbiter = ra;
+
             uint256 netTotal;
             for (uint256 i; i < amounts.length; i++) netTotal += amounts[i];
             require(netTotal > 0, "No amounts");
             rec.totalAmount = netTotal;
 
-            (uint256 netAmount, uint256 fee) = _computeFee(msg.value, useAIArbiter);
-            require(netAmount >= netTotal, "msg.value too low for amounts + fees");
-            uint256 totalFee = fee + (netAmount - netTotal);
-            accumulatedFees += totalFee;
+            (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
+            require(net >= netTotal, "msg.value too low for amounts + fees");
+            accumulatedFees += fee + (net - netTotal);
             rec.fee = fee;
 
-            MilestoneEscrow escrow = new MilestoneEscrow(
-                msg.sender, beneficiary, resolvedArbiter, descriptions, amounts
-            );
-            escrow.fund{ value: netTotal }();
-            rec.contractAddress = address(escrow);
+            MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, descriptions, amounts);
+            esc.fund{ value: netTotal }();
+            rec.contractAddress = address(esc);
 
-            _applyReferral(referrer, msg.value, totalFee, rec.contractAddress);
+            _applyReferral(referrer, msg.value, fee + (net - netTotal), rec.contractAddress);
         }
 
         _registerEscrow(rec);
-        emit MilestoneEscrowCreated(rec.contractAddress, msg.sender, beneficiary, resolvedArbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter);
+        emit MilestoneEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter);
         return rec.contractAddress;
     }
 
