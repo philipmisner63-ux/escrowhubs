@@ -377,5 +377,21 @@
     "saved": "保存しました。",
     "error": "保存に失敗しました。",
     "bellLabel": "通知設定"
+  },
+  "referral": {
+    "title": "紹介して稼ぐ",
+    "subtitle": "リンクを共有 — エスクロー作成ごとにBDAGを獲得",
+    "yourLink": "あなたの紹介リンク",
+    "copied": "コピーしました！",
+    "stats": "あなたの統計",
+    "referrals": "紹介数",
+    "totalEarned": "累計獲得",
+    "claimable": "請求可能",
+    "claim": "BDAGを請求",
+    "claiming": "請求中...",
+    "claimed": "BDAGの請求に成功しました！",
+    "noEarnings": "請求できる収益がありません",
+    "connectWallet": "ウォレットを接続して紹介統計を確認",
+    "howItWorks": "リンクを共有してください。そのリンクでエスクローが作成されると、プロトコル手数料の一部をBDAGで獲得できます。"
   }
 }

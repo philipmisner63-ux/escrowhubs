@@ -377,5 +377,21 @@
     "saved": "Guardado.",
     "error": "Error al guardar.",
     "bellLabel": "Configuración de notificaciones"
+  },
+  "referral": {
+    "title": "Referir y Ganar",
+    "subtitle": "Comparte tu enlace — gana BDAG en cada escrow creado",
+    "yourLink": "Tu Enlace de Referido",
+    "copied": "¡Copiado!",
+    "stats": "Tus Estadísticas",
+    "referrals": "Referidos",
+    "totalEarned": "Total Ganado",
+    "claimable": "Reclamable",
+    "claim": "Reclamar BDAG",
+    "claiming": "Reclamando...",
+    "claimed": "¡BDAG reclamado con éxito!",
+    "noEarnings": "Sin ganancias para reclamar",
+    "connectWallet": "Conecta tu billetera para ver tus estadísticas",
+    "howItWorks": "Comparte tu enlace. Cuando alguien crea un escrow a través de él, ganas un porcentaje de la tarifa del protocolo en BDAG."
   }
 }

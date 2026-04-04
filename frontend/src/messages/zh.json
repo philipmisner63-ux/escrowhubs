@@ -377,5 +377,21 @@
     "saved": "已保存。",
     "error": "保存失败。",
     "bellLabel": "通知设置"
+  },
+  "referral": {
+    "title": "推荐赚取",
+    "subtitle": "分享您的链接 — 每次托管创建赚取BDAG",
+    "yourLink": "您的推荐链接",
+    "copied": "已复制！",
+    "stats": "您的统计",
+    "referrals": "推荐数",
+    "totalEarned": "总收益",
+    "claimable": "可领取",
+    "claim": "领取BDAG",
+    "claiming": "领取中...",
+    "claimed": "BDAG领取成功！",
+    "noEarnings": "没有可领取的收益",
+    "connectWallet": "连接钱包查看推荐统计",
+    "howItWorks": "分享您的链接。当有人通过该链接创建托管时，您将获得协议费用的一部分BDAG。"
   }
 }

@@ -377,5 +377,21 @@
     "saved": "Salvo.",
     "error": "Falha ao salvar.",
     "bellLabel": "Configurações de notificação"
+  },
+  "referral": {
+    "title": "Indicar & Ganhar",
+    "subtitle": "Compartilhe seu link — ganhe BDAG em cada escrow criado",
+    "yourLink": "Seu Link de Indicação",
+    "copied": "Copiado!",
+    "stats": "Suas Estatísticas",
+    "referrals": "Indicações",
+    "totalEarned": "Total Ganho",
+    "claimable": "Resgatável",
+    "claim": "Resgatar BDAG",
+    "claiming": "Resgatando...",
+    "claimed": "BDAG resgatado com sucesso!",
+    "noEarnings": "Sem ganhos para resgatar",
+    "connectWallet": "Conecte a carteira para ver suas estatísticas",
+    "howItWorks": "Compartilhe seu link. Quando alguém criar um escrow por ele, você ganhará uma porcentagem da taxa do protocolo em BDAG."
   }
 }

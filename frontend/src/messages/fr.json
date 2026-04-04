@@ -377,5 +377,21 @@
     "saved": "Enregistré.",
     "error": "Échec de l'enregistrement.",
     "bellLabel": "Paramètres de notification"
+  },
+  "referral": {
+    "title": "Parrainer & Gagner",
+    "subtitle": "Partagez votre lien — gagnez du BDAG sur chaque escrow créé",
+    "yourLink": "Votre Lien de Parrainage",
+    "copied": "Copié !",
+    "stats": "Vos Statistiques",
+    "referrals": "Parrainages",
+    "totalEarned": "Total Gagné",
+    "claimable": "Réclamable",
+    "claim": "Réclamer BDAG",
+    "claiming": "Réclamation...",
+    "claimed": "BDAG réclamé avec succès !",
+    "noEarnings": "Aucun gain à réclamer",
+    "connectWallet": "Connectez votre portefeuille pour voir vos statistiques",
+    "howItWorks": "Partagez votre lien. Lorsque quelqu'un crée un escrow via celui-ci, vous gagnez un pourcentage des frais de protocole en BDAG."
   }
 }

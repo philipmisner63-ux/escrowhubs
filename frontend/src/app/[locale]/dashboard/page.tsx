@@ -17,6 +17,7 @@ import { useWalletEscrows } from "@/lib/hooks/useEscrowFactory";
 import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
 import { getViewedEscrows, type ViewedEscrow } from "@/lib/localStorage";
+import { ReferralPanel } from "@/components/referral-panel";
 
 function isValidAddress(addr: string) {
   return /^0x[0-9a-fA-F]{40}$/.test(addr);
@@ -194,6 +195,10 @@ export default function DashboardPage() {
             )}
           </div>
         </PageWrapper>
+        {/* Referral section */}
+        <div className="mx-auto max-w-4xl w-full px-4 pb-10">
+          <ReferralPanel />
+        </div>
       </main>
       <Footer />
     </div>

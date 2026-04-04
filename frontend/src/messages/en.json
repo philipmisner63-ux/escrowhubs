@@ -377,5 +377,21 @@
     "saved": "Settings saved.",
     "error": "Failed to save. Please try again.",
     "bellLabel": "Notification settings"
+  },
+  "referral": {
+    "title": "Refer & Earn",
+    "subtitle": "Share your link — earn BDAG on every escrow created",
+    "yourLink": "Your Referral Link",
+    "copied": "Copied!",
+    "stats": "Your Stats",
+    "referrals": "Referrals",
+    "totalEarned": "Total Earned",
+    "claimable": "Claimable",
+    "claim": "Claim BDAG",
+    "claiming": "Claiming...",
+    "claimed": "BDAG claimed successfully!",
+    "noEarnings": "No earnings to claim",
+    "connectWallet": "Connect wallet to see your referral stats",
+    "howItWorks": "Share your link. When someone creates an escrow through it, you earn a percentage of the protocol fee in BDAG."
   }
 }

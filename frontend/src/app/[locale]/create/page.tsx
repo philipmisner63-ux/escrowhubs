@@ -19,6 +19,7 @@ import {
 import { getFactoryAddress, getArbiterAddress } from "@/lib/contracts/addresses";
 import { cn } from "@/lib/utils";
 import { GAS_LIMITS } from "@/lib/gasConfig";
+import { useReferrer } from "@/lib/hooks/useReferrer";
 import { useTranslations } from "next-intl";
 
 type EscrowType = "simple" | "milestone";
@@ -32,7 +33,8 @@ export default function CreateEscrowPage() {
   const t = useTranslations("create");
   const router = useRouter();
   const { addToast, removeToast } = useToast();
-  const chainId = useChainId();
+  const chainId  = useChainId();
+  const referrer = useReferrer();
   const { writeContractAsync } = useWriteContract();
   const publicClient = createPublicClient({
     chain: blockdagMainnet,
@@ -75,7 +77,7 @@ export default function CreateEscrowPage() {
           address: factoryAddress,
           abi: ESCROW_FACTORY_ABI,
           functionName: "createSimpleEscrow",
-          args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter],
+          args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, referrer],
           value: totalValue,
           gas: GAS_LIMITS.deploySimpleEscrow,
         });
@@ -91,7 +93,7 @@ export default function CreateEscrowPage() {
           address: factoryAddress,
           abi: ESCROW_FACTORY_ABI,
           functionName: "createMilestoneEscrow",
-          args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter],
+          args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, referrer],
           value: totalValue,
           gas: GAS_LIMITS.deployMilestoneEscrow,
         });

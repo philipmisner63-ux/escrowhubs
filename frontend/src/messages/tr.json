@@ -377,5 +377,21 @@
     "saved": "Kaydedildi.",
     "error": "Kaydetme başarısız.",
     "bellLabel": "Bildirim ayarları"
+  },
+  "referral": {
+    "title": "Refer Et & Kazan",
+    "subtitle": "Linkinizi paylaşın — oluşturulan her escrow'da BDAG kazanın",
+    "yourLink": "Referans Linkiniz",
+    "copied": "Kopyalandı!",
+    "stats": "İstatistikleriniz",
+    "referrals": "Referanslar",
+    "totalEarned": "Toplam Kazanılan",
+    "claimable": "Talep Edilebilir",
+    "claim": "BDAG Talep Et",
+    "claiming": "Talep ediliyor...",
+    "claimed": "BDAG başarıyla talep edildi!",
+    "noEarnings": "Talep edilecek kazanç yok",
+    "connectWallet": "Referans istatistiklerinizi görmek için cüzdan bağlayın",
+    "howItWorks": "Linkinizi paylaşın. Biri üzerinden escrow oluşturduğunda, protokol ücretinin bir yüzdesini BDAG olarak kazanırsınız."
   }
 }

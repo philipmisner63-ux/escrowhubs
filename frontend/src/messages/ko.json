@@ -377,5 +377,21 @@
     "saved": "저장되었습니다.",
     "error": "저장 실패.",
     "bellLabel": "알림 설정"
+  },
+  "referral": {
+    "title": "추천 & 수익",
+    "subtitle": "링크를 공유하세요 — 에스크로 생성마다 BDAG 획득",
+    "yourLink": "추천 링크",
+    "copied": "복사됨!",
+    "stats": "내 통계",
+    "referrals": "추천 수",
+    "totalEarned": "총 획득",
+    "claimable": "청구 가능",
+    "claim": "BDAG 청구",
+    "claiming": "청구 중...",
+    "claimed": "BDAG 청구 성공!",
+    "noEarnings": "청구할 수익 없음",
+    "connectWallet": "지갑을 연결하여 추천 통계 확인",
+    "howItWorks": "링크를 공유하세요. 해당 링크를 통해 에스크로가 생성되면 프로토콜 수수료의 일부를 BDAG로 획득합니다."
   }
 }

@@ -377,5 +377,21 @@
     "saved": "Gespeichert.",
     "error": "Fehler beim Speichern.",
     "bellLabel": "Benachrichtigungseinstellungen"
+  },
+  "referral": {
+    "title": "Empfehlen & Verdienen",
+    "subtitle": "Teilen Sie Ihren Link — verdienen Sie BDAG bei jedem Escrow",
+    "yourLink": "Ihr Empfehlungslink",
+    "copied": "Kopiert!",
+    "stats": "Ihre Statistiken",
+    "referrals": "Empfehlungen",
+    "totalEarned": "Gesamt Verdient",
+    "claimable": "Beanspruchbar",
+    "claim": "BDAG beanspruchen",
+    "claiming": "Wird beansprucht...",
+    "claimed": "BDAG erfolgreich beansprucht!",
+    "noEarnings": "Keine Einnahmen zum Beanspruchen",
+    "connectWallet": "Wallet verbinden um Ihre Statistiken zu sehen",
+    "howItWorks": "Teilen Sie Ihren Link. Wenn jemand darüber einen Escrow erstellt, verdienen Sie einen Anteil der Protokollgebühr in BDAG."
   }
 }

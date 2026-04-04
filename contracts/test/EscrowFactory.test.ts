@@ -14,6 +14,7 @@ import { parseEther, getAddress } from "viem";
 // 7: trustTier
 // 8: aiArbiter
 // 9: createdAt
+// 10: referrer
 
 describe("EscrowFactory", () => {
   async function deploy() {
@@ -36,7 +37,7 @@ describe("EscrowFactory", () => {
     const [total] = await factory.read.quoteSimple([parseEther("1.0"), false]);
 
     await factory.write.createSimpleEscrow(
-      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false],
+      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false, "0x0000000000000000000000000000000000000000"],
       { value: total }
     );
 
@@ -56,7 +57,7 @@ describe("EscrowFactory", () => {
     const [total, fee] = await factory.read.quoteSimple([parseEther("1.0"), false]);
 
     await factory.write.createSimpleEscrow(
-      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false],
+      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false, "0x0000000000000000000000000000000000000000"],
       { value: total }
     );
 
@@ -89,7 +90,7 @@ describe("EscrowFactory", () => {
     const [total] = await factory.read.quoteSimple([parseEther("1.0"), true]);
 
     await factory.write.createSimpleEscrow(
-      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, true],
+      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, true, "0x0000000000000000000000000000000000000000"],
       { value: total }
     );
 
@@ -118,6 +119,7 @@ describe("EscrowFactory", () => {
         amounts,
         1,     // Enhanced tier
         false,
+        "0x0000000000000000000000000000000000000000", // no referrer
       ],
       { value: gross }
     );
@@ -138,7 +140,7 @@ describe("EscrowFactory", () => {
 
     for (let i = 0; i < 2; i++) {
       await factory.write.createSimpleEscrow(
-        [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false],
+        [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false, "0x0000000000000000000000000000000000000000"],
         { value: total }
       );
     }
@@ -153,7 +155,7 @@ describe("EscrowFactory", () => {
 
     for (let i = 0; i < 3; i++) {
       await factory.write.createSimpleEscrow(
-        [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false],
+        [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false, "0x0000000000000000000000000000000000000000"],
         { value: total }
       );
     }
@@ -173,7 +175,7 @@ describe("EscrowFactory", () => {
 
     const [total] = await factory.read.quoteSimple([parseEther("1.0"), false]);
     await factory.write.createSimpleEscrow(
-      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false],
+      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address), 0, false, "0x0000000000000000000000000000000000000000"],
       { value: total }
     );
 
