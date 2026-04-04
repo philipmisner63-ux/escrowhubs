@@ -85,6 +85,7 @@ export default function CreateEscrowPage() {
           // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= escrow
           // So: grossValue = escrow + ceil(escrow * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
+          // Gross up correctly: fee = floor(msg.value * 50/10000), need net >= escrowAmount
           const protocolFeeNeeded = (escrowAmount * 50n + 9949n) / 9950n;
           const grossValue = escrowAmount + protocolFeeNeeded;
           const totalValue = grossValue + aiArbiterFee;
@@ -117,6 +118,7 @@ export default function CreateEscrowPage() {
           // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= netTotal
           // So: grossValue = netTotal + ceil(netTotal * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
+          // Gross up correctly: fee = floor(msg.value * 50/10000), need net >= netTotal
           const protocolFeeNeeded = (netTotal * 50n + 9949n) / 9950n;
           const grossValue = netTotal + protocolFeeNeeded;
           const totalValue = grossValue + aiArbiterFee;
