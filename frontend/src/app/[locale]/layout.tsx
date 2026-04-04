@@ -3,7 +3,7 @@ import { Geist, JetBrains_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { Providers } from "@/components/providers";
+import { ProvidersClient } from "@/components/providers-client";
 import { AnimatedBackground } from "@/components/animated-background";
 import { routing } from "@/i18n/routing";
 import { localeMetadata } from "@/i18n/config";
@@ -67,7 +67,7 @@ export default async function LocaleLayout({
       </head>
       <body className={`${geistSans.variable} ${jetbrainsMono.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
-          <Providers>
+          <ProvidersClient>
             <PWARegister />
             <AnimatedBackground />
             <div className="relative min-h-screen">
@@ -75,7 +75,7 @@ export default async function LocaleLayout({
                 {children}
               </ChainGuard>
             </div>
-          </Providers>
+          </ProvidersClient>
         </NextIntlClientProvider>
       </body>
     </html>
