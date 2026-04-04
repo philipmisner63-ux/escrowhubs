@@ -12,7 +12,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string
 export type TokenType = "ETH" | "USDC";
 
 export function useTokenSelector() {
-  const [selectedToken, setSelectedToken] = useState<TokenType>("USDC");
+  const [selectedToken, setSelectedToken] = useState<TokenType>("ETH");
   const { address: wallet } = useAccount();
   const chainId = useChainId();
   const factoryAddress = getFactoryAddress(chainId);
