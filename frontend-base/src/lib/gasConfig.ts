@@ -1,7 +1,7 @@
 export const GAS_LIMITS = {
   // Factory deployment operations (higher gas — contract creation)
-  deploySimpleEscrow: 500_000n,
-  deployMilestoneEscrow: 1_000_000n,
+  deploySimpleEscrow: 1_100_000n,
+  deployMilestoneEscrow: 2_000_000n,
 
   // Simple escrow operations
   deposit: 150_000n,
