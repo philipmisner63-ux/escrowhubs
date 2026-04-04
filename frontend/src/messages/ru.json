@@ -353,5 +353,29 @@
     "success": "Спасибо! Ваше предложение получено.",
     "error": "Что-то пошло не так. Попробуйте ещё раз.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "Настройки уведомлений",
+    "subtitle": "Получайте уведомления о вашей эскроу-активности.",
+    "emailSection": "Email-уведомления",
+    "emailLabel": "Email-адрес",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "Уведомления Telegram",
+    "telegramLink": "Связать Telegram",
+    "telegramLinked": "Telegram привязан ✓",
+    "telegramHint": "Открывает Telegram для привязки кошелька",
+    "events": {
+      "escrow_created": "Эскроу создан",
+      "escrow_funded": "Эскроу пополнен",
+      "funds_released": "Средства выпущены",
+      "dispute_opened": "Спор открыт",
+      "dispute_resolved": "Спор разрешён",
+      "milestone_completed": "Этап завершён"
+    },
+    "save": "Сохранить",
+    "saving": "Сохранение…",
+    "saved": "Сохранено.",
+    "error": "Ошибка сохранения.",
+    "bellLabel": "Настройки уведомлений"
   }
 }

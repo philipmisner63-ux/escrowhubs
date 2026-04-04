@@ -353,5 +353,29 @@
     "success": "شكراً! تم استلام اقتراحك.",
     "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "إعدادات الإشعارات",
+    "subtitle": "احصل على إشعارات حول نشاط الضمان.",
+    "emailSection": "إشعارات البريد الإلكتروني",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "إشعارات تيليغرام",
+    "telegramLink": "ربط تيليغرام",
+    "telegramLinked": "تيليغرام مرتبط ✓",
+    "telegramHint": "يفتح تيليغرام لربط محفظتك",
+    "events": {
+      "escrow_created": "تم إنشاء الضمان",
+      "escrow_funded": "تم تمويل الضمان",
+      "funds_released": "تم تحرير الأموال",
+      "dispute_opened": "تم فتح نزاع",
+      "dispute_resolved": "تم حل النزاع",
+      "milestone_completed": "تم إكمال المرحلة"
+    },
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم الحفظ.",
+    "error": "فشل الحفظ.",
+    "bellLabel": "إعدادات الإشعارات"
   }
 }

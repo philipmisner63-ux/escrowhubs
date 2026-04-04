@@ -353,5 +353,29 @@
     "success": "Danke! Ihr Vorschlag wurde empfangen.",
     "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "Benachrichtigungseinstellungen",
+    "subtitle": "Benachrichtigungen über Ihre Escrow-Aktivität.",
+    "emailSection": "E-Mail-Benachrichtigungen",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "sie@beispiel.de",
+    "telegramSection": "Telegram-Benachrichtigungen",
+    "telegramLink": "Telegram verknüpfen",
+    "telegramLinked": "Telegram verknüpft ✓",
+    "telegramHint": "Öffnet Telegram zur Wallet-Verknüpfung",
+    "events": {
+      "escrow_created": "Escrow erstellt",
+      "escrow_funded": "Escrow finanziert",
+      "funds_released": "Gelder freigegeben",
+      "dispute_opened": "Streit eröffnet",
+      "dispute_resolved": "Streit gelöst",
+      "milestone_completed": "Meilenstein abgeschlossen"
+    },
+    "save": "Speichern",
+    "saving": "Speichern…",
+    "saved": "Gespeichert.",
+    "error": "Fehler beim Speichern.",
+    "bellLabel": "Benachrichtigungseinstellungen"
   }
 }

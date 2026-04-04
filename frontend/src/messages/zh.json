@@ -353,5 +353,29 @@
     "success": "感谢！您的建议已收到。",
     "error": "出了点问题。请再试一次。",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "通知设置",
+    "subtitle": "接收关于您的托管活动的通知。",
+    "emailSection": "邮件通知",
+    "emailLabel": "邮箱地址",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "Telegram通知",
+    "telegramLink": "关联Telegram",
+    "telegramLinked": "Telegram已关联 ✓",
+    "telegramHint": "打开Telegram关联您的钱包",
+    "events": {
+      "escrow_created": "托管已创建",
+      "escrow_funded": "托管已资助",
+      "funds_released": "资金已释放",
+      "dispute_opened": "争议已提起",
+      "dispute_resolved": "争议已解决",
+      "milestone_completed": "里程碑已完成"
+    },
+    "save": "保存",
+    "saving": "保存中…",
+    "saved": "已保存。",
+    "error": "保存失败。",
+    "bellLabel": "通知设置"
   }
 }

@@ -353,5 +353,29 @@
     "success": "धन्यवाद! आपका सुझाव प्राप्त हो गया।",
     "error": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "अधिसूचना सेटिंग्स",
+    "subtitle": "अपनी एस्क्रो गतिविधि के बारे में सूचनाएं पाएं।",
+    "emailSection": "ईमेल सूचनाएं",
+    "emailLabel": "ईमेल पता",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "Telegram सूचनाएं",
+    "telegramLink": "Telegram लिंक करें",
+    "telegramLinked": "Telegram लिंक हो गया ✓",
+    "telegramHint": "अपना वॉलेट लिंक करने के लिए Telegram खोलें",
+    "events": {
+      "escrow_created": "एस्क्रो बनाया गया",
+      "escrow_funded": "एस्क्रो फंड किया गया",
+      "funds_released": "फंड जारी हुए",
+      "dispute_opened": "विवाद खुला",
+      "dispute_resolved": "विवाद सुलझा",
+      "milestone_completed": "माइलस्टोन पूरा हुआ"
+    },
+    "save": "सहेजें",
+    "saving": "सहेजा जा रहा है…",
+    "saved": "सहेजा गया।",
+    "error": "सहेजने में विफल।",
+    "bellLabel": "अधिसूचना सेटिंग्स"
   }
 }

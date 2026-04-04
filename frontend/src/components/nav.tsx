@@ -1,10 +1,12 @@
 "use client";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAccount, useChainId } from "wagmi";
 import { WalletConnectButton } from "@/components/connect-button";
 import { LanguagePicker } from "@/components/language-picker";
 import { LanguagePickerMobile } from "@/components/language-picker-mobile";
+import { NotificationModal } from "@/components/notification-modal";
 import { cn } from "@/lib/utils";
 import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chains";
 function WalletWarningBanner() {
@@ -24,6 +26,8 @@ function WalletWarningBanner() {
 }
 export function Nav() {
   const t = useTranslations("nav");
+  const tNotif = useTranslations("notifications");
+  const [notifOpen, setNotifOpen] = useState(false);
   const locale = useLocale();
   const pathname = usePathname();
   // Strip locale prefix for active link matching
@@ -71,8 +75,19 @@ export function Nav() {
             {/* Right side */}
             <div className="flex items-center gap-2">
               <LanguagePicker />
+              <button
+                onClick={() => setNotifOpen(true)}
+                aria-label={tNotif("bellLabel")}
+                className="p-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </button>
               <div data-tour="connect-wallet"><WalletConnectButton /></div>
             </div>
+            <NotificationModal open={notifOpen} onClose={() => setNotifOpen(false)} />
           </div>
         </div>
       </div>

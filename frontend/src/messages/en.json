@@ -353,5 +353,29 @@
     "success": "Thanks! Your suggestion has been received.",
     "error": "Something went wrong. Please try again.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "subtitle": "Get notified about your escrow activity.",
+    "emailSection": "Email Notifications",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "Telegram Notifications",
+    "telegramLink": "Link Telegram",
+    "telegramLinked": "Telegram Linked ✓",
+    "telegramHint": "Opens Telegram to link your wallet",
+    "events": {
+      "escrow_created": "Escrow created",
+      "escrow_funded": "Escrow funded",
+      "funds_released": "Funds released",
+      "dispute_opened": "Dispute opened",
+      "dispute_resolved": "Dispute resolved",
+      "milestone_completed": "Milestone completed"
+    },
+    "save": "Save Settings",
+    "saving": "Saving…",
+    "saved": "Settings saved.",
+    "error": "Failed to save. Please try again.",
+    "bellLabel": "Notification settings"
   }
 }

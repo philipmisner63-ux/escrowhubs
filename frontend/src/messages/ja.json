@@ -353,5 +353,29 @@
     "success": "ありがとうございます！ご提案を受け取りました。",
     "error": "問題が発生しました。もう一度お試しください。",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "通知設定",
+    "subtitle": "エスクロー活動の通知を受け取る。",
+    "emailSection": "メール通知",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "Telegram通知",
+    "telegramLink": "Telegramを連携",
+    "telegramLinked": "Telegram連携済み ✓",
+    "telegramHint": "Telegramを開いてウォレットを連携",
+    "events": {
+      "escrow_created": "エスクロー作成",
+      "escrow_funded": "エスクロー資金投入",
+      "funds_released": "資金リリース",
+      "dispute_opened": "紛争開始",
+      "dispute_resolved": "紛争解決",
+      "milestone_completed": "マイルストーン完了"
+    },
+    "save": "保存",
+    "saving": "保存中…",
+    "saved": "保存しました。",
+    "error": "保存に失敗しました。",
+    "bellLabel": "通知設定"
   }
 }

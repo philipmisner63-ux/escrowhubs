@@ -27,6 +27,7 @@ import {
   formatEther,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { notifyParties } from "./notify.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -444,6 +445,13 @@ function startChainListener(chainConfig) {
       appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, txHash });
       processed.add(escrowAddress);
 
+      // ── Notify parties ──
+      const eventData = { amount: disputeContext.amount, symbol: nativeCurrency?.symbol ?? "BDAG", chainId };
+      notifyParties(escrowAddress, "dispute_opened",   eventData, [depositor, beneficiary]);
+      if (txHash !== "pending_manual_review") {
+        notifyParties(escrowAddress, "dispute_resolved", { ...eventData, ruling: decision._onChainRuling }, [depositor, beneficiary]);
+      }
+
     } catch (err) {
       console.error(`❌ ${tag} [SIMPLE] Error for ${escrowAddress}:`, err.message);
     }
@@ -521,6 +529,16 @@ function startChainListener(chainConfig) {
       appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, txHash });
       processed.add(disputeKey);
 
+      // ── Notify parties ──
+      const eventData = {
+        amount: formatEther(disputed.amount), symbol: nativeCurrency?.symbol ?? "BDAG",
+        chainId, milestoneIndex, milestoneDescription: disputed.description,
+      };
+      notifyParties(escrowAddress, "dispute_opened",   eventData, [depositor, beneficiary]);
+      if (txHash !== "pending_manual_review") {
+        notifyParties(escrowAddress, "dispute_resolved", { ...eventData, ruling: decision._onChainRuling }, [depositor, beneficiary]);
+      }
+
     } catch (err) {
       console.error(`❌ ${tag} [MILESTONE] Error for ${escrowAddress} #${milestoneIndex}:`, err.message);
     }
@@ -577,6 +595,80 @@ function startChainListener(chainConfig) {
           }
         } catch { /* not a compatible escrow */ }
       }
+
+      // ── Additional escrow lifecycle events for notifications ────────────────
+
+      // Factory: SimpleEscrowCreated — notify beneficiary
+      try {
+        const createdLogs = await publicClient.getLogs({
+          fromBlock, toBlock,
+          address: factoryAddress,
+          event: parseAbiItem("event SimpleEscrowCreated(address indexed contractAddress, address indexed depositor, address indexed beneficiary, address arbiter, uint256 amount, uint8 trustTier)"),
+        });
+        for (const log of createdLogs) {
+          const sym = nativeCurrency?.symbol ?? "BDAG";
+          notifyParties(log.args.contractAddress, "escrow_created",
+            { amount: formatEther(log.args.amount ?? 0n), symbol: sym, chainId },
+            [log.args.beneficiary]
+          );
+        }
+      } catch { /* non-fatal */ }
+
+      // SimpleEscrow Deposited — notify both parties
+      try {
+        const depositedLogs = await publicClient.getLogs({
+          fromBlock, toBlock,
+          event: parseAbiItem("event Deposited(address indexed depositor, uint256 amount)"),
+        });
+        for (const log of depositedLogs) {
+          const escrow = log.address;
+          try {
+            const [dep, ben] = await Promise.all([
+              publicClient.readContract({ address: escrow, abi: SimpleEscrowABI, functionName: "depositor" }),
+              publicClient.readContract({ address: escrow, abi: SimpleEscrowABI, functionName: "beneficiary" }),
+            ]);
+            notifyParties(escrow, "escrow_funded",
+              { amount: formatEther(log.args.amount ?? 0n), symbol: nativeCurrency?.symbol ?? "BDAG", chainId },
+              [dep, ben]
+            );
+          } catch { /* not a compatible escrow */ }
+        }
+      } catch { /* non-fatal */ }
+
+      // SimpleEscrow Released — notify beneficiary
+      try {
+        const releasedLogs = await publicClient.getLogs({
+          fromBlock, toBlock,
+          event: parseAbiItem("event Released(address indexed to, uint256 amount)"),
+        });
+        for (const log of releasedLogs) {
+          notifyParties(log.address, "funds_released",
+            { amount: formatEther(log.args.amount ?? 0n), symbol: nativeCurrency?.symbol ?? "BDAG", chainId },
+            [log.args.to]
+          );
+        }
+      } catch { /* non-fatal */ }
+
+      // MilestoneEscrow MilestoneReleased — notify both parties
+      try {
+        const msReleasedLogs = await publicClient.getLogs({
+          fromBlock, toBlock,
+          event: parseAbiItem("event MilestoneReleased(uint256 indexed index, uint256 amount)"),
+        });
+        for (const log of msReleasedLogs) {
+          const escrow = log.address;
+          try {
+            const [dep, ben] = await Promise.all([
+              publicClient.readContract({ address: escrow, abi: MilestoneEscrowABI, functionName: "depositor" }),
+              publicClient.readContract({ address: escrow, abi: MilestoneEscrowABI, functionName: "beneficiary" }),
+            ]);
+            notifyParties(escrow, "milestone_completed",
+              { amount: formatEther(log.args.amount ?? 0n), symbol: nativeCurrency?.symbol ?? "BDAG", chainId, milestoneIndex: Number(log.args.index) },
+              [dep, ben]
+            );
+          } catch { /* not a compatible escrow */ }
+        }
+      } catch { /* non-fatal */ }
 
       lastBlock = currentBlock;
 

@@ -353,5 +353,29 @@
     "success": "Teşekkürler! Öneriniz alındı.",
     "error": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "Bildirim Ayarları",
+    "subtitle": "Escrow etkinliğiniz hakkında bildirim alın.",
+    "emailSection": "E-posta Bildirimleri",
+    "emailLabel": "E-posta Adresi",
+    "emailPlaceholder": "siz@ornek.com",
+    "telegramSection": "Telegram Bildirimleri",
+    "telegramLink": "Telegram Bağla",
+    "telegramLinked": "Telegram Bağlandı ✓",
+    "telegramHint": "Cüzdanınızı bağlamak için Telegram'ı açar",
+    "events": {
+      "escrow_created": "Escrow oluşturuldu",
+      "escrow_funded": "Escrow finanse edildi",
+      "funds_released": "Fonlar serbest bırakıldı",
+      "dispute_opened": "Anlaşmazlık açıldı",
+      "dispute_resolved": "Anlaşmazlık çözüldü",
+      "milestone_completed": "Kilometre taşı tamamlandı"
+    },
+    "save": "Kaydet",
+    "saving": "Kaydediliyor…",
+    "saved": "Kaydedildi.",
+    "error": "Kaydetme başarısız.",
+    "bellLabel": "Bildirim ayarları"
   }
 }

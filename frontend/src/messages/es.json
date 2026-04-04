@@ -353,5 +353,29 @@
     "success": "¡Gracias! Tu sugerencia ha sido recibida.",
     "error": "Algo salió mal. Por favor intenta de nuevo.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "Configuración de Notificaciones",
+    "subtitle": "Recibe alertas sobre tu actividad de escrow.",
+    "emailSection": "Notificaciones por Email",
+    "emailLabel": "Correo Electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "telegramSection": "Notificaciones de Telegram",
+    "telegramLink": "Vincular Telegram",
+    "telegramLinked": "Telegram Vinculado ✓",
+    "telegramHint": "Abre Telegram para vincular tu billetera",
+    "events": {
+      "escrow_created": "Escrow creado",
+      "escrow_funded": "Escrow financiado",
+      "funds_released": "Fondos liberados",
+      "dispute_opened": "Disputa abierta",
+      "dispute_resolved": "Disputa resuelta",
+      "milestone_completed": "Hito completado"
+    },
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado.",
+    "error": "Error al guardar.",
+    "bellLabel": "Configuración de notificaciones"
   }
 }

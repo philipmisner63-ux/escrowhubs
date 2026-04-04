@@ -353,5 +353,29 @@
     "success": "감사합니다! 제안이 접수되었습니다.",
     "error": "문제가 발생했습니다. 다시 시도해주세요.",
     "charCount": "{count}/{max}"
+  },
+  "notifications": {
+    "title": "알림 설정",
+    "subtitle": "에스크로 활동 알림을 받으세요.",
+    "emailSection": "이메일 알림",
+    "emailLabel": "이메일 주소",
+    "emailPlaceholder": "you@example.com",
+    "telegramSection": "텔레그램 알림",
+    "telegramLink": "텔레그램 연결",
+    "telegramLinked": "텔레그램 연결됨 ✓",
+    "telegramHint": "텔레그램을 열어 지갑을 연결하세요",
+    "events": {
+      "escrow_created": "에스크로 생성됨",
+      "escrow_funded": "에스크로 자금 입금됨",
+      "funds_released": "자금 지급됨",
+      "dispute_opened": "분쟁 제기됨",
+      "dispute_resolved": "분쟁 해결됨",
+      "milestone_completed": "마일스톤 완료됨"
+    },
+    "save": "저장",
+    "saving": "저장 중…",
+    "saved": "저장되었습니다.",
+    "error": "저장 실패.",
+    "bellLabel": "알림 설정"
   }
 }
