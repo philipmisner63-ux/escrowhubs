@@ -1,0 +1,12 @@
+[
+  { "type": "function", "name": "getTier",
+    "inputs": [{ "name": "wallet", "type": "address" }], "outputs": [{ "type": "uint8" }], "stateMutability": "view" },
+  { "type": "function", "name": "getScoreAndTier",
+    "inputs": [{ "name": "wallet", "type": "address" }],
+    "outputs": [{ "name": "score", "type": "uint8" }, { "name": "tier", "type": "uint8" }],
+    "stateMutability": "view" },
+  { "type": "function", "name": "scores",
+    "inputs": [{ "name": "wallet", "type": "address" }], "outputs": [{ "type": "uint8" }], "stateMutability": "view" },
+  { "type": "function", "name": "tier1Threshold", "inputs": [], "outputs": [{ "type": "uint8" }], "stateMutability": "view" },
+  { "type": "function", "name": "tier2Threshold", "inputs": [], "outputs": [{ "type": "uint8" }], "stateMutability": "view" }
+]
