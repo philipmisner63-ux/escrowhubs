@@ -13,7 +13,8 @@ import { fileURLToPath } from "url";
 const __dirname   = path.dirname(fileURLToPath(import.meta.url));
 // notifications.json lives in the frontend dir (served by Next.js API routes)
 const PREFS_FILE  = path.join(__dirname, "..", "frontend", "notifications.json");
-const BOT_TOKEN   = process.env.TELEGRAM_BOT_TOKEN ?? "";
+// Read lazily so dotenv in index.js has time to populate process.env
+function getBotToken() { return process.env.TELEGRAM_BOT_TOKEN ?? ""; }
 const APP_URL     = "https://app.escrowhubs.io";
 const DISCORD_WEBHOOK = process.env.SUPPORT_DISCORD_WEBHOOK ?? "";
 
@@ -67,10 +68,10 @@ function linkChatId(wallet, chatId) {
 
 // ─── Telegram API helpers ─────────────────────────────────────────────────────
 
-const TG = `https://api.telegram.org/bot${BOT_TOKEN}`;
-
 async function tgCall(method, body) {
+  const BOT_TOKEN = getBotToken();
   if (!BOT_TOKEN) return null;
+  const TG = `https://api.telegram.org/bot${BOT_TOKEN}`;
   try {
     const res = await fetch(`${TG}/${method}`, {
       method:  "POST",
@@ -122,10 +123,12 @@ async function processUpdate(update) {
 }
 
 export async function startTelegramBot() {
+  const BOT_TOKEN = getBotToken();
   if (!BOT_TOKEN) {
     console.log("ℹ️  TELEGRAM_BOT_TOKEN not set — Telegram bot disabled");
     return;
   }
+  const TG = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
   // Verify token works
   const me = await tgCall("getMe", {});
