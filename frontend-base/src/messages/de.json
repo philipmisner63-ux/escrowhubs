@@ -73,7 +73,7 @@
   "create": {
     "title": "Escrow erstellen",
     "subtitle": "Neuen Escrow-Vertrag auf Base deployen",
-    "networkBanner": "Base Mainnet. Verbinde deine Wallet mit Base (Chain ID: 8453, RPC: https://mainnet.base.org) vor dem Deployen.",
+    "networkBanner": "Verbinde deine Wallet mit Base (Chain ID: 8453, RPC: https://mainnet.base.org) vor dem Deployen.",
     "simpleEscrow": "Einfaches Escrow",
     "simpleEscrowDesc": "Einmalige Freigabe. Gelder bei Lieferung oder Schiedsrichterbeschluss freigegeben.",
     "milestoneEscrow": "Meilenstein-Escrow",

@@ -192,7 +192,7 @@ export default function CreateEscrowPage() {
 
             {/* Network banner */}
             <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-xs text-cyan-300">
-              <strong>Base Mainnet.</strong> {t("networkBanner")}
+              {t("networkBanner")}
             </div>
 
             {/* Type selector */}

@@ -73,7 +73,7 @@
   "create": {
     "title": "Создать эскроу",
     "subtitle": "Развернуть новый эскроу-контракт на Base",
-    "networkBanner": "Base Mainnet. Подключите кошелёк к Base (Chain ID: 8453, RPC: https://mainnet.base.org) перед развёртыванием.",
+    "networkBanner": "Подключите кошелёк к Base (Chain ID: 8453, RPC: https://mainnet.base.org) перед развёртыванием.",
     "simpleEscrow": "Простой эскроу",
     "simpleEscrowDesc": "Однократный выпуск. Средства выпускаются при доставке или по решению арбитра.",
     "milestoneEscrow": "Поэтапный эскроу",

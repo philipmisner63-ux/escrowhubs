@@ -73,7 +73,7 @@
   "create": {
     "title": "Emanet Oluştur",
     "subtitle": "Base üzerinde yeni bir emanet sözleşmesi dağıtın",
-    "networkBanner": "Base Mainnet. Dağıtmadan önce cüzdanınızı Base'a bağlayın (Chain ID: 8453, RPC: https://mainnet.base.org).",
+    "networkBanner": "Dağıtmadan önce cüzdanınızı Base'a bağlayın (Chain ID: 8453, RPC: https://mainnet.base.org).",
     "simpleEscrow": "Basit Emanet",
     "simpleEscrowDesc": "Tek serbest bırakma. Fonlar teslimde veya hakem kararıyla serbest bırakılır.",
     "milestoneEscrow": "Aşamalı Emanet",
