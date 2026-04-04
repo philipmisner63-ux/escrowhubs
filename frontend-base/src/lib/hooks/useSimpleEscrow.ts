@@ -20,7 +20,7 @@ export function useSimpleEscrowRead(address: Address | undefined, chainId?: numb
       { ...contract, functionName: "beneficiary" },
       { ...contract, functionName: "arbiter" },
     ],
-    query: { enabled: !!address, refetchInterval: 5_000 },
+    query: { enabled: !!address, refetchInterval: 30_000, staleTime: 10_000 },
   });
 
   return {
