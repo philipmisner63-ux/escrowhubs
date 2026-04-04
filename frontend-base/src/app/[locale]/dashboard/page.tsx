@@ -46,7 +46,7 @@ export default function DashboardPage() {
   // Get escrow addresses directly from factory using raw index lookup
   const myIndices = Array.from(new Set([...asDepositor, ...asBeneficiary].map(n => Number(n))));
 
-  const { data: escrowData, isLoading: recordsLoading } = useReadContracts({
+  const { data: escrowData, isLoading: recordsLoading, isFetching: recordsFetching } = useReadContracts({
     contracts: myIndices.map(i => ({
       address: factoryAddress,
       abi: ESCROW_FACTORY_ABI,
@@ -90,7 +90,9 @@ export default function DashboardPage() {
     router.push(`/escrow/${addr}`);
   }
 
-  const isLoading = walletLoading || recordsLoading;
+  // Only show loading spinner on first load, not background refetches
+  const isFirstLoad = (walletLoading && !asDepositor.length) || (recordsLoading && !escrowData);
+  const isLoading = isFirstLoad;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -122,7 +124,7 @@ export default function DashboardPage() {
                 <GlassCard className="p-8 text-center">
                   <p className="text-slate-500 text-sm animate-pulse">{t("loading")}</p>
                 </GlassCard>
-              ) : myEscrows.length === 0 ? (
+              ) : myEscrows.length === 0 && !recordsFetching ? (
                 <GlassCard className="p-8 text-center">
                   <p className="text-slate-500 text-sm">{t("noEscrows")}</p>
                   <p className="text-slate-600 text-xs mt-1">{t("noEscrowsHint")}</p>
