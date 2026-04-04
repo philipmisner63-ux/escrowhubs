@@ -488,7 +488,9 @@ function EvidencePanel({ escrowAddress }: { escrowAddress: Address }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EscrowDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const { id: rawId } = use(params);
+  // Normalize to lowercase — Next.js/next-intl may transform the URL segment
+  const id = rawId?.toLowerCase() as string;
   const chainId = useChainId();
   const contractType = useContractType(isAddress(id) ? id : undefined, chainId);
   const { events } = useEscrowEvents(isAddress(id) ? id : undefined, contractType, chainId);
