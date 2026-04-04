@@ -35,9 +35,11 @@ export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const router = useRouter();
   const { address: walletLive } = useAccount();
-  // Cache wallet — never let a brief undefined wipe the UI
-  const [wallet, setWallet] = useState<`0x${string}` | undefined>(undefined);
-  useEffect(() => { if (walletLive) setWallet(walletLive); }, [walletLive]);
+  // Cache wallet for display — never wipe UI on brief undefined during reconnect
+  const [walletCached, setWalletCached] = useState<`0x${string}` | undefined>(undefined);
+  useEffect(() => { if (walletLive) setWalletCached(walletLive); }, [walletLive]);
+  const wallet = walletCached; // stable for display
+  const walletForQuery = walletLive ?? walletCached; // use live for queries, fall back to cached
   const chainId = useChainId();
   const factoryAddress = getFactoryAddress(chainId);
   const [input, setInput] = useState("");
@@ -45,7 +47,7 @@ export default function DashboardPage() {
   const [viewed, setViewed] = useState<ViewedEscrow[]>([]);
   const [cachedEscrows, setCachedEscrows] = useState<{ contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint }[]>([]);
 
-  const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(wallet, chainId);
+  const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(walletForQuery, chainId);
 
   // Get escrow addresses directly from factory using raw index lookup
   const myIndices = Array.from(new Set([...asDepositor, ...asBeneficiary].map(n => Number(n))));
