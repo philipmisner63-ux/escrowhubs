@@ -78,6 +78,7 @@ export default function CreateEscrowPage() {
             functionName: "createSimpleEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer],
             value: 0n,
+            gas: 1_100_000n,
           });
         } else {
           const escrowAmount = parseEther(form.amount);
@@ -91,6 +92,7 @@ export default function CreateEscrowPage() {
             functionName: "createSimpleEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer],
             value: totalValue,
+            gas: 1_100_000n,
           });
         }
       } else {
@@ -105,6 +107,7 @@ export default function CreateEscrowPage() {
             functionName: "createMilestoneEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer],
             value: 0n,
+            gas: 1_500_000n,
           });
         } else {
           const amounts = milestones.map(m => parseEther(m.amount));
@@ -119,6 +122,7 @@ export default function CreateEscrowPage() {
             functionName: "createMilestoneEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer],
             value: totalValue,
+            gas: 1_500_000n,
           });
         }
       }
