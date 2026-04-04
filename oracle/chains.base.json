@@ -1,0 +1,13 @@
+[
+  {
+    "chainId": 8453,
+    "name": "Base",
+    "nativeCurrency": { "name": "Ether", "symbol": "ETH", "decimals": 18 },
+    "rpcUrlEnvVar": "BASE_RPC_URL",
+    "rpcUrlFallback": "https://mainnet.base.org",
+    "factoryAddressEnvVar": "NEXT_PUBLIC_FACTORY_ADDRESS",
+    "factoryAddressFallback": "0x0000000000000000000000000000000000000001",
+    "arbiterAddressEnvVar": "AI_ARBITER_ADDRESS",
+    "arbiterAddressFallback": "0x0000000000000000000000000000000000000002"
+  }
+]

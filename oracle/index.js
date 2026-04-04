@@ -14,7 +14,15 @@
  * To add a new chain: add an entry to chains.json — no code changes needed.
  */
 
-import "dotenv/config";
+import dotenv from "dotenv";
+import { createRequire } from "module";
+// Support ENV_FILE env var for running multiple oracle instances with different configs
+// e.g. ENV_FILE=.env.base pm2 start oracle-base
+{
+  const envFile = process.env.ENV_FILE ?? ".env";
+  const envPath = new URL(envFile, import.meta.url).pathname;
+  dotenv.config({ path: envPath, override: false });
+}
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import path from "path";
@@ -37,10 +45,12 @@ const { default: SimpleEscrowABI }    = await import("./abis/SimpleEscrow.json",
 const { default: MilestoneEscrowABI } = await import("./abis/MilestoneEscrow.json", { with: { type: "json" } });
 const { default: AIArbiterABI }       = await import("./abis/AIArbiter.json",       { with: { type: "json" } });
 
-// ─── Chain config (from chains.json, resolved with env vars) ─────────────────
+// ─── Chain config (from chains.json or CHAINS_FILE env var) ──────────────────
+// Use CHAINS_FILE=chains.base.json to run a Base-specific oracle instance.
 
+const chainsFile = process.env.CHAINS_FILE ?? "chains.json";
 const chainsRaw = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "chains.json"), "utf8")
+  fs.readFileSync(path.join(__dirname, chainsFile), "utf8")
 );
 
 /**
