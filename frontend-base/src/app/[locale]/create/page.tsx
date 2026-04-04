@@ -18,7 +18,6 @@ import {
 } from "@/lib/contracts";
 import { getFactoryAddress, getArbiterAddress } from "@/lib/contracts/addresses";
 import { cn } from "@/lib/utils";
-import { GAS_LIMITS } from "@/lib/gasConfig";
 import { useReferrer } from "@/lib/hooks/useReferrer";
 import { useTokenSelector } from "@/lib/hooks/useTokenSelector";
 import { TokenSelector } from "@/components/token-selector";
@@ -79,7 +78,6 @@ export default function CreateEscrowPage() {
             functionName: "createSimpleEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer],
             value: 0n,
-            gas: GAS_LIMITS.deploySimpleEscrow,
           });
         } else {
           const escrowAmount = parseEther(form.amount);
@@ -92,7 +90,6 @@ export default function CreateEscrowPage() {
             functionName: "createSimpleEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer],
             value: totalValue,
-            gas: GAS_LIMITS.deploySimpleEscrow,
           });
         }
       } else {
@@ -107,7 +104,6 @@ export default function CreateEscrowPage() {
             functionName: "createMilestoneEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer],
             value: 0n,
-            gas: GAS_LIMITS.deployMilestoneEscrow,
           });
         } else {
           const amounts = milestones.map(m => parseEther(m.amount));
@@ -121,7 +117,6 @@ export default function CreateEscrowPage() {
             functionName: "createMilestoneEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer],
             value: totalValue,
-            gas: GAS_LIMITS.deployMilestoneEscrow,
           });
         }
       }
