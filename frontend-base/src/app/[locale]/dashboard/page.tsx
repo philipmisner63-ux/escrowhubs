@@ -54,7 +54,7 @@ export default function DashboardPage() {
       args: [BigInt(i)],
       chainId,
     })),
-    query: { enabled: myIndices.length > 0, refetchInterval: 5_000 },
+    query: { enabled: myIndices.length > 0, refetchInterval: 5_000, placeholderData: (prev: unknown) => prev },
   });
 
   const myEscrows = (escrowData ?? [])
