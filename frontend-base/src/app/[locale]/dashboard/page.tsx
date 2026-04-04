@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useAccount, useReadContracts, useChainId } from "wagmi";
@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [viewed, setViewed] = useState<ViewedEscrow[]>([]);
+  const [cachedEscrows, setCachedEscrows] = useState<{ contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint }[]>([]);
 
   const { asDepositor, asBeneficiary, isLoading: walletLoading } = useWalletEscrows(wallet, chainId);
 
@@ -79,6 +80,11 @@ export default function DashboardPage() {
   useEffect(() => {
     setViewed(getViewedEscrows());
   }, []);
+
+  // Cache escrows — only update when we have real results, never clear on refetch
+  useEffect(() => {
+    if (myEscrows.length > 0) setCachedEscrows(myEscrows);
+  }, [myEscrows.length, escrowData]);
 
   function handleLoad() {
     const addr = input.trim();
@@ -124,14 +130,14 @@ export default function DashboardPage() {
                 <GlassCard className="p-8 text-center">
                   <p className="text-slate-500 text-sm animate-pulse">{t("loading")}</p>
                 </GlassCard>
-              ) : myEscrows.length === 0 && !recordsFetching ? (
+              ) : cachedEscrows.length === 0 && !recordsFetching ? (
                 <GlassCard className="p-8 text-center">
                   <p className="text-slate-500 text-sm">{t("noEscrows")}</p>
                   <p className="text-slate-600 text-xs mt-1">{t("noEscrowsHint")}</p>
                 </GlassCard>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {myEscrows.map(e => (
+                  {cachedEscrows.map(e => (
                     <Link key={e.contractAddress} href={`/escrow/${e.contractAddress}`}>
                       <GlassCard className="p-4 cursor-pointer hover:border-cyan-400/30 transition-all">
                         <div className="flex items-center justify-between mb-2">
