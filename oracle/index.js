@@ -15,18 +15,17 @@
  */
 
 import dotenv from "dotenv";
-import { createRequire } from "module";
+import path from "path";
+import { fileURLToPath } from "url";
 // Support ENV_FILE env var for running multiple oracle instances with different configs
 // e.g. ENV_FILE=.env.base pm2 start oracle-base
 {
+  const _dir = path.dirname(fileURLToPath(import.meta.url));
   const envFile = process.env.ENV_FILE ?? ".env";
-  const envPath = new URL(envFile, import.meta.url).pathname;
-  dotenv.config({ path: envPath, override: false });
+  dotenv.config({ path: path.resolve(_dir, envFile), override: false });
 }
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import {
   createPublicClient,
   createWalletClient,
