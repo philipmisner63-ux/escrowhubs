@@ -73,7 +73,7 @@
   "create": {
     "title": "Escrow erstellen",
     "subtitle": "Neuen Escrow-Vertrag auf Base deployen",
-    "networkBanner": "Base Mainnet. Verbinde deine Wallet mit Base (Chain ID: 1404, RPC: https://rpc.bdagscan.com) vor dem Deployen.",
+    "networkBanner": "Base Mainnet. Verbinde deine Wallet mit Base (Chain ID: 8453, RPC: https://mainnet.base.org) vor dem Deployen.",
     "simpleEscrow": "Einfaches Escrow",
     "simpleEscrowDesc": "Einmalige Freigabe. Gelder bei Lieferung oder Schiedsrichterbeschluss freigegeben.",
     "milestoneEscrow": "Meilenstein-Escrow",
@@ -239,7 +239,7 @@
     "subtitle": "Wie EscrowHubs deine Vermögenswerte auf Base schützt",
     "smartContractTitle": "Smart-Contract-Sicherheit",
     "sc1": "100% On-Chain-Escrow-Logik — keine Custodial-Wallets, keine Mittelsmänner",
-    "sc2": "Unveränderliche Smart Contracts auf Base deployiert (Chain ID 1404)",
+    "sc2": "Unveränderliche Smart Contracts auf Base deployiert (Chain ID 8453)",
     "sc3": "Alle Escrow-Gelder werden vom Vertrag gehalten, nicht von EscrowHubs",
     "sc4": "0 Exploits seit dem Launch",
     "protectionTitle": "Wie deine Gelder geschützt werden",

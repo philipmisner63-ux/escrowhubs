@@ -73,7 +73,7 @@
   "create": {
     "title": "एस्क्रो बनाएं",
     "subtitle": "Base पर नया एस्क्रो कॉन्ट्रैक्ट तैनात करें",
-    "networkBanner": "Base Mainnet। तैनात करने से पहले अपने वॉलेट को Base (Chain ID: 1404, RPC: https://rpc.bdagscan.com) से जोड़ें।",
+    "networkBanner": "Base Mainnet। तैनात करने से पहले अपने वॉलेट को Base (Chain ID: 8453, RPC: https://mainnet.base.org) से जोड़ें।",
     "simpleEscrow": "सरल एस्क्रो",
     "simpleEscrowDesc": "एकल रिलीज। डिलीवरी या मध्यस्थ के निर्णय पर धन जारी।",
     "milestoneEscrow": "मील-पत्थर एस्क्रो",
@@ -239,7 +239,7 @@
     "subtitle": "EscrowHubs Base पर आपकी संपत्ति कैसे सुरक्षित करता है",
     "smartContractTitle": "स्मार्ट कॉन्ट्रैक्ट सुरक्षा",
     "sc1": "100% ऑन-चेन एस्क्रो लॉजिक — कोई कस्टोडियल वॉलेट नहीं, कोई बिचौलिया नहीं",
-    "sc2": "Base पर तैनात अपरिवर्तनीय स्मार्ट कॉन्ट्रैक्ट (Chain ID 1404)",
+    "sc2": "Base पर तैनात अपरिवर्तनीय स्मार्ट कॉन्ट्रैक्ट (Chain ID 8453)",
     "sc3": "सभी एस्क्रो फंड कॉन्ट्रैक्ट द्वारा रखे जाते हैं, EscrowHubs द्वारा नहीं",
     "sc4": "लॉन्च के बाद से 0 एक्सप्लॉइट",
     "protectionTitle": "आपका फंड कैसे सुरक्षित है",

@@ -73,7 +73,7 @@
   "create": {
     "title": "Créer un séquestre",
     "subtitle": "Déployez un nouveau contrat de séquestre sur Base",
-    "networkBanner": "Mainnet Base. Connectez votre portefeuille à Base (Chain ID : 1404, RPC : https://rpc.bdagscan.com) avant de déployer.",
+    "networkBanner": "Mainnet Base. Connectez votre portefeuille à Base (Chain ID : 8453, RPC : https://mainnet.base.org) avant de déployer.",
     "simpleEscrow": "Séquestre simple",
     "simpleEscrowDesc": "Libération unique. Fonds libérés à la livraison ou sur décision de l'arbitre.",
     "milestoneEscrow": "Séquestre par jalons",
@@ -239,7 +239,7 @@
     "subtitle": "Comment EscrowHubs protège vos actifs sur Base",
     "smartContractTitle": "Sécurité des Contrats Intelligents",
     "sc1": "Logique de séquestre 100% on-chain — pas de portefeuilles de garde, pas d'intermédiaires",
-    "sc2": "Contrats intelligents immuables déployés sur Base (Chain ID 1404)",
+    "sc2": "Contrats intelligents immuables déployés sur Base (Chain ID 8453)",
     "sc3": "Tous les fonds de séquestre sont détenus par le contrat, pas par EscrowHubs",
     "sc4": "0 exploit depuis le lancement",
     "protectionTitle": "Comment Vos Fonds Sont Protégés",

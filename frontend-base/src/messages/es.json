@@ -73,7 +73,7 @@
   "create": {
     "title": "Crear Custodia",
     "subtitle": "Despliega un nuevo contrato de custodia en Base",
-    "networkBanner": "Mainnet de Base. Conecta tu billetera a Base (Chain ID: 1404, RPC: https://rpc.bdagscan.com) antes de desplegar.",
+    "networkBanner": "Mainnet de Base. Conecta tu billetera a Base (Chain ID: 8453, RPC: https://mainnet.base.org) antes de desplegar.",
     "simpleEscrow": "Custodia Simple",
     "simpleEscrowDesc": "Liberación única. Fondos liberados al entregar o por decisión del árbitro.",
     "milestoneEscrow": "Custodia por Hitos",
@@ -239,7 +239,7 @@
     "subtitle": "Cómo EscrowHubs protege tus activos en Base",
     "smartContractTitle": "Seguridad del Contrato Inteligente",
     "sc1": "Lógica de custodia 100% en cadena — sin billeteras custodiales, sin intermediarios",
-    "sc2": "Contratos inteligentes inmutables desplegados en Base (Chain ID 1404)",
+    "sc2": "Contratos inteligentes inmutables desplegados en Base (Chain ID 8453)",
     "sc3": "Todos los fondos de custodia los retiene el contrato, no EscrowHubs",
     "sc4": "0 exploits desde el lanzamiento",
     "protectionTitle": "Cómo Se Protegen Tus Fondos",

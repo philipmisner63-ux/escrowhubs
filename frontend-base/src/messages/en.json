@@ -73,7 +73,7 @@
   "create": {
     "title": "Create Escrow",
     "subtitle": "Deploy a new escrow contract on Base",
-    "networkBanner": "Base Mainnet. Connect your wallet to Base (Chain ID: 1404, RPC: https://rpc.bdagscan.com) before deploying.",
+    "networkBanner": "Base Mainnet. Connect your wallet to Base (Chain ID: 8453, RPC: https://mainnet.base.org) before deploying.",
     "simpleEscrow": "Simple Escrow",
     "simpleEscrowDesc": "Single-release. Funds released on delivery or arbiter decision.",
     "milestoneEscrow": "Milestone Escrow",
@@ -239,7 +239,7 @@
     "subtitle": "How EscrowHubs protects your assets on Base",
     "smartContractTitle": "Smart Contract Security",
     "sc1": "100% on-chain escrow logic — no custodial wallets, no middlemen",
-    "sc2": "Immutable smart contracts deployed on Base (Chain ID 1404)",
+    "sc2": "Immutable smart contracts deployed on Base (Chain ID 8453)",
     "sc3": "All escrow funds are held by the contract, not by EscrowHubs",
     "sc4": "0 exploits since launch",
     "protectionTitle": "How Your Funds Are Protected",

@@ -73,7 +73,7 @@
   "create": {
     "title": "Criar Custódia",
     "subtitle": "Implante um novo contrato de custódia na Base",
-    "networkBanner": "Mainnet Base. Conecte sua carteira à Base (Chain ID: 1404, RPC: https://rpc.bdagscan.com) antes de implantar.",
+    "networkBanner": "Mainnet Base. Conecte sua carteira à Base (Chain ID: 8453, RPC: https://mainnet.base.org) antes de implantar.",
     "simpleEscrow": "Custódia Simples",
     "simpleEscrowDesc": "Liberação única. Fundos liberados na entrega ou decisão do árbitro.",
     "milestoneEscrow": "Custódia por Etapas",
@@ -239,7 +239,7 @@
     "subtitle": "Como a EscrowHubs protege seus ativos na Base",
     "smartContractTitle": "Segurança do Contrato Inteligente",
     "sc1": "Lógica de custódia 100% on-chain — sem carteiras custodiais, sem intermediários",
-    "sc2": "Contratos inteligentes imutáveis implantados na Base (Chain ID 1404)",
+    "sc2": "Contratos inteligentes imutáveis implantados na Base (Chain ID 8453)",
     "sc3": "Todos os fundos de custódia são mantidos pelo contrato, não pela EscrowHubs",
     "sc4": "0 exploits desde o lançamento",
     "protectionTitle": "Como Seus Fundos São Protegidos",

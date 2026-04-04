@@ -73,7 +73,7 @@
   "create": {
     "title": "创建托管",
     "subtitle": "在 Base 上部署新的托管合约",
-    "networkBanner": "Base Mainnet。在部署之前，请将钱包连接到 Base（Chain ID: 1404，RPC: https://rpc.bdagscan.com）。",
+    "networkBanner": "Base Mainnet。在部署之前，请将钱包连接到 Base（Chain ID: 8453，RPC: https://mainnet.base.org）。",
     "simpleEscrow": "简单托管",
     "simpleEscrowDesc": "单次释放。资金在交付或仲裁决定后释放。",
     "milestoneEscrow": "里程碑托管",
@@ -239,7 +239,7 @@
     "subtitle": "EscrowHubs 如何在 Base 上保护您的资产",
     "smartContractTitle": "智能合约安全",
     "sc1": "100% 链上托管逻辑 — 无托管钱包，无中间商",
-    "sc2": "部署在 Base 上的不可变智能合约（Chain ID 1404）",
+    "sc2": "部署在 Base 上的不可变智能合约（Chain ID 8453）",
     "sc3": "所有托管资金由合约持有，而非 EscrowHubs",
     "sc4": "自上线以来 0 次漏洞利用",
     "protectionTitle": "您的资金如何受到保护",

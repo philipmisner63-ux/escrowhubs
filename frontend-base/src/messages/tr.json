@@ -73,7 +73,7 @@
   "create": {
     "title": "Emanet Oluştur",
     "subtitle": "Base üzerinde yeni bir emanet sözleşmesi dağıtın",
-    "networkBanner": "Base Mainnet. Dağıtmadan önce cüzdanınızı Base'a bağlayın (Chain ID: 1404, RPC: https://rpc.bdagscan.com).",
+    "networkBanner": "Base Mainnet. Dağıtmadan önce cüzdanınızı Base'a bağlayın (Chain ID: 8453, RPC: https://mainnet.base.org).",
     "simpleEscrow": "Basit Emanet",
     "simpleEscrowDesc": "Tek serbest bırakma. Fonlar teslimde veya hakem kararıyla serbest bırakılır.",
     "milestoneEscrow": "Aşamalı Emanet",
@@ -239,7 +239,7 @@
     "subtitle": "EscrowHubs'ın Base'da varlıklarınızı nasıl koruduğu",
     "smartContractTitle": "Akıllı Sözleşme Güvenliği",
     "sc1": "100% zincir üzeri emanet mantığı — velayet cüzdanı yok, aracı yok",
-    "sc2": "Base'da dağıtılan değiştirilemez akıllı sözleşmeler (Chain ID 1404)",
+    "sc2": "Base'da dağıtılan değiştirilemez akıllı sözleşmeler (Chain ID 8453)",
     "sc3": "Tüm emanet fonları, EscrowHubs değil, sözleşme tarafından tutulur",
     "sc4": "Başlatmadan bu yana 0 exploit",
     "protectionTitle": "Fonlarınız Nasıl Korunur",

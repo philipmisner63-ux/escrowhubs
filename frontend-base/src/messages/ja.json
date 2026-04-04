@@ -73,7 +73,7 @@
   "create": {
     "title": "エスクローを作成",
     "subtitle": "Baseに新しいエスクローコントラクトをデプロイ",
-    "networkBanner": "Base Mainnet。デプロイ前にウォレットをBase（Chain ID: 1404、RPC: https://rpc.bdagscan.com）に接続してください。",
+    "networkBanner": "Base Mainnet。デプロイ前にウォレットをBase（Chain ID: 8453、RPC: https://mainnet.base.org）に接続してください。",
     "simpleEscrow": "シンプルエスクロー",
     "simpleEscrowDesc": "一度限りのリリース。配送時または仲裁人の決定で資金リリース。",
     "milestoneEscrow": "マイルストーンエスクロー",
@@ -239,7 +239,7 @@
     "subtitle": "EscrowHubsがBase上でどのように資産を保護するか",
     "smartContractTitle": "スマートコントラクトのセキュリティ",
     "sc1": "100%オンチェーンのエスクローロジック — カストディアルウォレットなし、仲介者なし",
-    "sc2": "Baseにデプロイされた不変のスマートコントラクト（Chain ID 1404）",
+    "sc2": "Baseにデプロイされた不変のスマートコントラクト（Chain ID 8453）",
     "sc3": "すべてのエスクロー資金はEscrowHubsではなくコントラクトが保管",
     "sc4": "ローンチ以来0件のエクスプロイト",
     "protectionTitle": "資金がどのように保護されるか",

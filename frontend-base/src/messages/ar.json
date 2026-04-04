@@ -73,7 +73,7 @@
   "create": {
     "title": "إنشاء ضمان",
     "subtitle": "نشر عقد ضمان جديد على Base",
-    "networkBanner": "Mainnet Base. ربط محفظتك بـ Base (Chain ID: 1404, RPC: https://rpc.bdagscan.com) قبل النشر.",
+    "networkBanner": "Mainnet Base. ربط محفظتك بـ Base (Chain ID: 8453, RPC: https://mainnet.base.org) قبل النشر.",
     "simpleEscrow": "ضمان بسيط",
     "simpleEscrowDesc": "إصدار واحد. الأموال تُحرر عند التسليم أو بقرار الحكم.",
     "milestoneEscrow": "ضمان بالمراحل",
@@ -239,7 +239,7 @@
     "subtitle": "كيف تحمي EscrowHubs أصولك على Base",
     "smartContractTitle": "أمان العقد الذكي",
     "sc1": "منطق ضمان 100% على السلسلة — بلا محافظ وصائية، بلا وسطاء",
-    "sc2": "عقود ذكية غير قابلة للتغيير مُنشأة على Base (Chain ID 1404)",
+    "sc2": "عقود ذكية غير قابلة للتغيير مُنشأة على Base (Chain ID 8453)",
     "sc3": "جميع أموال الضمان يحتفظ بها العقد، وليس EscrowHubs",
     "sc4": "0 ثغرات منذ الإطلاق",
     "protectionTitle": "كيف تُحمى أموالك",
