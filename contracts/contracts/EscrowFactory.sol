@@ -200,12 +200,48 @@ contract EscrowFactory is ReentrancyGuard {
         uint256 protocolFee = (grossValue * protocolFeeBps) / 10_000;
         kickback = (protocolFee * referralShareBps) / 10_000;
         if (kickback == 0 || kickback > fee) return 0;
-        // Subtract kickback from protocol's share (fee already added to accumulatedFees)
         accumulatedFees -= kickback;
         referralEarnings[referrer]    += kickback;
         referralTotalEarned[referrer] += kickback;
         referralCount[referrer]       += 1;
         emit ReferralCredited(referrer, escrow, kickback);
+    }
+
+    /// @dev Build an EscrowRecord to avoid stack-too-deep in create functions.
+    function _buildRecord(
+        address    contractAddress,
+        EscrowType escrowType,
+        address    depositor,
+        address    beneficiary,
+        address    arbiter,
+        uint256    totalAmount,
+        uint256    fee,
+        uint8      trustTier,
+        bool       aiArbiterUsed,
+        address    referrer
+    ) internal view returns (EscrowRecord memory) {
+        return EscrowRecord({
+            contractAddress: contractAddress,
+            escrowType:      escrowType,
+            depositor:       depositor,
+            beneficiary:     beneficiary,
+            arbiter:         arbiter,
+            totalAmount:     totalAmount,
+            fee:             fee,
+            trustTier:       trustTier,
+            aiArbiter:       aiArbiterUsed,
+            createdAt:       block.timestamp,
+            referrer:        referrer
+        });
+    }
+
+    /// @dev Register an escrow record and update indexes. Reduces stack depth in create fns.
+    function _registerEscrow(EscrowRecord memory record) internal returns (uint256 index) {
+        index = escrows.length;
+        escrows.push(record);
+        escrowsByDepositor[record.depositor].push(index);
+        escrowsByBeneficiary[record.beneficiary].push(index);
+        escrowIndex[record.contractAddress] = index + 1;
     }
 
     // ─── Deploy: SimpleEscrow ─────────────────────────────────────────────────
@@ -229,27 +265,11 @@ contract EscrowFactory is ReentrancyGuard {
         SimpleEscrow escrow = new SimpleEscrow(msg.sender, beneficiary, resolvedArbiter);
         escrow.deposit{ value: netAmount }();
 
-        // Referral kickback (subtracted from accumulatedFees)
         _applyReferral(referrer, msg.value, fee, address(escrow));
-
-        uint256 index = escrows.length;
-        escrows.push(EscrowRecord({
-            contractAddress: address(escrow),
-            escrowType:      EscrowType.SIMPLE,
-            depositor:       msg.sender,
-            beneficiary:     beneficiary,
-            arbiter:         resolvedArbiter,
-            totalAmount:     netAmount,
-            fee:             fee,
-            trustTier:       trustTier,
-            aiArbiter:       useAIArbiter,
-            createdAt:       block.timestamp,
-            referrer:        referrer
-        }));
-
-        escrowsByDepositor[msg.sender].push(index);
-        escrowsByBeneficiary[beneficiary].push(index);
-        escrowIndex[address(escrow)] = index + 1;
+        _registerEscrow(_buildRecord(
+            address(escrow), EscrowType.SIMPLE, msg.sender, beneficiary,
+            resolvedArbiter, netAmount, fee, trustTier, useAIArbiter, referrer
+        ));
 
         emit SimpleEscrowCreated(address(escrow), msg.sender, beneficiary, resolvedArbiter, netAmount, fee, trustTier, useAIArbiter);
         return address(escrow);
@@ -285,27 +305,11 @@ contract EscrowFactory is ReentrancyGuard {
         );
         escrow.fund{ value: netTotal }();
 
-        // Referral kickback (subtracted from accumulatedFees)
         _applyReferral(referrer, msg.value, fee + dust, address(escrow));
-
-        uint256 index = escrows.length;
-        escrows.push(EscrowRecord({
-            contractAddress: address(escrow),
-            escrowType:      EscrowType.MILESTONE,
-            depositor:       msg.sender,
-            beneficiary:     beneficiary,
-            arbiter:         resolvedArbiter,
-            totalAmount:     netTotal,
-            fee:             fee,
-            trustTier:       trustTier,
-            aiArbiter:       useAIArbiter,
-            createdAt:       block.timestamp,
-            referrer:        referrer
-        }));
-
-        escrowsByDepositor[msg.sender].push(index);
-        escrowsByBeneficiary[beneficiary].push(index);
-        escrowIndex[address(escrow)] = index + 1;
+        _registerEscrow(_buildRecord(
+            address(escrow), EscrowType.MILESTONE, msg.sender, beneficiary,
+            resolvedArbiter, netTotal, fee, trustTier, useAIArbiter, referrer
+        ));
 
         emit MilestoneEscrowCreated(address(escrow), msg.sender, beneficiary, resolvedArbiter, netTotal, fee, trustTier, useAIArbiter);
         return address(escrow);
