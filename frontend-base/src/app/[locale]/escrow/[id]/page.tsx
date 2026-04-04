@@ -67,16 +67,18 @@ function SimpleEscrowView({ address }: { address: Address }) {
   const data = useSimpleEscrowRead(address, chainId);
   const writes = useSimpleEscrowWrite(chainId);
 
-  // Use refs to hold last-known-good values — never flicker back to defaults
-  const roleRef = useRef<Role>("observer");
-  const stateRef = useRef<number | null>(null);
+  const [role, setRole] = useState<Role>("observer");
+  const [stateNum, setStateNum] = useState<number | null>(null);
 
-  const derivedRole = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
-  if (derivedRole !== "observer" || data.depositor) roleRef.current = derivedRole;
-  if (data.state !== null && data.state !== undefined) stateRef.current = data.state;
+  useEffect(() => {
+    if (!data.depositor) return; // don't update until data is loaded
+    setRole(deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter));
+  }, [wallet, data.depositor, data.beneficiary, data.arbiter]);
 
-  const role = roleRef.current;
-  const stateNum = stateRef.current;
+  useEffect(() => {
+    if (data.state !== null && data.state !== undefined) setStateNum(data.state);
+  }, [data.state]);
+
   const stateLabel = stateNum !== null ? (SIMPLE_STATE_LABEL[stateNum] ?? "Unknown") : "Loading…";
 
   useEffect(() => {
