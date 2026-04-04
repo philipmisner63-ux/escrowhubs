@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useId } from "react";
+import { createPortal } from "react-dom";
 import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useTranslations } from "next-intl";
@@ -119,7 +120,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       ref={backdropRef}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -226,7 +227,8 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
