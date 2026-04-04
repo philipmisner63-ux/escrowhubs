@@ -34,7 +34,10 @@ function stateToStatus(stateNum: number): "pending" | "active" | "complete" | "d
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const router = useRouter();
-  const { address: wallet } = useAccount();
+  const { address: walletLive } = useAccount();
+  // Cache wallet — never let a brief undefined wipe the UI
+  const [wallet, setWallet] = useState<`0x${string}` | undefined>(undefined);
+  useEffect(() => { if (walletLive) setWallet(walletLive); }, [walletLive]);
   const chainId = useChainId();
   const factoryAddress = getFactoryAddress(chainId);
   const [input, setInput] = useState("");

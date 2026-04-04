@@ -59,7 +59,9 @@ const ROLE_BADGE: Record<Role, string> = {
 const rpcClient = createPublicClient({ chain: baseMainnet, transport: http(getRpcUrl(DEFAULT_CHAIN_ID)) });
 
 function SimpleEscrowView({ address }: { address: Address }) {
-  const { address: wallet } = useAccount();
+  const { address: walletLive } = useAccount();
+  const [wallet, setWallet] = useState<`0x${string}` | undefined>(undefined);
+  useEffect(() => { if (walletLive) setWallet(walletLive); }, [walletLive]);
   const chainId = useChainId();
   const arbiterAddress = getArbiterAddress(chainId);
   const { addToast, removeToast } = useToast();
