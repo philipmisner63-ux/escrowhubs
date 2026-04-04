@@ -209,7 +209,7 @@ contract EscrowFactory is ReentrancyGuard {
 
     /// @dev Build an EscrowRecord to avoid stack-too-deep in create functions.
     function _buildRecord(
-        address    contractAddress,
+        address    contractAddr,
         EscrowType escrowType,
         address    depositor,
         address    beneficiary,
@@ -217,22 +217,20 @@ contract EscrowFactory is ReentrancyGuard {
         uint256    totalAmount,
         uint256    fee,
         uint8      trustTier,
-        bool       aiArbiterUsed,
+        bool       aiArbiter,
         address    referrer
-    ) internal view returns (EscrowRecord memory) {
-        return EscrowRecord({
-            contractAddress: contractAddress,
-            escrowType:      escrowType,
-            depositor:       depositor,
-            beneficiary:     beneficiary,
-            arbiter:         arbiter,
-            totalAmount:     totalAmount,
-            fee:             fee,
-            trustTier:       trustTier,
-            aiArbiter:       aiArbiterUsed,
-            createdAt:       block.timestamp,
-            referrer:        referrer
-        });
+    ) internal view returns (EscrowRecord memory r) {
+        r.contractAddress = contractAddr;
+        r.escrowType      = escrowType;
+        r.depositor       = depositor;
+        r.beneficiary     = beneficiary;
+        r.arbiter         = arbiter;
+        r.totalAmount     = totalAmount;
+        r.fee             = fee;
+        r.trustTier       = trustTier;
+        r.aiArbiter       = aiArbiter;
+        r.createdAt       = block.timestamp;
+        r.referrer        = referrer;
     }
 
     /// @dev Register an escrow record and update indexes. Reduces stack depth in create fns.
