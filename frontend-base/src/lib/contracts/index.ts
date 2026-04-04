@@ -17,11 +17,13 @@ import TrustScoreOracleJson from "./abis/TrustScoreOracle.json";
 import ERC20Json            from "./abis/ERC20.json";
 
 // ─── Canonical camelCase exports ─────────────────────────────────────────────
-export const SimpleEscrowABI     = (SimpleEscrowJson as any).abi     ?? SimpleEscrowJson     as Abi;
-export const MilestoneEscrowABI  = (MilestoneEscrowJson as any).abi  ?? MilestoneEscrowJson  as Abi;
-export const EscrowFactoryABI    = (EscrowFactoryJson as any).abi    ?? EscrowFactoryJson    as Abi;
-export const AIArbiterABI        = (AIArbiterJson as any).abi        ?? AIArbiterJson        as Abi;
-export const TrustScoreOracleABI = (TrustScoreOracleJson as any).abi ?? TrustScoreOracleJson as Abi;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const extractAbi = (json: any): Abi => ((json.abi ?? json) as unknown) as Abi;
+export const SimpleEscrowABI     = extractAbi(SimpleEscrowJson);
+export const MilestoneEscrowABI  = extractAbi(MilestoneEscrowJson);
+export const EscrowFactoryABI    = extractAbi(EscrowFactoryJson);
+export const AIArbiterABI        = extractAbi(AIArbiterJson);
+export const TrustScoreOracleABI = extractAbi(TrustScoreOracleJson);
 
 // ─── Legacy SCREAMING_SNAKE_CASE aliases (backward compat) ───────────────────
 export const SIMPLE_ESCROW_ABI    = SimpleEscrowABI;
