@@ -81,9 +81,10 @@ export default function CreateEscrowPage() {
           });
         } else {
           const escrowAmount = parseEther(form.amount);
-          const protocolFee = escrowAmount * 50n / 10000n;
+          // Fee is % of msg.value, not of escrow amount — gross up correctly
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          const totalValue = escrowAmount + protocolFee + aiArbiterFee;
+          const grossValue = (escrowAmount * 10000n) / 9950n + 1n; // ceil to ensure net >= escrowAmount
+          const totalValue = grossValue + aiArbiterFee;
           txHash = await writeContractAsync({
             address: factoryAddress,
             abi: ESCROW_FACTORY_ABI,
@@ -108,9 +109,10 @@ export default function CreateEscrowPage() {
         } else {
           const amounts = milestones.map(m => parseEther(m.amount));
           const netTotal = amounts.reduce((a, b) => a + b, 0n);
-          const protocolFee = netTotal * 50n / 10000n;
+          // Fee is % of msg.value — gross up so net >= netTotal
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          const totalValue = netTotal + protocolFee + aiArbiterFee;
+          const grossValue = (netTotal * 10000n) / 9950n + 1n;
+          const totalValue = grossValue + aiArbiterFee;
           txHash = await writeContractAsync({
             address: factoryAddress,
             abi: ESCROW_FACTORY_ABI,
