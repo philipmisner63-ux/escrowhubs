@@ -4,7 +4,7 @@
     "name": "Base",
     "nativeCurrency": { "name": "Ether", "symbol": "ETH", "decimals": 18 },
     "rpcUrlEnvVar": "BASE_RPC_URL",
-    "rpcUrlFallback": "https://base.llamarpc.com",
+    "rpcUrlFallback": "https://mainnet.base.org",
     "factoryAddressEnvVar": "NEXT_PUBLIC_FACTORY_ADDRESS",
     "factoryAddressFallback": "0x93e86fac9a15add437363f7bbec776bdbc932411",
     "arbiterAddressEnvVar": "AI_ARBITER_ADDRESS",

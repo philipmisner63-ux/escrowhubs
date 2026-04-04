@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useAccount, useWriteContract, useChainId } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
@@ -59,9 +59,7 @@ const ROLE_BADGE: Record<Role, string> = {
 const rpcClient = createPublicClient({ chain: baseMainnet, transport: http(getRpcUrl(DEFAULT_CHAIN_ID)) });
 
 function SimpleEscrowView({ address }: { address: Address }) {
-  const { address: walletLive } = useAccount();
-  const [wallet, setWallet] = useState<`0x${string}` | undefined>(undefined);
-  useEffect(() => { if (walletLive) setWallet(walletLive); }, [walletLive]);
+  const { address: wallet } = useAccount();
   const chainId = useChainId();
   const arbiterAddress = getArbiterAddress(chainId);
   const { addToast, removeToast } = useToast();
@@ -69,22 +67,16 @@ function SimpleEscrowView({ address }: { address: Address }) {
   const data = useSimpleEscrowRead(address, chainId);
   const writes = useSimpleEscrowWrite(chainId);
 
-  // Stable role + state — only update when we have real data, never flicker back to defaults
-  const [stableRole, setStableRole] = useState<Role>("observer");
-  const [stableState, setStableState] = useState<number | null>(null);
+  // Use refs to hold last-known-good values — never flicker back to defaults
+  const roleRef = useRef<Role>("observer");
+  const stateRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    const r = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
-    if (r !== "observer") setStableRole(r);
-    else if (!data.depositor) setStableRole("observer"); // reset only if data not yet loaded
-  }, [wallet, data.depositor, data.beneficiary, data.arbiter]);
+  const derivedRole = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
+  if (derivedRole !== "observer" || data.depositor) roleRef.current = derivedRole;
+  if (data.state !== null && data.state !== undefined) stateRef.current = data.state;
 
-  useEffect(() => {
-    if (data.state !== null && data.state !== undefined) setStableState(data.state);
-  }, [data.state]);
-
-  const role = stableRole;
-  const stateNum = stableState;
+  const role = roleRef.current;
+  const stateNum = stateRef.current;
   const stateLabel = stateNum !== null ? (SIMPLE_STATE_LABEL[stateNum] ?? "Unknown") : "Loading…";
 
   useEffect(() => {
