@@ -1,12 +1,212 @@
-[
-  { "type": "function", "name": "getTier",
-    "inputs": [{ "name": "wallet", "type": "address" }], "outputs": [{ "type": "uint8" }], "stateMutability": "view" },
-  { "type": "function", "name": "getScoreAndTier",
-    "inputs": [{ "name": "wallet", "type": "address" }],
-    "outputs": [{ "name": "score", "type": "uint8" }, { "name": "tier", "type": "uint8" }],
-    "stateMutability": "view" },
-  { "type": "function", "name": "scores",
-    "inputs": [{ "name": "wallet", "type": "address" }], "outputs": [{ "type": "uint8" }], "stateMutability": "view" },
-  { "type": "function", "name": "tier1Threshold", "inputs": [], "outputs": [{ "type": "uint8" }], "stateMutability": "view" },
-  { "type": "function", "name": "tier2Threshold", "inputs": [], "outputs": [{ "type": "uint8" }], "stateMutability": "view" }
-]
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "TrustScoreOracle",
+  "sourceName": "contracts/TrustScoreOracle.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "score",
+          "type": "uint8"
+        }
+      ],
+      "name": "ScoreUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "tier1",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "tier2",
+          "type": "uint8"
+        }
+      ],
+      "name": "ThresholdsUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "getScoreAndTier",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "score",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "tier",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "getTier",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "scores",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "score",
+          "type": "uint8"
+        }
+      ],
+      "name": "setScore",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "wallets",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint8[]",
+          "name": "_scores",
+          "type": "uint8[]"
+        }
+      ],
+      "name": "setScoreBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "tier1",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "tier2",
+          "type": "uint8"
+        }
+      ],
+      "name": "setThresholds",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "tier1Threshold",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "tier2Threshold",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080806040523461002e575f80546001600160b01b031916331761032560a41b17905561063490816100338239f35b5f80fdfe608080604052600480361015610013575f80fd5b5f3560e01c9182631039298f1461048d575081636b5e9cb614610327578163702c5a4d1461030557816376dd110f146102ca5781638da5cb5b146102a3578163b45aae5214610275578163bfce86b31461018e57508063db2ebdad146101005763ef853b3714610081575f80fd5b346100fc5760203660031901126100fc5761009a6104dd565b6001600160a01b03165f90815260016020526040812054905460ff9182169160a082901c1682106100e157506002905b6040805160ff928316815292909116602083015290f35b60a81c60ff1681106100f5576001906100ca565b5f906100ca565b5f80fd5b346100fc5760403660031901126100fc576101196104dd565b7fcd1a12ecb9eefeb52825050dd2d30ccc9a4bc1466bd71e9a4c376548b3b71af660206101446104f3565b5f546001600160a01b039160ff9161015f9084163314610503565b169361016e606486111561056d565b1692835f526001825260405f208160ff19825416179055604051908152a2005b346100fc5760403660031901126100fc57803560ff8116908181036100fc576101b56104f3565b5f5490926101cd336001600160a01b03841614610503565b60ff841611156102395761ffff60a01b191660a882901b60ff60a81b161760a083901b60ff60a01b16175f556040805160ff92831681529290911660208301527f3fd6bba74537aa094f8a76e08d4476e6e1b7db911efdda62bf2904b8ef4779f99250819081010390a1005b60405162461bcd60e51b815260208186015260156024820152743a34b2b9189036bab9ba103132901e103a34b2b91960591b6044820152606490fd5b346100fc5760203660031901126100fc5760206102986102936104dd565b6105bb565b60ff60405191168152f35b346100fc575f3660031901126100fc575f546040516001600160a01b039091168152602090f35b346100fc5760203660031901126100fc576001600160a01b036102eb6104dd565b165f526001602052602060ff60405f205416604051908152f35b346100fc575f3660031901126100fc57602060ff5f5460a81c16604051908152f35b346100fc5760403660031901126100fc5767ffffffffffffffff81358181116100fc5761035790369084016104ac565b9290916024359081116100fc5761037190369083016104ac565b909161038760018060a01b035f54163314610503565b81850361045757505f5b84811061039a57005b806103bf606460ff6103b76103b2600196888a61053b565b61055f565b16111561056d565b6103cd6103b282858761053b565b828060a01b036103e66103e1848a8a61053b565b6105a7565b165f5260209083825260ff60405f20911660ff198254161790557fcd1a12ecb9eefeb52825050dd2d30ccc9a4bc1466bd71e9a4c376548b3b71af661042f6103e1848a8a61053b565b9161043e6103b285888a61053b565b9260ff60405194168452858060a01b031692a201610391565b60649060206040519162461bcd60e51b8352820152600f60248201526e098cadccee8d040dad2e6dac2e8c6d608b1b6044820152fd5b346100fc575f3660031901126100fc5760209060ff5f5460a01c168152f35b9181601f840112156100fc5782359167ffffffffffffffff83116100fc576020808501948460051b0101116100fc57565b600435906001600160a01b03821682036100fc57565b6024359060ff821682036100fc57565b1561050a57565b60405162461bcd60e51b81526020600482015260096024820152682737ba1037bbb732b960b91b6044820152606490fd5b919081101561054b5760051b0190565b634e487b7160e01b5f52603260045260245ffd5b3560ff811681036100fc5790565b1561057457565b60405162461bcd60e51b815260206004820152600b60248201526a053636f7265203e203130360ac1b6044820152606490fd5b356001600160a01b03811681036100fc5790565b60018060a01b03165f52600160205260ff60405f2054165f5460ff8160a01c168210156105f75760a81c60ff1611156105f2575f90565b600190565b505060029056fea2646970667358221220cf52a5ddd21c89b431c6d6c7d8b46c856a47ebf214e35b1248838a2a68d11b2a64736f6c63430008180033",
+  "deployedBytecode": "0x608080604052600480361015610013575f80fd5b5f3560e01c9182631039298f1461048d575081636b5e9cb614610327578163702c5a4d1461030557816376dd110f146102ca5781638da5cb5b146102a3578163b45aae5214610275578163bfce86b31461018e57508063db2ebdad146101005763ef853b3714610081575f80fd5b346100fc5760203660031901126100fc5761009a6104dd565b6001600160a01b03165f90815260016020526040812054905460ff9182169160a082901c1682106100e157506002905b6040805160ff928316815292909116602083015290f35b60a81c60ff1681106100f5576001906100ca565b5f906100ca565b5f80fd5b346100fc5760403660031901126100fc576101196104dd565b7fcd1a12ecb9eefeb52825050dd2d30ccc9a4bc1466bd71e9a4c376548b3b71af660206101446104f3565b5f546001600160a01b039160ff9161015f9084163314610503565b169361016e606486111561056d565b1692835f526001825260405f208160ff19825416179055604051908152a2005b346100fc5760403660031901126100fc57803560ff8116908181036100fc576101b56104f3565b5f5490926101cd336001600160a01b03841614610503565b60ff841611156102395761ffff60a01b191660a882901b60ff60a81b161760a083901b60ff60a01b16175f556040805160ff92831681529290911660208301527f3fd6bba74537aa094f8a76e08d4476e6e1b7db911efdda62bf2904b8ef4779f99250819081010390a1005b60405162461bcd60e51b815260208186015260156024820152743a34b2b9189036bab9ba103132901e103a34b2b91960591b6044820152606490fd5b346100fc5760203660031901126100fc5760206102986102936104dd565b6105bb565b60ff60405191168152f35b346100fc575f3660031901126100fc575f546040516001600160a01b039091168152602090f35b346100fc5760203660031901126100fc576001600160a01b036102eb6104dd565b165f526001602052602060ff60405f205416604051908152f35b346100fc575f3660031901126100fc57602060ff5f5460a81c16604051908152f35b346100fc5760403660031901126100fc5767ffffffffffffffff81358181116100fc5761035790369084016104ac565b9290916024359081116100fc5761037190369083016104ac565b909161038760018060a01b035f54163314610503565b81850361045757505f5b84811061039a57005b806103bf606460ff6103b76103b2600196888a61053b565b61055f565b16111561056d565b6103cd6103b282858761053b565b828060a01b036103e66103e1848a8a61053b565b6105a7565b165f5260209083825260ff60405f20911660ff198254161790557fcd1a12ecb9eefeb52825050dd2d30ccc9a4bc1466bd71e9a4c376548b3b71af661042f6103e1848a8a61053b565b9161043e6103b285888a61053b565b9260ff60405194168452858060a01b031692a201610391565b60649060206040519162461bcd60e51b8352820152600f60248201526e098cadccee8d040dad2e6dac2e8c6d608b1b6044820152fd5b346100fc575f3660031901126100fc5760209060ff5f5460a01c168152f35b9181601f840112156100fc5782359167ffffffffffffffff83116100fc576020808501948460051b0101116100fc57565b600435906001600160a01b03821682036100fc57565b6024359060ff821682036100fc57565b1561050a57565b60405162461bcd60e51b81526020600482015260096024820152682737ba1037bbb732b960b91b6044820152606490fd5b919081101561054b5760051b0190565b634e487b7160e01b5f52603260045260245ffd5b3560ff811681036100fc5790565b1561057457565b60405162461bcd60e51b815260206004820152600b60248201526a053636f7265203e203130360ac1b6044820152606490fd5b356001600160a01b03811681036100fc5790565b60018060a01b03165f52600160205260ff60405f2054165f5460ff8160a01c168210156105f75760a81c60ff1611156105f2575f90565b600190565b505060029056fea2646970667358221220cf52a5ddd21c89b431c6d6c7d8b46c856a47ebf214e35b1248838a2a68d11b2a64736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/TrustScoreOracle.sol",
+  "buildInfoId": "solc-0_8_24-4a4225a40358cf888f00ae64ce53b2b8f766b6a3"
+}
