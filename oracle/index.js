@@ -22,7 +22,7 @@ import { fileURLToPath } from "url";
 {
   const _dir = path.dirname(fileURLToPath(import.meta.url));
   const envFile = process.env.ENV_FILE ?? ".env";
-  dotenv.config({ path: path.resolve(_dir, envFile), override: false });
+  dotenv.config({ path: path.resolve(_dir, envFile), override: true });
 }
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
