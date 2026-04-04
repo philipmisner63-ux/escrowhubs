@@ -17,11 +17,11 @@ import TrustScoreOracleJson from "./abis/TrustScoreOracle.json";
 import ERC20Json            from "./abis/ERC20.json";
 
 // ─── Canonical camelCase exports ─────────────────────────────────────────────
-export const SimpleEscrowABI     = SimpleEscrowJson     as Abi;
-export const MilestoneEscrowABI  = MilestoneEscrowJson  as Abi;
-export const EscrowFactoryABI    = EscrowFactoryJson    as Abi;
-export const AIArbiterABI        = AIArbiterJson        as Abi;
-export const TrustScoreOracleABI = TrustScoreOracleJson as Abi;
+export const SimpleEscrowABI     = (SimpleEscrowJson as any).abi     ?? SimpleEscrowJson     as Abi;
+export const MilestoneEscrowABI  = (MilestoneEscrowJson as any).abi  ?? MilestoneEscrowJson  as Abi;
+export const EscrowFactoryABI    = (EscrowFactoryJson as any).abi    ?? EscrowFactoryJson    as Abi;
+export const AIArbiterABI        = (AIArbiterJson as any).abi        ?? AIArbiterJson        as Abi;
+export const TrustScoreOracleABI = (TrustScoreOracleJson as any).abi ?? TrustScoreOracleJson as Abi;
 
 // ─── Legacy SCREAMING_SNAKE_CASE aliases (backward compat) ───────────────────
 export const SIMPLE_ESCROW_ABI    = SimpleEscrowABI;
