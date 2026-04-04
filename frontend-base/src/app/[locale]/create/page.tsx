@@ -82,9 +82,11 @@ export default function CreateEscrowPage() {
           });
         } else {
           const escrowAmount = parseEther(form.amount);
-          // Fee is % of msg.value, not of escrow amount — gross up correctly
+          // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= escrow
+          // So: grossValue = escrow + ceil(escrow * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          const grossValue = (escrowAmount * 10000n) / 9950n + 1n; // ceil to ensure net >= escrowAmount
+          const protocolFeeNeeded = (escrowAmount * 50n + 9949n) / 9950n;
+          const grossValue = escrowAmount + protocolFeeNeeded;
           const totalValue = grossValue + aiArbiterFee;
           txHash = await writeContractAsync({
             address: factoryAddress,
@@ -112,9 +114,11 @@ export default function CreateEscrowPage() {
         } else {
           const amounts = milestones.map(m => parseEther(m.amount));
           const netTotal = amounts.reduce((a, b) => a + b, 0n);
-          // Fee is % of msg.value — gross up so net >= netTotal
+          // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= netTotal
+          // So: grossValue = netTotal + ceil(netTotal * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          const grossValue = (netTotal * 10000n) / 9950n + 1n;
+          const protocolFeeNeeded = (netTotal * 50n + 9949n) / 9950n;
+          const grossValue = netTotal + protocolFeeNeeded;
           const totalValue = grossValue + aiArbiterFee;
           txHash = await writeContractAsync({
             address: factoryAddress,
