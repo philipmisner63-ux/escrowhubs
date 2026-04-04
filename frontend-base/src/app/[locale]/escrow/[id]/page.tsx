@@ -68,8 +68,9 @@ function SimpleEscrowView({ address }: { address: Address }) {
   const writes = useSimpleEscrowWrite(chainId);
 
   const role = deriveRole(wallet, data.depositor, data.beneficiary, data.arbiter);
-  const stateNum = data.state ?? 0;
-  const stateLabel = SIMPLE_STATE_LABEL[stateNum] ?? "Unknown";
+  // Use null state while loading — don't default to 0 (AWAITING_PAYMENT) prematurely
+  const stateNum = data.state ?? (data.isLoading ? null : 0);
+  const stateLabel = stateNum !== null ? (SIMPLE_STATE_LABEL[stateNum] ?? "Unknown") : "Loading…";
 
   useEffect(() => {
     if (data.depositor) {
@@ -172,6 +173,9 @@ function SimpleEscrowView({ address }: { address: Address }) {
       <GlassCard className="p-5">
         <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">Actions</h3>
         <div className="space-y-3">
+          {stateNum === null && (
+            <p className="text-sm text-slate-500 py-4 text-center animate-pulse">Loading contract data…</p>
+          )}
           {role === "depositor" && stateNum === SimpleEscrowState.AWAITING_DELIVERY && (
             <>
               <ActionRow
@@ -216,7 +220,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
               )}
             </div>
           )}
-          {(stateNum === SimpleEscrowState.AWAITING_PAYMENT) && (
+          {stateNum === SimpleEscrowState.AWAITING_PAYMENT && (
             <p className="text-sm text-slate-500 py-4 text-center">Awaiting deposit.</p>
           )}
           {role === "observer" && stateNum === SimpleEscrowState.AWAITING_DELIVERY && (
