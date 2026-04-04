@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useId } from "react";
 import { useAccount } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/toast";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -45,6 +46,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
   const t          = useTranslations("notifications");
   const uid        = useId();
   const { address: wallet } = useAccount();
+  const { openConnectModal } = useConnectModal();
   const { addToast }        = useToast();
   const backdropRef         = useRef<HTMLDivElement>(null);
 
@@ -128,10 +130,10 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
     >
       <div
         data-modal
-        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-xl max-h-[90vh] flex flex-col overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
+        {/* Header — fixed, never collapses */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔔</span>
             <div>
@@ -144,9 +146,17 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
           <button onClick={onClose} aria-label="Close" className="text-slate-500 hover:text-white transition-colors text-xl leading-none ml-4">×</button>
         </div>
 
+        <div className="overflow-y-auto flex-1 min-h-0">
         {!wallet ? (
-          <div className="px-6 py-10 text-center text-slate-500 text-sm">
-            Connect your wallet to manage notifications.
+          <div className="px-6 py-10 flex flex-col items-center gap-4 text-center">
+            <p className="text-sm text-slate-500">Connect your wallet to manage notifications.</p>
+            <GlowButton
+              variant="primary"
+              onClick={() => { onClose(); openConnectModal?.(); }}
+              className="px-6 py-2.5 text-sm"
+            >
+              Connect Wallet
+            </GlowButton>
           </div>
         ) : (
           <form onSubmit={handleSave} className="p-6 space-y-6">
@@ -214,6 +224,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
             </div>
           </form>
         )}
+        </div>
       </div>
     </div>
   );
