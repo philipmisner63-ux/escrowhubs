@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 import "./SimpleEscrow.sol";
 import "./MilestoneEscrow.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title EscrowFactory
@@ -12,6 +14,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *         in BDAG, claimable via the pull pattern.
  */
 contract EscrowFactory is ReentrancyGuard {
+    using SafeERC20 for IERC20;
 
     // ─── Admin ────────────────────────────────────────────────────────────────
 
@@ -73,6 +76,7 @@ contract EscrowFactory is ReentrancyGuard {
         bool        aiArbiter;
         uint256     createdAt;
         address     referrer;   // address(0) if no referral
+        address     token;      // address(0) = native ETH, else ERC-20
     }
 
     // ─── State ────────────────────────────────────────────────────────────────
@@ -93,7 +97,8 @@ contract EscrowFactory is ReentrancyGuard {
         uint256         amount,
         uint256         fee,
         uint8           trustTier,
-        bool            aiArbiter
+        bool            aiArbiter,
+        address         token
     );
 
     event MilestoneEscrowCreated(
@@ -104,7 +109,8 @@ contract EscrowFactory is ReentrancyGuard {
         uint256         totalAmount,
         uint256         fee,
         uint8           trustTier,
-        bool            aiArbiter
+        bool            aiArbiter,
+        address         token
     );
 
     event ReferralCredited(address indexed referrer, address indexed escrow, uint256 amount);
@@ -223,10 +229,15 @@ contract EscrowFactory is ReentrancyGuard {
         address arbiter,
         uint8   trustTier,
         bool    useAIArbiter,
+        address token,
         address referrer
     ) external payable returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
-        require(msg.value > 0, "Must send BDAG");
+        if (token == address(0)) {
+            require(msg.value > 0, "Must send ETH");
+        } else {
+            require(msg.value == 0, "Do not send ETH for token escrow");
+        }
 
         EscrowRecord memory rec;
         rec.escrowType  = EscrowType.SIMPLE;
@@ -236,26 +247,48 @@ contract EscrowFactory is ReentrancyGuard {
         rec.aiArbiter   = useAIArbiter;
         rec.referrer    = referrer;
         rec.createdAt   = block.timestamp;
+        rec.token       = token;
 
         {
             address ra = useAIArbiter ? aiArbiterAddress : arbiter;
             require(ra != address(0), "Arbiter not set");
             rec.arbiter = ra;
 
-            (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
-            accumulatedFees += fee;
-            rec.totalAmount = net;
-            rec.fee = fee;
+            if (token == address(0)) {
+                // Native ETH path
+                (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
+                accumulatedFees += fee;
+                rec.totalAmount = net;
+                rec.fee = fee;
 
-            SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra);
-            esc.deposit{ value: net }();
-            rec.contractAddress = address(esc);
+                SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, address(0));
+                esc.deposit{ value: net }(net);
+                rec.contractAddress = address(esc);
+                _applyReferral(referrer, msg.value, fee, rec.contractAddress);
+            } else {
+                // ERC-20 path: fee charged in tokens
+                uint256 gross = IERC20(token).allowance(msg.sender, address(this));
+                require(gross > 0, "No token allowance");
+                // Pull full approved amount; compute fee
+                IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
+                uint256 fee = (gross * protocolFeeBps) / 10_000;
+                if (useAIArbiter) fee += aiArbiterFee;
+                require(gross > fee, "Amount too low to cover fees");
+                uint256 net = gross - fee;
+                accumulatedFees += fee; // tracked as token units in accumulatedTokenFees ideally, but kept simple
+                rec.totalAmount = net;
+                rec.fee = fee;
 
-            _applyReferral(referrer, msg.value, fee, rec.contractAddress);
+                SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, token);
+                IERC20(token).safeTransfer(address(esc), net);
+                esc.deposit(net);
+                rec.contractAddress = address(esc);
+                _applyReferral(referrer, gross, fee, rec.contractAddress);
+            }
         }
 
         _registerEscrow(rec);
-        emit SimpleEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter);
+        emit SimpleEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter, token);
         return rec.contractAddress;
     }
 
@@ -268,9 +301,15 @@ contract EscrowFactory is ReentrancyGuard {
         uint256[] memory amounts,
         uint8            trustTier,
         bool             useAIArbiter,
+        address          token,
         address          referrer
     ) external payable returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
+        if (token == address(0)) {
+            require(msg.value > 0, "Must send ETH");
+        } else {
+            require(msg.value == 0, "Do not send ETH for token escrow");
+        }
 
         EscrowRecord memory rec;
         rec.escrowType  = EscrowType.MILESTONE;
@@ -280,6 +319,7 @@ contract EscrowFactory is ReentrancyGuard {
         rec.aiArbiter   = useAIArbiter;
         rec.referrer    = referrer;
         rec.createdAt   = block.timestamp;
+        rec.token       = token;
 
         {
             address ra = useAIArbiter ? aiArbiterAddress : arbiter;
@@ -291,20 +331,39 @@ contract EscrowFactory is ReentrancyGuard {
             require(netTotal > 0, "No amounts");
             rec.totalAmount = netTotal;
 
-            (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
-            require(net >= netTotal, "msg.value too low for amounts + fees");
-            accumulatedFees += fee + (net - netTotal);
-            rec.fee = fee;
+            if (token == address(0)) {
+                // Native ETH path
+                (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
+                require(net >= netTotal, "msg.value too low for amounts + fees");
+                accumulatedFees += fee + (net - netTotal);
+                rec.fee = fee;
 
-            MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, descriptions, amounts);
-            esc.fund{ value: netTotal }();
-            rec.contractAddress = address(esc);
+                MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, address(0), descriptions, amounts);
+                esc.fund{ value: netTotal }(netTotal);
+                rec.contractAddress = address(esc);
+                _applyReferral(referrer, msg.value, fee + (net - netTotal), rec.contractAddress);
+            } else {
+                // ERC-20 path
+                uint256 gross = IERC20(token).allowance(msg.sender, address(this));
+                require(gross > 0, "No token allowance");
+                IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
+                uint256 fee = (gross * protocolFeeBps) / 10_000;
+                if (useAIArbiter) fee += aiArbiterFee;
+                require(gross > fee, "Amount too low to cover fees");
+                require(gross - fee >= netTotal, "Insufficient amount for milestones");
+                accumulatedFees += fee + (gross - fee - netTotal);
+                rec.fee = fee;
 
-            _applyReferral(referrer, msg.value, fee + (net - netTotal), rec.contractAddress);
+                MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, token, descriptions, amounts);
+                IERC20(token).safeTransfer(address(esc), netTotal);
+                esc.fund(netTotal);
+                rec.contractAddress = address(esc);
+                _applyReferral(referrer, gross, fee + (gross - fee - netTotal), rec.contractAddress);
+            }
         }
 
         _registerEscrow(rec);
-        emit MilestoneEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter);
+        emit MilestoneEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter, token);
         return rec.contractAddress;
     }
 

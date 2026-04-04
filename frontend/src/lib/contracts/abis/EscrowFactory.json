@@ -10,6 +10,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -110,6 +121,12 @@
         "internalType": "bool",
         "name": "aiArbiter",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "MilestoneEscrowCreated",
@@ -222,6 +239,12 @@
         "internalType": "bool",
         "name": "aiArbiter",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       }
     ],
     "name": "SimpleEscrowCreated",
@@ -320,6 +343,11 @@
       },
       {
         "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "referrer",
         "type": "address"
       }
@@ -356,6 +384,11 @@
         "internalType": "bool",
         "name": "useAIArbiter",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -469,6 +502,11 @@
       {
         "internalType": "address",
         "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
         "type": "address"
       }
     ],
@@ -593,6 +631,11 @@
           {
             "internalType": "address",
             "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
             "type": "address"
           }
         ],

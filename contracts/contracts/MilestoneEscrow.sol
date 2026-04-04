@@ -2,15 +2,17 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title MilestoneEscrow
- * @notice Phased escrow with per-milestone release. Each milestone has an amount
- *         and can be released independently once marked complete by the depositor.
- * @dev Adaptive verification layers are enforced off-chain via trust score;
- *      on-chain, the arbiter role handles dispute resolution per milestone.
+ * @notice Phased escrow with per-milestone release, supporting ETH and ERC-20 tokens.
+ *         token == address(0) → native ETH. token != address(0) → ERC-20.
  */
 contract MilestoneEscrow is ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     enum MilestoneState { PENDING, RELEASED, DISPUTED, REFUNDED }
 
     struct Milestone {
@@ -22,6 +24,8 @@ contract MilestoneEscrow is ReentrancyGuard {
     address public immutable depositor;
     address public immutable beneficiary;
     address public immutable arbiter;
+    /// @notice ERC-20 token address, or address(0) for native ETH.
+    address public immutable token;
 
     Milestone[] public milestones;
     uint256     public totalDeposited;
@@ -39,6 +43,7 @@ contract MilestoneEscrow is ReentrancyGuard {
         address          _depositor,
         address          _beneficiary,
         address          _arbiter,
+        address          _token,
         string[] memory  _descriptions,
         uint256[] memory _amounts
     ) {
@@ -51,6 +56,7 @@ contract MilestoneEscrow is ReentrancyGuard {
         depositor   = _depositor;
         beneficiary = _beneficiary;
         arbiter     = _arbiter;
+        token       = _token;
 
         uint256 total;
         for (uint256 i; i < _descriptions.length; i++) {
@@ -65,11 +71,18 @@ contract MilestoneEscrow is ReentrancyGuard {
         totalDeposited = total;
     }
 
-    function fund() external payable {
+    /// @notice Fund the escrow. For ETH: send exact value. For ERC-20: factory transfers first.
+    function fund(uint256 _amount) external payable {
         require(!funded, "Already funded");
-        require(msg.value == totalDeposited, "Incorrect amount");
+        require(_amount == totalDeposited, "Incorrect amount");
+        if (token == address(0)) {
+            require(msg.value == _amount, "ETH amount mismatch");
+        } else {
+            require(msg.value == 0, "Do not send ETH for token escrow");
+            require(IERC20(token).balanceOf(address(this)) >= _amount, "Token not received");
+        }
         funded = true;
-        emit Funded(msg.value);
+        emit Funded(_amount);
     }
 
     function releaseMilestone(uint256 index) external onlyDepositor nonReentrant {
@@ -78,7 +91,7 @@ contract MilestoneEscrow is ReentrancyGuard {
         require(m.state == MilestoneState.PENDING, "Not pending");
         m.state = MilestoneState.RELEASED;
         emit MilestoneReleased(index, m.amount);
-        payable(beneficiary).transfer(m.amount);
+        _transfer(beneficiary, m.amount);
     }
 
     function disputeMilestone(uint256 index) external onlyDepositor {
@@ -94,7 +107,7 @@ contract MilestoneEscrow is ReentrancyGuard {
         require(m.state == MilestoneState.DISPUTED, "Not disputed");
         m.state = MilestoneState.RELEASED;
         emit MilestoneReleased(index, m.amount);
-        payable(beneficiary).transfer(m.amount);
+        _transfer(beneficiary, m.amount);
     }
 
     function resolveRefund(uint256 index) external onlyArbiter nonReentrant {
@@ -102,10 +115,20 @@ contract MilestoneEscrow is ReentrancyGuard {
         require(m.state == MilestoneState.DISPUTED, "Not disputed");
         m.state = MilestoneState.REFUNDED;
         emit MilestoneRefunded(index, m.amount);
-        payable(depositor).transfer(m.amount);
+        _transfer(depositor, m.amount);
     }
 
     function milestoneCount() external view returns (uint256) {
         return milestones.length;
+    }
+
+    // ─── Internal transfer helper ─────────────────────────────────────────────
+
+    function _transfer(address to, uint256 amt) internal {
+        if (token == address(0)) {
+            payable(to).transfer(amt);
+        } else {
+            IERC20(token).safeTransfer(to, amt);
+        }
     }
 }

@@ -1,21 +1,303 @@
 [
-  { "type": "function", "name": "depositor",       "inputs": [], "outputs": [{ "type": "address" }], "stateMutability": "view" },
-  { "type": "function", "name": "beneficiary",     "inputs": [], "outputs": [{ "type": "address" }], "stateMutability": "view" },
-  { "type": "function", "name": "arbiter",         "inputs": [], "outputs": [{ "type": "address" }], "stateMutability": "view" },
-  { "type": "function", "name": "totalDeposited",  "inputs": [], "outputs": [{ "type": "uint256" }], "stateMutability": "view" },
-  { "type": "function", "name": "funded",          "inputs": [], "outputs": [{ "type": "bool" }],    "stateMutability": "view" },
-  { "type": "function", "name": "milestoneCount",  "inputs": [], "outputs": [{ "type": "uint256" }], "stateMutability": "view" },
-  { "type": "function", "name": "milestones",
-    "inputs": [{ "name": "index", "type": "uint256" }],
-    "outputs": [{ "name": "description", "type": "string" }, { "name": "amount", "type": "uint256" }, { "name": "state", "type": "uint8" }],
-    "stateMutability": "view" },
-  { "type": "function", "name": "fund",             "inputs": [], "outputs": [], "stateMutability": "payable" },
-  { "type": "function", "name": "releaseMilestone", "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
-  { "type": "function", "name": "disputeMilestone", "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
-  { "type": "function", "name": "resolveRelease",   "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
-  { "type": "function", "name": "resolveRefund",    "inputs": [{ "name": "index", "type": "uint256" }], "outputs": [], "stateMutability": "nonpayable" },
-  { "type": "event", "name": "Funded",            "inputs": [{ "name": "total",  "type": "uint256", "indexed": false }] },
-  { "type": "event", "name": "MilestoneReleased", "inputs": [{ "name": "index",  "type": "uint256", "indexed": true  }, { "name": "amount", "type": "uint256", "indexed": false }] },
-  { "type": "event", "name": "MilestoneDisputed", "inputs": [{ "name": "index",  "type": "uint256", "indexed": true  }] },
-  { "type": "event", "name": "MilestoneRefunded", "inputs": [{ "name": "index",  "type": "uint256", "indexed": true  }, { "name": "amount", "type": "uint256", "indexed": false }] }
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_depositor",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_arbiter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_descriptions",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "name": "Funded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "MilestoneDisputed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "MilestoneRefunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "MilestoneReleased",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "arbiter",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "beneficiary",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "depositor",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "disputeMilestone",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "fund",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "funded",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "milestoneCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "milestones",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum MilestoneEscrow.MilestoneState",
+        "name": "state",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "releaseMilestone",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "resolveRefund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "resolveRelease",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "token",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalDeposited",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]
