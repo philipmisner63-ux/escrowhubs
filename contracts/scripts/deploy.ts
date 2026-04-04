@@ -12,8 +12,12 @@ async function main() {
   if (!privateKey) throw new Error("DEPLOYER_PRIVATE_KEY not set in .env");
 
   const account = privateKeyToAccount(privateKey);
+  const networkName = hre.network.name ?? "unknown";
   console.log("Deploying with account:", account.address);
-  console.log("Network:", hre.network.name);
+  console.log("Network:", networkName);
+  if (networkName === "base" || networkName === "baseSepolia") {
+    console.log("Base native USDC: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913");
+  }
 
   // 1. TrustScoreOracle
   const oracle = await conn.viem.deployContract("TrustScoreOracle", []);
