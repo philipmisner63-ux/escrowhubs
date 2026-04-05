@@ -12,6 +12,7 @@ const CSP = [
   [
     "connect-src 'self'",
     "https://mainnet.base.org",
+    "https://api.developer.coinbase.com",
     "https://base.llamarpc.com",
     "https://base-mainnet.infura.io",
     "https://base-rpc.publicnode.com",
