@@ -113,8 +113,13 @@ export default function CreateEscrowPage() {
             gas: 1_500_000n,
           });
         } else {
-          const amounts = milestones.map(m => parseEther(m.amount));
+          const amounts = milestones.map(m => {
+            const val = m.amount?.trim();
+            if (!val || isNaN(parseFloat(val)) || parseFloat(val) <= 0) throw new Error('All milestone amounts must be greater than 0');
+            return parseEther(val);
+          });
           const netTotal = amounts.reduce((a, b) => a + b, 0n);
+          if (netTotal === 0n) throw new Error('Total milestone amount must be greater than 0');
           // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= netTotal
           // So: grossValue = netTotal + ceil(netTotal * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
