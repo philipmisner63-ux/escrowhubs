@@ -231,7 +231,9 @@ Rules:
     messages: [{ role: "user", content: prompt }],
   });
 
-  const raw = message.content[0].text.trim();
+  const rawText = message.content[0].text.trim();
+  // Strip markdown code fences if AI wrapped response despite instructions
+  const raw = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
   try {
     const decision = JSON.parse(raw);
