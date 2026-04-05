@@ -31,6 +31,9 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(APP_URL),
     ...base,
+    other: {
+      'base:app_id': '69d1ab2867a388b6eeaf809f',
+    },
   };
 }
 
