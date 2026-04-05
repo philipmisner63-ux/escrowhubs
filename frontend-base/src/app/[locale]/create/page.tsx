@@ -69,39 +69,48 @@ export default function CreateEscrowPage() {
 
       let txHash: `0x${string}`;
 
+      // Helper: estimate gas via our own RPC so MetaMask doesn't use Infura's broken estimator
+      const estimateGas = async (args: Parameters<typeof publicClient.estimateGas>[0]) => {
+        try {
+          const est = await publicClient.estimateGas(args);
+          return est * 130n / 100n; // 30% buffer
+        } catch {
+          return undefined; // fall back to MetaMask estimation
+        }
+      };
+
       if (type === "simple") {
         if (isUSDC) {
-          // USDC path: msg.value = 0, factory pulls via allowance
+          const gas = await estimateGas({ to: factoryAddress, data: undefined, account: form.beneficiary as `0x${string}`, value: 0n });
           txHash = await writeContractAsync({
             address: factoryAddress,
             abi: ESCROW_FACTORY_ABI,
             functionName: "createSimpleEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer],
             value: 0n,
-            gas: 1_100_000n,
+            ...(gas ? { gas } : {}),
           });
         } else {
           const escrowAmount = parseEther(form.amount);
-          // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= escrow
-          // So: grossValue = escrow + ceil(escrow * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          // Gross up correctly: fee = floor(msg.value * 50/10000), need net >= escrowAmount
           const protocolFeeNeeded = (escrowAmount * 50n + 9949n) / 9950n;
           const grossValue = escrowAmount + protocolFeeNeeded;
           const totalValue = grossValue + aiArbiterFee;
+          const { encodeFunctionData } = await import("viem");
+          const data = encodeFunctionData({ abi: ESCROW_FACTORY_ABI, functionName: "createSimpleEscrow", args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer] });
+          const gas = await estimateGas({ to: factoryAddress, data, value: totalValue });
           txHash = await writeContractAsync({
             address: factoryAddress,
             abi: ESCROW_FACTORY_ABI,
             functionName: "createSimpleEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, tokenAddress, referrer],
             value: totalValue,
-            gas: 1_100_000n,
+            ...(gas ? { gas } : {}),
           });
         }
       } else {
         const descriptions = milestones.map(m => m.description);
         if (isUSDC) {
-          // USDC milestone path
           const { parseUnits } = await import("viem");
           const amounts = milestones.map(m => parseUnits(m.amount, 6));
           txHash = await writeContractAsync({
@@ -110,7 +119,6 @@ export default function CreateEscrowPage() {
             functionName: "createMilestoneEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer],
             value: 0n,
-            gas: 1_500_000n,
           });
         } else {
           const amounts = milestones.map(m => {
@@ -120,20 +128,20 @@ export default function CreateEscrowPage() {
           });
           const netTotal = amounts.reduce((a, b) => a + b, 0n);
           if (netTotal === 0n) throw new Error('Total milestone amount must be greater than 0');
-          // Contract: fee = floor(msg.value * 50/10000), net = msg.value - fee, require net >= netTotal
-          // So: grossValue = netTotal + ceil(netTotal * 50/9950)
           const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          // Gross up correctly: fee = floor(msg.value * 50/10000), need net >= netTotal
           const protocolFeeNeeded = (netTotal * 50n + 9949n) / 9950n;
           const grossValue = netTotal + protocolFeeNeeded;
           const totalValue = grossValue + aiArbiterFee;
+          const { encodeFunctionData } = await import("viem");
+          const data = encodeFunctionData({ abi: ESCROW_FACTORY_ABI, functionName: "createMilestoneEscrow", args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer] });
+          const gas = await estimateGas({ to: factoryAddress, data, value: totalValue });
           txHash = await writeContractAsync({
             address: factoryAddress,
             abi: ESCROW_FACTORY_ABI,
             functionName: "createMilestoneEscrow",
             args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, tokenAddress, referrer],
             value: totalValue,
-            gas: 1_500_000n,
+            ...(gas ? { gas } : {}),
           });
         }
       }
