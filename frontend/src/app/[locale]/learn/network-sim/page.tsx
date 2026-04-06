@@ -24,7 +24,7 @@ function NavBarSim({ state }: { state: SimState }) {
       <div className="bg-black/50 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-6 w-6 rounded bg-gradient-to-br from-cyan-400 to-blue-600" />
-          <span className="font-bold text-sm text-white">BlockDAG Escrow</span>
+          <span className="font-bold text-sm text-white">EscrowHubs</span>
         </div>
         <div>
           {state === "disconnected" && (

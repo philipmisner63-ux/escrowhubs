@@ -1,4 +1,4 @@
-# BlockDAG Escrow
+# EscrowHubs
 
 **Trustless escrow with AI-powered dispute resolution, built on BlockDAG.**
 
@@ -8,7 +8,7 @@ Featured on [BlockDAG Academy](https://academy.blockdag.network) as a live case 
 
 ## What Is It?
 
-BlockDAG Escrow is a decentralized escrow platform where two parties anywhere in the world can lock funds in a smart contract and release them based on agreed conditions — no bank, no lawyer, no middleman.
+EscrowHubs is a decentralized escrow platform where two parties anywhere in the world can lock funds in a smart contract and release them based on agreed conditions — no bank, no lawyer, no middleman.
 
 When something goes wrong, disputes are resolved automatically by an **AI oracle** that reviews on-chain evidence and executes the ruling. Minutes, not weeks.
 
