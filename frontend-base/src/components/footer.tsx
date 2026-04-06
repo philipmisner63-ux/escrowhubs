@@ -27,7 +27,7 @@ export function Footer() {
   const communityLinks = [
     { label: t("twitter"),  href: "https://x.com/",           external: true },
     { label: t("telegram"), href: "https://t.me/",            external: true },
-    { label: t("discord"),  href: "https://discord.gg/",      external: true },
+    { label: t("discord"),  href: "https://discord.gg/BsBudsMhgt", external: true },
   ];
 
   return (
