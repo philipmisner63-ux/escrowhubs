@@ -1,0 +1,80 @@
+type Escrow @entity {
+  "Contract address of the escrow"
+  id: ID!
+  type: String! # "simple" | "milestone"
+  buyer: Bytes! # depositor
+  seller: Bytes! # beneficiary
+  arbiter: Bytes!
+  token: Bytes! # ERC-20 address or zero address for native MATIC
+  amount: BigInt!
+  fee: BigInt!
+  trustTier: Int!
+  status: String! # CREATED | FUNDED | RELEASED | REFUNDED | DISPUTED | RESOLVED
+  useAIArbiter: Boolean!
+  createdAt: BigInt!
+  txHash: Bytes!
+  blockNumber: BigInt!
+  fundReleases: [FundRelease!]! @derivedFrom(field: "escrow")
+  milestoneReleases: [MilestoneRelease!]! @derivedFrom(field: "escrow")
+  disputes: [Dispute!]! @derivedFrom(field: "escrow")
+}
+
+type FundRelease @entity {
+  "txHash-logIndex"
+  id: ID!
+  escrow: Escrow!
+  recipient: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type MilestoneRelease @entity {
+  "escrowAddress-milestoneIndex"
+  id: ID!
+  escrow: Escrow!
+  milestoneIndex: BigInt!
+  amount: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type Dispute @entity {
+  "escrowAddress for simple disputes; escrowAddress-milestoneIndex for milestone disputes"
+  id: ID!
+  escrow: Escrow!
+  initiator: Bytes # only set for SimpleEscrow disputes
+  milestoneIndex: BigInt # only set for MilestoneEscrow disputes
+  openedAt: BigInt!
+  resolvedAt: BigInt
+  resolution: String # "release" | "refund" — set by AIArbiter
+}
+
+type TrustScoreChange @entity {
+  "txHash-logIndex"
+  id: ID!
+  wallet: Bytes!
+  newScore: Int!
+  previousScore: Int!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type WalletTrustScore @entity {
+  "Wallet address — tracks current trust score for previousScore lookups"
+  id: ID!
+  wallet: Bytes!
+  currentScore: Int!
+  lastUpdated: BigInt!
+}
+
+type GlobalStats @entity {
+  "Singleton — always ID = 'global'"
+  id: ID!
+  totalEscrows: BigInt!
+  totalVolume: BigInt!
+  activeEscrows: BigInt!
+  totalDisputes: BigInt!
+  resolvedDisputes: BigInt!
+  disputeRate: BigDecimal!
+}
