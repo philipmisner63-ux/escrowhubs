@@ -2,6 +2,7 @@
 
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { SUPPORTED_CHAINS, isChainSupported } from "@/lib/chains";
+import { STRINGS } from "@/lib/strings";
 
 interface ChainGuardProps {
   children: React.ReactNode;
@@ -38,7 +39,7 @@ export function ChainGuard({ children }: ChainGuardProps) {
                 Unsupported network
               </p>
               <p className="text-xs text-slate-400 mt-0.5">
-                Your wallet is connected to an unsupported network. Switch to a supported chain to use EscrowHubs.
+                {STRINGS.chainHelper.choose}
               </p>
             </div>
           </div>

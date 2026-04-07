@@ -49,9 +49,9 @@ export function Nav() {
               <Link href="/" className="flex items-center gap-2.5 group">
                 <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_0_15px_rgba(0,245,255,0.5)] group-hover:shadow-[0_0_25px_rgba(0,245,255,0.7)] transition-shadow" />
                 <span className="text-lg font-bold tracking-tight">
-                  <span className="text-white">BlockDAG</span>
+                  <span className="text-white">Escrow</span>
                   <span className="ms-1" style={{ color: "#00f5ff", textShadow: "0 0 10px rgba(0,245,255,0.6)" }}>
-                    Escrow
+                    Hubs
                   </span>
                 </span>
               </Link>
