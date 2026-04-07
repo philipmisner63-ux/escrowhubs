@@ -1,0 +1,189 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "escrow",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "resolution",
+        "type": "string"
+      }
+    ],
+    "name": "DisputeResolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "escrow",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "submitter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidenceURI",
+        "type": "string"
+      }
+    ],
+    "name": "EvidenceSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newSigner",
+        "type": "address"
+      }
+    ],
+    "name": "OracleSignerUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" }
+    ],
+    "name": "getAllEvidence",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "submitter", "type": "address" },
+          { "internalType": "string", "name": "uri", "type": "string" },
+          { "internalType": "uint256", "name": "submittedAt", "type": "uint256" }
+        ],
+        "internalType": "struct AIArbiter.Evidence[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" },
+      { "internalType": "uint256", "name": "index", "type": "uint256" }
+    ],
+    "name": "getEvidence",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "submitter", "type": "address" },
+          { "internalType": "string", "name": "uri", "type": "string" },
+          { "internalType": "uint256", "name": "submittedAt", "type": "uint256" }
+        ],
+        "internalType": "struct AIArbiter.Evidence",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" }
+    ],
+    "name": "getEvidenceCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oracleSigner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" },
+      { "internalType": "uint256", "name": "milestoneIndex", "type": "uint256" }
+    ],
+    "name": "resolveMilestoneRefund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" },
+      { "internalType": "uint256", "name": "milestoneIndex", "type": "uint256" }
+    ],
+    "name": "resolveMilestoneRelease",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" }
+    ],
+    "name": "resolveRefund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" }
+    ],
+    "name": "resolveRelease",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newSigner", "type": "address" }
+    ],
+    "name": "setOracleSigner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "escrowAddress", "type": "address" },
+      { "internalType": "string", "name": "evidenceURI", "type": "string" }
+    ],
+    "name": "submitEvidence",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
