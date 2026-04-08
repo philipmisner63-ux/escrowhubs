@@ -33,40 +33,24 @@ export default function LandingPage() {
       <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 space-y-16">
 
         {/* ── Hero ─────────────────────────────────────────────────── */}
-        <section className="hero-glow rounded-2xl border border-white/8 px-6 py-16 text-center space-y-5">
+        <section className="hero-glow rounded-2xl border border-white/8 px-6 py-10 text-center space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/5 px-4 py-1.5 text-xs text-violet-300">
             <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
             {t("badge")}
           </div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-5xl sm:text-6xl font-bold leading-tight tracking-tight"
+            className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight"
           >
             <span className="text-white block">{t("heroTitle1")}</span>
             <span className="block mt-1 text-cyan-400" style={{ textShadow: "0 0 40px rgba(0,245,255,0.5)" }}>
               {t("heroTitle2")}
             </span>
           </motion.h1>
-          <p className="text-slate-400 max-w-xl mx-auto leading-relaxed">{t("heroSubtitle")}</p>
-          {/* Quote block */}
-          <div className="flex items-center justify-center gap-3 py-1">
-            <span className="text-slate-600 text-xl leading-none">"</span>
-            <p className="text-slate-300 text-base sm:text-lg font-medium italic tracking-wide">
-              {t("heroQuote")}
-            </p>
-            <span className="text-slate-600 text-xl leading-none">"</span>
-          </div>
+          <p className="text-slate-400 max-w-xl mx-auto leading-relaxed text-sm sm:text-base">{t("heroSubtitle")}</p>
 
-          {/* Why EscrowHubs bullets */}
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-1">
-            {(["why1","why2","why3","why4","why5"] as const).map((key) => (
-              <span key={key} className="flex items-center gap-1.5 text-xs text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/70 shrink-0" />
-                {t(key)}
-              </span>
-            ))}
-          </div>
-          <div className="flex items-center justify-center gap-4 flex-wrap pt-2">
+          {/* CTAs */}
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link
               href="/dashboard"
               className="btn-glow px-8 py-3 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 font-semibold hover:bg-cyan-400/20 transition-all"
@@ -81,6 +65,25 @@ export default function LandingPage() {
             >
               {t("viewContracts")}
             </a>
+          </div>
+
+          {/* Quote — above patent pending, visible without scrolling */}
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <span className="text-cyan-400/40 text-2xl leading-none font-serif">❝</span>
+            <p className="text-slate-300 text-sm sm:text-base font-medium italic tracking-wide">
+              {t("heroQuote")}
+            </p>
+            <span className="text-cyan-400/40 text-2xl leading-none font-serif">❞</span>
+          </div>
+
+          {/* Why EscrowHubs bullets */}
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+            {(["why1","why2","why3","why4","why5"] as const).map((key) => (
+              <span key={key} className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span className="w-1 h-1 rounded-full bg-cyan-400/50 shrink-0" />
+                {t(key)}
+              </span>
+            ))}
           </div>
         </section>
 
