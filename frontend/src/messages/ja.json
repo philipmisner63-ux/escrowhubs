@@ -57,7 +57,8 @@
     "why2": "アカウント不要 — 接続するだけで利用可能",
     "why3": "一方的な引き出しなし",
     "why4": "AI仲裁 — 迅速、公正、オンチェーン",
-    "why5": "マルチチェーン: Base、Polygon、BlockDAG"
+    "why5": "マルチチェーン: Base、Polygon、BlockDAG",
+    "heroQuote": "信頼より安全。マルチシグより簡単。"
   },
   "dashboard": {
     "title": "ダッシュボード",

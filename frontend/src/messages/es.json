@@ -57,7 +57,8 @@
     "why2": "Sin cuentas — solo conecta y listo",
     "why3": "Sin retiros unilaterales",
     "why4": "Arbitraje con IA — rápido, imparcial, on-chain",
-    "why5": "Multi-cadena: Base, Polygon, BlockDAG"
+    "why5": "Multi-cadena: Base, Polygon, BlockDAG",
+    "heroQuote": "Más seguro que confiar. Más simple que multisig."
   },
   "dashboard": {
     "title": "Panel",

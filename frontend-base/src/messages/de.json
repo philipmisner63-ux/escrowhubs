@@ -57,7 +57,8 @@
     "why2": "Keine Konten — einfach verbinden und loslegen",
     "why3": "Keine einseitigen Auszahlungen",
     "why4": "KI-Arbitrage — schnell, unparteiisch, on-chain",
-    "why5": "Multi-Chain: Base, Polygon, BlockDAG"
+    "why5": "Multi-Chain: Base, Polygon, BlockDAG",
+    "heroQuote": "Sicherer als Vertrauen. Einfacher als Multisig."
   },
   "dashboard": {
     "title": "Dashboard",

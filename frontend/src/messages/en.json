@@ -57,7 +57,8 @@
     "why2": "No accounts — just connect and go",
     "why3": "No unilateral withdrawals",
     "why4": "AI arbitration — fast, unbiased, on-chain",
-    "why5": "Multi-chain: Base, Polygon, BlockDAG"
+    "why5": "Multi-chain: Base, Polygon, BlockDAG",
+    "heroQuote": "Safer than trust. Simpler than multisig."
   },
   "dashboard": {
     "title": "Dashboard",

@@ -57,7 +57,8 @@
     "why2": "无需账户 — 连接即用",
     "why3": "无单方面提款",
     "why4": "AI 仲裁 — 快速、公正、链上",
-    "why5": "多链：Base、Polygon、BlockDAG"
+    "why5": "多链：Base、Polygon、BlockDAG",
+    "heroQuote": "比信任更安全。比多签更简单。"
   },
   "dashboard": {
     "title": "控制台",

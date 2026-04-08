@@ -48,6 +48,15 @@ export default function LandingPage() {
             </span>
           </motion.h1>
           <p className="text-slate-400 max-w-xl mx-auto leading-relaxed">{t("heroSubtitle")}</p>
+          {/* Quote block */}
+          <div className="flex items-center justify-center gap-3 py-1">
+            <span className="text-slate-600 text-xl leading-none">"</span>
+            <p className="text-slate-300 text-base sm:text-lg font-medium italic tracking-wide">
+              {t("heroQuote")}
+            </p>
+            <span className="text-slate-600 text-xl leading-none">"</span>
+          </div>
+
           {/* Why EscrowHubs bullets */}
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-1">
             {(["why1","why2","why3","why4","why5"] as const).map((key) => (

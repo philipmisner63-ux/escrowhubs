@@ -57,7 +57,8 @@
     "why2": "Pas de compte — connectez et c'est parti",
     "why3": "Pas de retraits unilatéraux",
     "why4": "Arbitrage IA — rapide, impartial, on-chain",
-    "why5": "Multi-chaîne : Base, Polygon, BlockDAG"
+    "why5": "Multi-chaîne : Base, Polygon, BlockDAG",
+    "heroQuote": "Plus sûr que la confiance. Plus simple que le multisig."
   },
   "dashboard": {
     "title": "Tableau de bord",

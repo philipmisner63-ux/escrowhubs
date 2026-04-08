@@ -57,7 +57,8 @@
     "why2": "Hesap yok — sadece bağlan ve kullan",
     "why3": "Tek taraflı para çekme yok",
     "why4": "YZ tahkimi — hızlı, tarafsız, zincir üstü",
-    "why5": "Çoklu zincir: Base, Polygon, BlockDAG"
+    "why5": "Çoklu zincir: Base, Polygon, BlockDAG",
+    "heroQuote": "Güvenden daha güvenli. Multisig'den daha basit."
   },
   "dashboard": {
     "title": "Gösterge Paneli",
