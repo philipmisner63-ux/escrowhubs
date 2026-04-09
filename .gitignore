@@ -46,3 +46,20 @@ lcov.info
 **/public/workbox-*.js.map
 **/public/sw.js.map
 **/public/fallback-*.js
+
+# AI agent config files (internal tooling, not for public repo)
+AGENTS.md
+CLAUDE.md
+BOOTSTRAP.md
+
+# Debug artifacts
+*.cpuprofile
+*.heapsnapshot
+
+# Oracle runtime state
+oracle/decisions.json
+oracle/oracle-state.json
+oracle/oracle-state.*.json
+
+# Notifications cache
+**/notifications.json
