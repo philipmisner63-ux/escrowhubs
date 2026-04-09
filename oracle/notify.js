@@ -27,6 +27,7 @@ const EVENT_META = {
   dispute_opened:      { emoji: "⚠️",  title: "Dispute Opened",                       desc: d => `A dispute has been raised on this escrow.` },
   dispute_resolved:    { emoji: "⚖️",  title: "Dispute Resolved",                     desc: d => `The dispute has been resolved.${d.ruling ? ` Ruling: ${d.ruling}.` : ""}` },
   milestone_completed: { emoji: "🏁", title: "Milestone Completed",                  desc: d => `Milestone #${d.milestoneIndex ?? "?"} has been completed.` },
+  evidence_requested:  { emoji: "📋", title: "Evidence Required — Action Needed",    desc: d => `The AI arbiter reviewed your claim and needs supporting proof.\n\n<b>Your claim:</b> "${d.claim}"\n\n<b>What to submit:</b> ${d.challengePrompt}\n\nPlease open the evidence panel on your escrow page and upload within ${d.windowHours || 4} hours.` },
 };
 
 // ─── Preferences ──────────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ function getPrefsForWallet(wallet) {
 function linkChatId(wallet, chatId) {
   const all   = loadPrefs();
   const key   = wallet.toLowerCase();
-  const ALL_EVENTS = ["escrow_created","escrow_funded","funds_released","dispute_opened","dispute_resolved","milestone_completed"];
+  const ALL_EVENTS = ["escrow_created","escrow_funded","funds_released","dispute_opened","dispute_resolved","milestone_completed","evidence_requested"];
   const existing   = all[key] ?? {};
   all[key] = {
     ...existing,

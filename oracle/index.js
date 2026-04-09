@@ -76,6 +76,8 @@ const ANTHROPIC_KEY            = process.env.ANTHROPIC_API_KEY;
 const DISCORD_WEBHOOK          = process.env.DISCORD_WEBHOOK_URL ?? null;
 const POLL_INTERVAL_MS         = parseInt(process.env.POLL_INTERVAL_MS ?? "30000");
 const AUTO_RESOLVE_MIN_CONFIDENCE = 70;
+const CHALLENGE_WINDOW_MS          = 4 * 60 * 60 * 1000; // 4 hours for challenged party to respond
+const CHALLENGE_POLL_INTERVAL_MS   = 2 * 60 * 1000;      // check for new evidence every 2 min
 const DECISIONS_FILE           = path.join(__dirname, "decisions.json");
 
 if (!PRIVATE_KEY || !ANTHROPIC_KEY) {
@@ -228,7 +230,14 @@ Respond with ONLY a valid JSON object — no markdown, no code fences, no explan
   "factors": [
     { "factor": "<observation>", "weight": "high|medium|low", "favoredParty": "depositor|beneficiary" }
   ],
-  "escalateToManual": <true if confidence < 70 or evidence genuinely ambiguous, else false>
+  "escalateToManual": <true if confidence < 70 or evidence genuinely ambiguous, else false>,
+  "unverifiedClaims": [
+    {
+      "party": "depositor" or "beneficiary",
+      "claim": "<the specific factual assertion they made without supporting proof>",
+      "challengePrompt": "<one sentence: exactly what evidence they should submit to prove it>"
+    }
+  ]
 }
 
 Additional ruling guidance:
@@ -236,7 +245,9 @@ Additional ruling guidance:
 - "confidence" reflects certainty — push for 70+ when evidence clearly favors one side
 - If no evidence: confidence ≤ 50, ruling "depositor", escalateToManual true
 - "factors" should list 2-5 key observations
-- Only escalate if evidence is GENUINELY ambiguous — not merely because one party made an unverified counter-claim`;
+- Only escalate if evidence is GENUINELY ambiguous — not merely because one party made an unverified counter-claim
+- "unverifiedClaims": list every specific factual claim that could change the ruling but lacks supporting documentation. Examples: "a second auditor found X", "client approved verbally", "I communicated the delay". Leave array empty [] if all material claims are documented.
+- For each unverified claim, write a "challengePrompt" as a direct instruction to that party: what file, screenshot, log, link, or hash would prove their claim.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
@@ -292,7 +303,135 @@ function logDecisionSummary(tag, decision) {
   return urgency;
 }
 
+// ─── Oracle state: persist challenge queue across restarts ──────────────────────
+
+const STATE_FILE = path.join(__dirname, "oracle-state.json");
+
+function loadState() {
+  try {
+    if (fs.existsSync(STATE_FILE)) {
+      const raw = fs.readFileSync(STATE_FILE, "utf8").trim();
+      if (raw) return JSON.parse(raw);
+    }
+  } catch { /* ignore */ }
+  return {};
+}
+
+function saveState(state) {
+  try { fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8"); }
+  catch (err) { console.error("❌ saveState error:", err.message); }
+}
+
+/** Persist a pending challenge so it survives oracle restarts */
+function recordChallenge(escrowKey, challengeData) {
+  const state = loadState();
+  if (!state.pendingChallenges) state.pendingChallenges = {};
+  state.pendingChallenges[escrowKey] = challengeData;
+  saveState(state);
+}
+
+/** Remove a resolved challenge */
+function clearChallenge(escrowKey) {
+  const state = loadState();
+  if (state.pendingChallenges?.[escrowKey]) {
+    delete state.pendingChallenges[escrowKey];
+    saveState(state);
+  }
+}
+
 // ─── Per-chain listener ───────────────────────────────────────────────────────
+
+// ─── Evidence challenge notification ────────────────────────────────────────────
+
+/**
+ * Notify a party that they made an unverified claim and prompt them to submit proof.
+ * Sends via Telegram (if linked) and Discord admin webhook.
+ */
+async function sendEvidenceChallenge(escrowAddress, disputeContext, unverifiedClaims, chainName) {
+  if (!unverifiedClaims?.length) return;
+
+  const APP_URL = "https://app.escrowhubs.io";
+  const shortAddr = (a) => a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "?";
+
+  for (const uc of unverifiedClaims) {
+    const wallet = uc.party === "depositor"
+      ? disputeContext.depositor.address
+      : disputeContext.beneficiary.address;
+
+    const role = uc.party === "depositor" ? "Buyer (Depositor)" : "Seller (Beneficiary)";
+    const escrowUrl = `${APP_URL}/escrow/${escrowAddress}`;
+
+    console.log(`📨 [CHALLENGE] ${role} (${shortAddr(wallet)}): "${uc.claim}"`);
+    console.log(`   → Prompt: ${uc.challengePrompt}`);
+
+    // Telegram notification to the party
+    await notifyParties(
+      escrowAddress,
+      "evidence_requested",
+      {
+        role,
+        claim: uc.claim,
+        challengePrompt: uc.challengePrompt,
+        escrowUrl,
+        chainName,
+        windowHours: 4,
+      },
+      [wallet]
+    ).catch(() => {});
+
+    // Discord admin alert
+    if (process.env.DISCORD_WEBHOOK_URL) {
+      try {
+        await fetch(process.env.DISCORD_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            embeds: [{
+              title: `📨 Evidence Challenge Sent — ${chainName}`,
+              color: 0x3b82f6,
+              fields: [
+                { name: "Escrow",   value: `\`${escrowAddress}\``, inline: false },
+                { name: "Party",    value: `${role} (\`${shortAddr(wallet)}\`)`, inline: true },
+                { name: "Claim",    value: uc.claim, inline: false },
+                { name: "Needs",    value: uc.challengePrompt, inline: false },
+                { name: "Window",   value: "4 hours to submit evidence", inline: true },
+                { name: "Link",     value: escrowUrl, inline: false },
+              ],
+              footer: { text: "EscrowHubs AI Arbiter — Evidence Challenge" },
+              timestamp: new Date().toISOString(),
+            }],
+          }),
+        });
+      } catch { /* silent */ }
+    }
+  }
+}
+
+/**
+ * Wait for new evidence to appear after a challenge was issued.
+ * Polls every CHALLENGE_POLL_INTERVAL_MS for up to CHALLENGE_WINDOW_MS.
+ * Returns the updated evidence array (may be same if party didn't respond).
+ */
+async function waitForChallengeResponse(escrowAddress, prevEvidenceCount, fetchEvidenceFn) {
+  const deadline = Date.now() + CHALLENGE_WINDOW_MS;
+  console.log(`⏳ [CHALLENGE] Waiting up to 4h for challenged party evidence on ${escrowAddress.slice(0,10)}…`);
+
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, CHALLENGE_POLL_INTERVAL_MS));
+    try {
+      const fresh = await fetchEvidenceFn(escrowAddress);
+      if (fresh.length > prevEvidenceCount) {
+        console.log(`✅ [CHALLENGE] New evidence received (${fresh.length - prevEvidenceCount} item(s)) — re-evaluating`);
+        return fresh;
+      }
+      const remaining = Math.round((deadline - Date.now()) / 60000);
+      console.log(`   [CHALLENGE] No new evidence yet — ${remaining}m remaining`);
+    } catch { /* ignore transient errors */ }
+  }
+
+  console.log(`⌛ [CHALLENGE] Window expired — proceeding with existing evidence`);
+  return await fetchEvidenceFn(escrowAddress).catch(() => null);
+}
 
 function startChainListener(chainConfig) {
   const { chainId, name, rpcUrl, factoryAddress, arbiterAddress, nativeCurrency } = chainConfig;
@@ -454,9 +593,25 @@ function startChainListener(chainConfig) {
       };
 
       console.log(`📋 ${tag} [SIMPLE] Evidence: ${evidence.length} | Depositor: ${depositor} | Amount: ${formatEther(amount)} ${nativeCurrency?.symbol}`);
-      console.log(`🤖 ${tag} [SIMPLE] Consulting AI...`);
+      console.log(`🤖 ${tag} [SIMPLE] Consulting AI (round 1)...`);
 
-      const decision = await callAI(disputeContext, evidence);
+      let decision = await callAI(disputeContext, evidence);
+      let currentEvidence = evidence;
+
+      // ── Evidence challenge round ─────────────────────────────────────────────
+      if (decision.unverifiedClaims?.length) {
+        console.log(`📨 ${tag} [SIMPLE] ${decision.unverifiedClaims.length} unverified claim(s) — issuing challenges`);
+        recordChallenge(escrowAddress, { issuedAt: Date.now(), claims: decision.unverifiedClaims });
+        await sendEvidenceChallenge(escrowAddress, disputeContext, decision.unverifiedClaims, name);
+        const freshEvidence = await waitForChallengeResponse(escrowAddress, currentEvidence.length, fetchEvidence);
+        if (freshEvidence && freshEvidence.length > currentEvidence.length) {
+          currentEvidence = freshEvidence;
+          console.log(`🤖 ${tag} [SIMPLE] Re-evaluating with ${currentEvidence.length} evidence item(s)...`);
+          decision = await callAI(disputeContext, currentEvidence);
+        }
+        clearChallenge(escrowAddress);
+      }
+
       const urgency  = logDecisionSummary(`${tag} [SIMPLE]`, decision);
 
       let txHash = "pending_manual_review";
@@ -466,7 +621,7 @@ function startChainListener(chainConfig) {
         await notifyDiscord(disputeContext, decision, urgency);
       }
 
-      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, txHash });
+      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, evidenceCount: currentEvidence.length, txHash });
       processed.add(escrowAddress);
 
       // ── Notify parties ──
@@ -538,9 +693,25 @@ function startChainListener(chainConfig) {
 
       console.log(`📋 ${tag} [MILESTONE] Evidence: ${evidence.length} | #${milestoneIndex} "${disputed.description}" — ${formatEther(disputed.amount)} ${nativeCurrency?.symbol}`);
       console.log(`   Progress: ${released}/${total} released | Depositor: ${depositor}`);
-      console.log(`🤖 ${tag} [MILESTONE] Consulting AI...`);
+      console.log(`🤖 ${tag} [MILESTONE] Consulting AI (round 1)...`);
 
-      const decision = await callAI(disputeContext, evidence);
+      let decision = await callAI(disputeContext, evidence);
+      let currentEvidence = evidence;
+
+      // ── Evidence challenge round ─────────────────────────────────────────────
+      if (decision.unverifiedClaims?.length) {
+        console.log(`📨 ${tag} [MILESTONE] ${decision.unverifiedClaims.length} unverified claim(s) — issuing challenges`);
+        recordChallenge(disputeKey, { issuedAt: Date.now(), claims: decision.unverifiedClaims });
+        await sendEvidenceChallenge(escrowAddress, disputeContext, decision.unverifiedClaims, name);
+        const freshEvidence = await waitForChallengeResponse(escrowAddress, currentEvidence.length, fetchEvidence);
+        if (freshEvidence && freshEvidence.length > currentEvidence.length) {
+          currentEvidence = freshEvidence;
+          console.log(`🤖 ${tag} [MILESTONE] Re-evaluating with ${currentEvidence.length} evidence item(s)...`);
+          decision = await callAI(disputeContext, currentEvidence);
+        }
+        clearChallenge(disputeKey);
+      }
+
       const urgency  = logDecisionSummary(`${tag} [MILESTONE]`, decision);
 
       let txHash = "pending_manual_review";
@@ -550,7 +721,7 @@ function startChainListener(chainConfig) {
         await notifyDiscord(disputeContext, decision, urgency);
       }
 
-      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, txHash });
+      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, evidenceCount: currentEvidence.length, txHash });
       processed.add(disputeKey);
 
       // ── Notify parties ──
