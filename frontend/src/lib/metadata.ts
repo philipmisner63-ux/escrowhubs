@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { locales, type Locale } from "@/i18n/config";
+import { locales } from "@/i18n/config";
 
 export const APP_URL = "https://app.escrowhubs.io";
 export const SITE_NAME = "EscrowHubs";
 
-// Map next-intl locale → OG locale format
 export const OG_LOCALE_MAP: Record<string, string> = {
   en:      "en_US",
   ar:      "ar_SA",
@@ -21,14 +20,14 @@ export const OG_LOCALE_MAP: Record<string, string> = {
   ja:      "ja_JP",
 };
 
-// hreflang alternates for all locales
 export function buildAlternates(path: string) {
   const languages: Record<string, string> = {};
   for (const loc of locales) {
     languages[loc === "pt-BR" ? "pt-BR" : loc] = `${APP_URL}/${loc}${path}`;
   }
+  // x-default points to root which 301s to /en
   languages["x-default"] = `${APP_URL}/en${path}`;
-  return { languages, canonical: undefined }; // canonical set per-page
+  return { languages };
 }
 
 export async function buildMetadata(
@@ -39,7 +38,8 @@ export async function buildMetadata(
   const t = await getTranslations({ locale, namespace: "meta" });
   const title = t(`${namespace}.title`);
   const description = t(`${namespace}.description`);
-  const url = `${APP_URL}/${locale}${path}`;
+  const canonical = `${APP_URL}/${locale}${path}`;
+  const url = canonical;
   const ogLocale = OG_LOCALE_MAP[locale] ?? "en_US";
   const alternates = buildAlternates(path);
 
@@ -48,7 +48,7 @@ export async function buildMetadata(
     description,
     alternates: {
       ...alternates,
-      canonical: url,
+      canonical,
     },
     openGraph: {
       title,
@@ -75,10 +75,7 @@ export async function buildMetadata(
     robots: {
       index: true,
       follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-      },
+      googleBot: { index: true, follow: true },
     },
     icons: {
       icon: "/favicon.ico",

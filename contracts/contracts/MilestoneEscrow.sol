@@ -126,7 +126,7 @@ contract MilestoneEscrow is ReentrancyGuard {
 
     function _transfer(address to, uint256 amt) internal {
         if (token == address(0)) {
-            payable(to).transfer(amt);
+            (bool ok, ) = payable(to).call{value: amt}(""); require(ok, "ETH transfer failed");
         } else {
             IERC20(token).safeTransfer(to, amt);
         }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { resetAndStartTour } from "@/components/onboarding-tour";
 import { FeedbackModal } from "@/components/feedback-modal";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export function Footer() {
   const t = useTranslations("footer");

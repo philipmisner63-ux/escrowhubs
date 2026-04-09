@@ -60,6 +60,7 @@ contract AIArbiter is ReentrancyGuard {
     );
 
     event OracleSignerUpdated(address indexed newSigner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     // ─── Modifiers ────────────────────────────────────────────────────────────
 
@@ -101,6 +102,7 @@ contract AIArbiter is ReentrancyGuard {
      * @param newOwner  New owner address.
      */
     function transferOwnership(address newOwner) external onlyOwner {
+        emit OwnershipTransferred(owner, newOwner);
         require(newOwner != address(0), "Invalid owner");
         owner = newOwner;
     }

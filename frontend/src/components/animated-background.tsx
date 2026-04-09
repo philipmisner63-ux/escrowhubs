@@ -3,25 +3,25 @@ export function AnimatedBackground() {
     <>
       <style>{`
         @keyframes drift1 {
-          0%   { transform: translate(0px, 0px) scale(1); }
-          33%  { transform: translate(80px, -60px) scale(1.1); }
-          66%  { transform: translate(-40px, 80px) scale(0.95); }
-          100% { transform: translate(0px, 0px) scale(1); }
+          0%   { transform: translateZ(0) translate(0px, 0px) scale(1); }
+          33%  { transform: translateZ(0) translate(80px, -60px) scale(1.1); }
+          66%  { transform: translateZ(0) translate(-40px, 80px) scale(0.95); }
+          100% { transform: translateZ(0) translate(0px, 0px) scale(1); }
         }
         @keyframes drift2 {
-          0%   { transform: translate(0px, 0px) scale(1); }
-          33%  { transform: translate(-100px, 60px) scale(1.05); }
-          66%  { transform: translate(60px, -80px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
+          0%   { transform: translateZ(0) translate(0px, 0px) scale(1); }
+          33%  { transform: translateZ(0) translate(-100px, 60px) scale(1.05); }
+          66%  { transform: translateZ(0) translate(60px, -80px) scale(0.9); }
+          100% { transform: translateZ(0) translate(0px, 0px) scale(1); }
         }
         @keyframes drift3 {
-          0%   { transform: translate(0px, 0px) scale(1); }
-          50%  { transform: translate(50px, 50px) scale(1.15); }
-          100% { transform: translate(0px, 0px) scale(1); }
+          0%   { transform: translateZ(0) translate(0px, 0px) scale(1); }
+          50%  { transform: translateZ(0) translate(50px, 50px) scale(1.15); }
+          100% { transform: translateZ(0) translate(0px, 0px) scale(1); }
         }
-        .orb1 { animation: drift1 40s ease-in-out infinite; }
-        .orb2 { animation: drift2 35s ease-in-out infinite; }
-        .orb3 { animation: drift3 30s ease-in-out infinite; }
+        .orb1 { animation: drift1 40s ease-in-out infinite; will-change: transform; }
+        .orb2 { animation: drift2 35s ease-in-out infinite; will-change: transform; }
+        .orb3 { animation: drift3 30s ease-in-out infinite; will-change: transform; }
       `}</style>
       <div
         aria-hidden="true"
@@ -33,7 +33,6 @@ export function AnimatedBackground() {
           overflow: "hidden",
         }}
       >
-        {/* Orb 1 — deep purple, top-left */}
         <div
           className="orb1"
           style={{
@@ -43,12 +42,9 @@ export function AnimatedBackground() {
             width: 600,
             height: 600,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #1a0533 0%, transparent 70%)",
-            filter: "blur(80px)",
-            opacity: 0.7,
+            background: "radial-gradient(circle, rgba(26,5,51,0.7) 0%, transparent 70%)",
           }}
         />
-        {/* Orb 2 — midnight blue, bottom-right */}
         <div
           className="orb2"
           style={{
@@ -58,12 +54,9 @@ export function AnimatedBackground() {
             width: 800,
             height: 800,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #0a1628 0%, transparent 70%)",
-            filter: "blur(80px)",
-            opacity: 0.7,
+            background: "radial-gradient(circle, rgba(10,22,40,0.7) 0%, transparent 70%)",
           }}
         />
-        {/* Orb 3 — dark cyan, center */}
         <div
           className="orb3"
           style={{
@@ -73,9 +66,7 @@ export function AnimatedBackground() {
             width: 500,
             height: 500,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #0a2a2a 0%, transparent 70%)",
-            filter: "blur(80px)",
-            opacity: 0.6,
+            background: "radial-gradient(circle, rgba(10,42,42,0.6) 0%, transparent 70%)",
           }}
         />
       </div>

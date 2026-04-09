@@ -59,6 +59,9 @@ export default async function LocaleLayout({
     <html lang={locale} dir={dir} className="dark">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <meta name="google-site-verification" content="fkTNXR1rE9muAcdAYD4qGMNADb7XmxvrcJOdwxEPfsg" />
+        <meta name="msvalidate.01" content="2CC2E70C01953340CA4DD7EFF81F7C10" />
+        <meta name="yandex-verification" content="34782cfba2a14ee4" />
         <meta name="theme-color" content="#06b6d4" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

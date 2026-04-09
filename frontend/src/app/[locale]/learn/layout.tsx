@@ -23,8 +23,29 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex flex-col min-h-screen">
       <Nav />
+
+      {/* Mobile horizontal nav — full width row ABOVE content */}
+      <div className="md:hidden w-full border-b border-white/8 bg-black/30 overflow-x-auto">
+        <div className="flex gap-1 px-3 py-2">
+          {LEARN_LINKS.map(({ href, label, icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all shrink-0",
+                pathname === href
+                  ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              )}
+            >
+              <span>{icon}</span> {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-1">
-        {/* Sidebar */}
+        {/* Desktop sidebar */}
         <aside className="hidden md:flex w-52 shrink-0 flex-col border-r border-white/8 bg-black/30">
           <div className="px-4 py-5 border-b border-white/8">
             <h2 className="text-sm font-bold text-white">Learn</h2>
@@ -49,28 +70,8 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
           </nav>
         </aside>
 
-        {/* Mobile nav */}
-        <div className="md:hidden w-full border-b border-white/8 bg-black/30 overflow-x-auto">
-          <div className="flex gap-1 px-3 py-2">
-            {LEARN_LINKS.map(({ href, label, icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all shrink-0",
-                  pathname === href
-                    ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                )}
-              >
-                <span>{icon}</span> {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
         {/* Content */}
-        <main className="flex-1 overflow-auto p-6 md:p-8">
+        <main className="flex-1 min-w-0 overflow-auto p-6 md:p-8">
           {children}
         </main>
       </div>
