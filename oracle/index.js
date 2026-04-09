@@ -235,7 +235,14 @@ Respond with ONLY a valid JSON object — no markdown, no code fences, no explan
     {
       "party": "depositor" or "beneficiary",
       "claim": "<the specific factual assertion they made without supporting proof>",
-      "challengePrompt": "<one sentence: exactly what evidence they should submit to prove it>"
+      "challengePrompt": "<one clear sentence: exactly what they should submit to prove it — written in plain, simple language anyone can understand>"
+    }
+  ],
+  "vagueEvidence": [
+    {
+      "party": "depositor" or "beneficiary",
+      "submittedText": "<quote the vague/unclear part of what they submitted>",
+      "clarificationPrompt": "<plain-language question that would help them provide useful detail — assume they are not technical and may be stressed>"
     }
   ]
 }
@@ -246,8 +253,22 @@ Additional ruling guidance:
 - If no evidence: confidence ≤ 50, ruling "depositor", escalateToManual true
 - "factors" should list 2-5 key observations
 - Only escalate if evidence is GENUINELY ambiguous — not merely because one party made an unverified counter-claim
-- "unverifiedClaims": list every specific factual claim that could change the ruling but lacks supporting documentation. Examples: "a second auditor found X", "client approved verbally", "I communicated the delay". Leave array empty [] if all material claims are documented.
-- For each unverified claim, write a "challengePrompt" as a direct instruction to that party: what file, screenshot, log, link, or hash would prove their claim.`;
+
+EVIDENCE QUALITY RULES:
+- "unverifiedClaims": List every specific factual claim that could change the ruling but has NO supporting proof at all.
+  Examples: "a second auditor found X" (no report attached), "client approved verbally" (no message/screenshot), "I communicated the delay" (no timestamp/log).
+  For each, write a "challengePrompt" telling them exactly what file, screenshot, link or hash would prove it. Use plain language.
+
+- "vagueEvidence": List evidence that WAS submitted but is too vague, unclear or incomplete to weigh reliably.
+  Examples: "the work was bad", "I did everything as agreed", "they never responded", "it doesn't work".
+  These statements might be completely true — the person may just not know what details to include.
+  For each, write a "clarificationPrompt" as a plain, friendly question that guides them to be more specific.
+  Write as if speaking to someone who is not technical and may be anxious about the dispute.
+  Examples of good clarificationPrompts:
+    "Can you describe what specifically was wrong with the work? For example: what were you expecting, and what did you receive instead? A screenshot or link would help a lot."
+    "You mentioned they never responded — do you have any messages, emails, or chat logs you could share? Even a screenshot of the conversation would help."
+    "You said it doesn't work — can you tell us what happens when you try to use it? For example, does it show an error message, or is something missing entirely?"
+  Leave vagueEvidence as [] if all submitted evidence is specific enough to evaluate.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
@@ -347,60 +368,95 @@ function clearChallenge(escrowKey) {
  * Notify a party that they made an unverified claim and prompt them to submit proof.
  * Sends via Telegram (if linked) and Discord admin webhook.
  */
-async function sendEvidenceChallenge(escrowAddress, disputeContext, unverifiedClaims, chainName) {
-  if (!unverifiedClaims?.length) return;
-
+async function sendEvidenceChallenge(escrowAddress, disputeContext, unverifiedClaims, vagueEvidence, chainName) {
   const APP_URL = "https://app.escrowhubs.io";
   const shortAddr = (a) => a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "?";
+  const escrowUrl = `${APP_URL}/escrow/${escrowAddress}`;
 
-  for (const uc of unverifiedClaims) {
+  // ── Unverified claims: party made a factual assertion with no proof ──────────
+  for (const uc of (unverifiedClaims ?? [])) {
     const wallet = uc.party === "depositor"
       ? disputeContext.depositor.address
       : disputeContext.beneficiary.address;
-
     const role = uc.party === "depositor" ? "Buyer (Depositor)" : "Seller (Beneficiary)";
-    const escrowUrl = `${APP_URL}/escrow/${escrowAddress}`;
 
     console.log(`📨 [CHALLENGE] ${role} (${shortAddr(wallet)}): "${uc.claim}"`);
-    console.log(`   → Prompt: ${uc.challengePrompt}`);
+    console.log(`   → Needs: ${uc.challengePrompt}`);
 
-    // Telegram notification to the party
-    await notifyParties(
-      escrowAddress,
-      "evidence_requested",
-      {
-        role,
-        claim: uc.claim,
-        challengePrompt: uc.challengePrompt,
-        escrowUrl,
-        chainName,
-        windowHours: 4,
-      },
-      [wallet]
-    ).catch(() => {});
+    await notifyParties(escrowAddress, "evidence_requested", {
+      type: "unverified_claim",
+      role,
+      claim: uc.claim,
+      challengePrompt: uc.challengePrompt,
+      escrowUrl,
+      chainName,
+      windowHours: 4,
+    }, [wallet]).catch(() => {});
 
-    // Discord admin alert
     if (process.env.DISCORD_WEBHOOK_URL) {
       try {
         await fetch(process.env.DISCORD_WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            embeds: [{
-              title: `📨 Evidence Challenge Sent — ${chainName}`,
-              color: 0x3b82f6,
-              fields: [
-                { name: "Escrow",   value: `\`${escrowAddress}\``, inline: false },
-                { name: "Party",    value: `${role} (\`${shortAddr(wallet)}\`)`, inline: true },
-                { name: "Claim",    value: uc.claim, inline: false },
-                { name: "Needs",    value: uc.challengePrompt, inline: false },
-                { name: "Window",   value: "4 hours to submit evidence", inline: true },
-                { name: "Link",     value: escrowUrl, inline: false },
-              ],
-              footer: { text: "EscrowHubs AI Arbiter — Evidence Challenge" },
-              timestamp: new Date().toISOString(),
-            }],
-          }),
+          body: JSON.stringify({ embeds: [{
+            title: `📨 Evidence Challenge Sent — ${chainName}`,
+            color: 0x3b82f6,
+            fields: [
+              { name: "Escrow",  value: `\`${escrowAddress}\``, inline: false },
+              { name: "Party",   value: `${role} (\`${shortAddr(wallet)}\`)`, inline: true },
+              { name: "Claim",   value: uc.claim, inline: false },
+              { name: "Needs",   value: uc.challengePrompt, inline: false },
+              { name: "Window",  value: "4 hours to respond", inline: true },
+              { name: "Link",    value: escrowUrl, inline: false },
+            ],
+            footer: { text: "EscrowHubs AI Arbiter — Unverified Claim Challenge" },
+            timestamp: new Date().toISOString(),
+          }]}),
+        });
+      } catch { /* silent */ }
+    }
+  }
+
+  // ── Vague evidence: party submitted something but it's too unclear to weigh ──
+  for (const ve of (vagueEvidence ?? [])) {
+    const wallet = ve.party === "depositor"
+      ? disputeContext.depositor.address
+      : disputeContext.beneficiary.address;
+    const role = ve.party === "depositor" ? "Buyer (Depositor)" : "Seller (Beneficiary)";
+
+    console.log(`💬 [CLARIFY] ${role} (${shortAddr(wallet)}) submitted vague evidence:`);
+    console.log(`   Submitted: "${ve.submittedText}"`);
+    console.log(`   → Guide: ${ve.clarificationPrompt}`);
+
+    await notifyParties(escrowAddress, "evidence_requested", {
+      type: "vague_evidence",
+      role,
+      submittedText: ve.submittedText,
+      clarificationPrompt: ve.clarificationPrompt,
+      escrowUrl,
+      chainName,
+      windowHours: 4,
+    }, [wallet]).catch(() => {});
+
+    if (process.env.DISCORD_WEBHOOK_URL) {
+      try {
+        await fetch(process.env.DISCORD_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ embeds: [{
+            title: `💬 Clarification Requested — ${chainName}`,
+            color: 0xf59e0b,
+            fields: [
+              { name: "Escrow",     value: `\`${escrowAddress}\``, inline: false },
+              { name: "Party",      value: `${role} (\`${shortAddr(wallet)}\`)`, inline: true },
+              { name: "They said",  value: `"${ve.submittedText}"`, inline: false },
+              { name: "Asked for",  value: ve.clarificationPrompt, inline: false },
+              { name: "Window",     value: "4 hours to respond", inline: true },
+              { name: "Link",       value: escrowUrl, inline: false },
+            ],
+            footer: { text: "EscrowHubs AI Arbiter — Vague Evidence Clarification" },
+            timestamp: new Date().toISOString(),
+          }]}),
         });
       } catch { /* silent */ }
     }
@@ -599,10 +655,12 @@ function startChainListener(chainConfig) {
       let currentEvidence = evidence;
 
       // ── Evidence challenge round ─────────────────────────────────────────────
-      if (decision.unverifiedClaims?.length) {
-        console.log(`📨 ${tag} [SIMPLE] ${decision.unverifiedClaims.length} unverified claim(s) — issuing challenges`);
-        recordChallenge(escrowAddress, { issuedAt: Date.now(), claims: decision.unverifiedClaims });
-        await sendEvidenceChallenge(escrowAddress, disputeContext, decision.unverifiedClaims, name);
+      const hasChallenges = decision.unverifiedClaims?.length || decision.vagueEvidence?.length;
+      if (hasChallenges) {
+        const totalItems = (decision.unverifiedClaims?.length ?? 0) + (decision.vagueEvidence?.length ?? 0);
+        console.log(`📨 ${tag} [SIMPLE] ${totalItems} evidence issue(s) detected (unverified: ${decision.unverifiedClaims?.length ?? 0}, vague: ${decision.vagueEvidence?.length ?? 0}) — issuing guidance`);
+        recordChallenge(escrowAddress, { issuedAt: Date.now(), unverifiedClaims: decision.unverifiedClaims, vagueEvidence: decision.vagueEvidence });
+        await sendEvidenceChallenge(escrowAddress, disputeContext, decision.unverifiedClaims, decision.vagueEvidence, name);
         const freshEvidence = await waitForChallengeResponse(escrowAddress, currentEvidence.length, fetchEvidence);
         if (freshEvidence && freshEvidence.length > currentEvidence.length) {
           currentEvidence = freshEvidence;
@@ -699,10 +757,12 @@ function startChainListener(chainConfig) {
       let currentEvidence = evidence;
 
       // ── Evidence challenge round ─────────────────────────────────────────────
-      if (decision.unverifiedClaims?.length) {
-        console.log(`📨 ${tag} [MILESTONE] ${decision.unverifiedClaims.length} unverified claim(s) — issuing challenges`);
-        recordChallenge(disputeKey, { issuedAt: Date.now(), claims: decision.unverifiedClaims });
-        await sendEvidenceChallenge(escrowAddress, disputeContext, decision.unverifiedClaims, name);
+      const hasChallenges = decision.unverifiedClaims?.length || decision.vagueEvidence?.length;
+      if (hasChallenges) {
+        const totalItems = (decision.unverifiedClaims?.length ?? 0) + (decision.vagueEvidence?.length ?? 0);
+        console.log(`📨 ${tag} [MILESTONE] ${totalItems} evidence issue(s) detected (unverified: ${decision.unverifiedClaims?.length ?? 0}, vague: ${decision.vagueEvidence?.length ?? 0}) — issuing guidance`);
+        recordChallenge(disputeKey, { issuedAt: Date.now(), unverifiedClaims: decision.unverifiedClaims, vagueEvidence: decision.vagueEvidence });
+        await sendEvidenceChallenge(escrowAddress, disputeContext, decision.unverifiedClaims, decision.vagueEvidence, name);
         const freshEvidence = await waitForChallengeResponse(escrowAddress, currentEvidence.length, fetchEvidence);
         if (freshEvidence && freshEvidence.length > currentEvidence.length) {
           currentEvidence = freshEvidence;

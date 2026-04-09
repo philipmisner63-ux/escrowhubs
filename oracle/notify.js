@@ -27,7 +27,12 @@ const EVENT_META = {
   dispute_opened:      { emoji: "⚠️",  title: "Dispute Opened",                       desc: d => `A dispute has been raised on this escrow.` },
   dispute_resolved:    { emoji: "⚖️",  title: "Dispute Resolved",                     desc: d => `The dispute has been resolved.${d.ruling ? ` Ruling: ${d.ruling}.` : ""}` },
   milestone_completed: { emoji: "🏁", title: "Milestone Completed",                  desc: d => `Milestone #${d.milestoneIndex ?? "?"} has been completed.` },
-  evidence_requested:  { emoji: "📋", title: "Evidence Required — Action Needed",    desc: d => `The AI arbiter reviewed your claim and needs supporting proof.\n\n<b>Your claim:</b> "${d.claim}"\n\n<b>What to submit:</b> ${d.challengePrompt}\n\nPlease open the evidence panel on your escrow page and upload within ${d.windowHours || 4} hours.` },
+  evidence_requested:  { emoji: "📋", title: "We need a bit more from you",           desc: d => {
+    if (d.type === "vague_evidence") {
+      return `The AI arbiter reviewed what you submitted, but needs a little more detail to make a fair decision.\n\n<b>You said:</b> "${d.submittedText}"\n\n<b>Can you help us by answering this?</b>\n${d.clarificationPrompt}\n\nYou have ${d.windowHours || 4} hours to add more detail using the evidence panel on your escrow page. This helps ensure a fair outcome.\n\n<a href="${d.escrowUrl}">Open Evidence Panel →</a>`;
+    }
+    return `The AI arbiter found a claim in your submission that needs supporting proof before it can be considered.\n\n<b>Your claim:</b> "${d.claim}"\n\n<b>What would help:</b> ${d.challengePrompt}\n\nYou have ${d.windowHours || 4} hours to submit this via the evidence panel.\n\n<a href="${d.escrowUrl}">Open Evidence Panel →</a>`;
+  }},
 };
 
 // ─── Preferences ──────────────────────────────────────────────────────────────
