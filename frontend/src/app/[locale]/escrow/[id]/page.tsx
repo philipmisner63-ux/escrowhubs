@@ -421,6 +421,9 @@ function ActionRow({ title, desc, action }: { title: string; desc: string; actio
 
 type IntakeForm = {
   goodsType: "physical" | "digital" | "service" | "";
+  trackingNumber: string;
+  itemCondition: string;
+  returnPolicyOffered: "yes" | "no" | "";
   agreementSummary: string;
   deadlineImportant: boolean;
   deadlineReason: string;
@@ -436,7 +439,7 @@ type IntakeForm = {
 };
 
 const EMPTY_INTAKE: IntakeForm = {
-  goodsType: "", agreementSummary: "", deadlineImportant: false, deadlineReason: "",
+  goodsType: "", trackingNumber: "", itemCondition: "", returnPolicyOffered: "", agreementSummary: "", deadlineImportant: false, deadlineReason: "",
   actionsTimeline: "", counterpartyTimeline: "", deliveryClaim: "",
   buyerUseClaim: "", evidence: "", firstComplaintTime: "",
   complaintEvidence: "", requestedOutcome: "", requestedOutcomeReason: "",
@@ -475,6 +478,9 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
       const payload = {
         role,
         goodsType: form.goodsType || "service",
+        trackingNumber: form.trackingNumber.trim(),
+        itemCondition: form.itemCondition.trim(),
+        returnPolicyOffered: form.returnPolicyOffered || "no",
         agreementSummary: form.agreementSummary.trim(),
         deadlineImportant: form.deadlineImportant,
         deadlineReason: form.deadlineReason.trim(),
@@ -639,15 +645,28 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
       <div>
         <label className={labelCls}>2. What did you do in this deal? *</label>
         <p className={hintCls + " mb-2"}>
-          {isBuyer
-            ? "When did you pay? Did you give the seller everything they needed (files, access, feedback)?"
-            : "What did you deliver, and when? Describe what you actually did step by step."}
+          {form.goodsType === "physical"
+            ? isBuyer
+              ? "When did you pay? Did you give the seller your shipping address and any other details they needed?"
+              : "When did you ship the item? Provide a tracking number if you have one."
+            : isBuyer
+              ? "When did you pay? Did you give the seller everything they needed (files, access, feedback)?"
+              : "What did you deliver, and when? Describe what you actually did step by step."}
         </p>
         <textarea className={inputCls + " resize-none"} rows={3}
-          placeholder={isBuyer
-            ? "e.g. I funded the escrow on March 1st. I sent the brand guide on March 3rd and answered all their questions."
-            : "e.g. I started work on March 2nd. Delivered a draft on March 10th, final version on March 14th via Google Drive link."}
+          placeholder={form.goodsType === "physical"
+            ? isBuyer
+              ? "e.g. I paid on March 1st and sent my shipping address on March 2nd."
+              : "e.g. I shipped the item on March 3rd via FedEx. Tracking: 7489 2345 6789. Delivered March 6th per carrier."
+            : isBuyer
+              ? "e.g. I funded the escrow on March 1st. I sent the brand guide on March 3rd and answered all their questions."
+              : "e.g. I started work on March 2nd. Delivered a draft on March 10th, final version on March 14th via Google Drive link."}
           value={form.actionsTimeline} onChange={e => set("actionsTimeline", e.target.value)} />
+        {form.goodsType === "physical" && !isBuyer && (
+          <input className={inputCls + " mt-2"} type="text"
+            placeholder="Tracking number — e.g. FedEx 7489 2345 6789 or USPS 9400 1000 0000 0000 0000 00"
+            value={form.trackingNumber} onChange={e => set("trackingNumber", e.target.value)} />
+        )}
       </div>
 
       {/* Q3 — Other party's actions */}
@@ -664,18 +683,49 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
       {/* Q3b — Delivery claim */}
       <div>
         <label className={labelCls}>
-          {isBuyer ? "Did the seller deliver anything?" : "How much of the agreed work did you deliver?"} *
+          {form.goodsType === "physical"
+            ? isBuyer ? "Did the item arrive?" : "Did you ship the item?"
+            : isBuyer ? "Did the seller deliver anything?" : "How much of the agreed work did you deliver?"} *
         </label>
         <select className={selectCls} value={form.deliveryClaim}
           onChange={e => set("deliveryClaim", e.target.value as IntakeForm["deliveryClaim"])}>
           <option value="">— Select —</option>
-          <option value="none">Nothing was delivered</option>
-          <option value="partial">Some of it was delivered, but not everything</option>
-          <option value="complete">Everything agreed was delivered</option>
+          {form.goodsType === "physical" ? (<>
+            <option value="none">{isBuyer ? "No — nothing arrived" : "No — I never shipped it"}</option>
+            <option value="partial">{isBuyer ? "Something arrived but it was wrong or damaged" : "I shipped but there was a problem"}</option>
+            <option value="complete">{isBuyer ? "Yes — item arrived" : "Yes — shipped and carrier confirmed delivery"}</option>
+          </>) : (<>
+            <option value="none">Nothing was delivered</option>
+            <option value="partial">Some of it was delivered, but not everything</option>
+            <option value="complete">Everything agreed was delivered</option>
+          </>)}
         </select>
 
-        {/* Seller only: did buyer use the work? */}
-        {!isBuyer && (
+        {/* Physical — buyer: describe the defect */}
+        {form.goodsType === "physical" && isBuyer && form.deliveryClaim === "partial" && (
+          <div className="mt-3">
+            <label className={labelCls}>Describe what was wrong with the item</label>
+            <textarea className={inputCls + " resize-none"} rows={2}
+              placeholder="e.g. The screen arrived cracked. The item was listed as new but arrived clearly used. Wrong item sent."
+              value={form.itemCondition} onChange={e => set("itemCondition", e.target.value)} />
+          </div>
+        )}
+
+        {/* Physical — seller: did you offer a return? */}
+        {form.goodsType === "physical" && !isBuyer && (
+          <div className="mt-3">
+            <label className={labelCls}>Did you offer the buyer a return or replacement?</label>
+            <select className={selectCls} value={form.returnPolicyOffered}
+              onChange={e => set("returnPolicyOffered", e.target.value as IntakeForm["returnPolicyOffered"])}>
+              <option value="">— Select —</option>
+              <option value="yes">Yes — I offered to accept the item back or send a replacement</option>
+              <option value="no">No — I did not offer a return or replacement</option>
+            </select>
+          </div>
+        )}
+
+        {/* Digital/service only — did buyer use the work? */}
+        {form.goodsType !== "physical" && !isBuyer && (
           <div className="mt-3">
             <label className={labelCls}>Did the buyer use or benefit from what you delivered?</label>
             <select className={selectCls} value={form.buyerUseClaim ?? ""}
@@ -692,7 +742,11 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
       {/* Q4 — Evidence */}
       <div>
         <label className={labelCls}>4. What evidence can you share?</label>
-        <p className={hintCls + " mb-2"}>Links, file hashes, screenshots hosted somewhere, GitHub repos, live URLs — one per line. Don&apos;t worry if you don&apos;t have much.</p>
+        <p className={hintCls + " mb-2"}>
+          {form.goodsType === "physical"
+            ? "Tracking number, delivery confirmation, photos of the item or packaging, carrier screenshots — one per line."
+            : "Links, file hashes, screenshots, GitHub repos, live URLs — one per line. Don\'t worry if you don\'t have much."}
+        </p>
         <textarea className={inputCls + " resize-none"} rows={3}
           placeholder={"e.g.\nhttps://github.com/myproject/repo\nhttps://imgur.com/screenshot.png\nipfs://QmDeliveryProof..."}
           value={form.evidence} onChange={e => set("evidence", e.target.value)} />

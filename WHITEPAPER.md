@@ -83,7 +83,7 @@ Zero high-severity findings. Zero medium-severity findings. All low-severity ite
 
 ## 5. AI Arbiter — Structured Dispute Resolution
 
-The AI Arbiter is EscrowHubs' most differentiated component. It is not a chatbot layered onto escrow — it is a purpose-built, legally grounded, auditable dispute resolution system that mirrors how commercial arbitration tribunals actually reach decisions.
+The AI Arbiter is EscrowHubs' most differentiated component. It is not a chatbot layered onto escrow — it is a purpose-built, legally grounded, auditable dispute resolution system that mirrors how commercial arbitration tribunals actually reach decisions. It supports both digital work (code, design, content, services) and physical goods (shipped items, merchandise, hardware), applying appropriate evidence standards and return-conditioned refund logic for each.
 
 ### 5.1 Architecture Overview
 
@@ -205,7 +205,58 @@ Every decision — auto-resolved or manually escalated — is appended to a pers
 
 This audit trail is the foundation for future analysis, model tuning, and regulatory compliance.
 
-### 5.9 Reliability — Test Results
+### 5.9 Physical Goods — Return-Conditioned Refunds
+
+EscrowHubs supports both digital work and physical goods. The two categories have fundamentally different dispute logic: digital deliverables cannot be returned once received, but physical items can and should be.
+
+#### The Problem
+
+Without explicit physical goods support, a malicious buyer could receive a physical item, dispute the transaction, receive a refund, and keep the product. This would make the protocol unusable for any commerce involving tangible goods.
+
+#### The Solution: Return-Conditioned Refunds
+
+When a dispute involves a physical item, the oracle does not execute a refund immediately after an AI ruling. Instead:
+
+1. The oracle detects the escrow involves physical goods (from the structured intake  field or shipping keywords in evidence)
+2. If the ruling is REFUND, the oracle sends the buyer a Telegram message: *To receive your refund, you must return the item to the seller. Submit your return tracking number within 72 hours.*
+3. The oracle polls for new evidence every 10 minutes
+4. **Return confirmed** (tracking shows delivered back to seller) →  executes
+5. **Buyer refuses or 72 hours expires** → ruling flips to  — seller keeps payment
+
+This eliminates the fraud vector entirely: a buyer cannot keep the physical product and receive a refund.
+
+#### Rule 18 — Return-Path Offered Doctrine
+
+If the seller offered a reasonable return or replacement path and the buyer refused to participate:
+- Score  (buyer clearly at fault)
+- Weight heavily toward release
+- The buyer cannot demand a refund while refusing to return the item
+
+#### Physical Goods Evidence Standards
+
+The arbiter applies different evidence standards for physical goods disputes:
+
+| Evidence | Weight |
+|---|---|
+| Carrier tracking showing Delivered with signature |  (full delivery) |
+| Tracking showing In Transit |  (partial) |
+| No tracking, no carrier confirmation |  |
+| Photos of defect at time of receipt | Strong support for buyer |
+| Photos of packaged item before shipping | Strong support for seller |
+| Seller offered return/replacement |  if buyer refused |
+| Return tracking confirmed delivered | Prerequisite for refund execution |
+
+#### Structured Intake for Physical Goods
+
+When both parties complete the intake questionnaire and select physical goods, they are asked:
+
+**Seller:** shipping date, tracking number, carrier, condition at time of shipping, whether a return was offered  
+**Buyer:** whether item arrived, item condition, defect description and photos, whether they are willing to return it
+
+This structured parallel data dramatically improves the AI's ability to reason correctly about physical goods disputes.
+
+### 5.10 Reliability — Test Results
+
 
 The arbiter prompt has been validated against a 100-scenario test suite derived from commercial arbitration case patterns, covering all major legal doctrines:
 

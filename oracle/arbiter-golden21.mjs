@@ -64,7 +64,34 @@ function mctx(o) { return {...ctx(o), escrowType:"milestone"}; }
 // ─── v3 prompt (keep in sync with oracle/index.js) ────────────────────────────
 
 async function callAI(disputeContext, evidence) {
+  // Parse INTAKE_JSON structured submissions into readable context for the AI
+  const intakeItems = evidence.filter(e => e.uri?.startsWith("INTAKE_JSON:"));
   const rawEvidence = evidence.filter(e => !e.uri?.startsWith("INTAKE_JSON:"));
+
+  let intakeSection = "";
+  if (intakeItems.length > 0) {
+    const intakeLines = [];
+    for (const item of intakeItems) {
+      try {
+        const intake = JSON.parse(item.uri.slice("INTAKE_JSON:".length));
+        const role = item.submitter?.toLowerCase() === disputeContext.depositor?.address?.toLowerCase()
+          ? "BUYER (Depositor)" : "SELLER (Beneficiary)";
+        intakeLines.push("");
+        intakeLines.push(`${role} STRUCTURED STATEMENT:`);
+        if (intake.goodsType) intakeLines.push(`  Type: ${intake.goodsType}`);
+        if (intake.trackingNumber) intakeLines.push(`  Tracking number: ${intake.trackingNumber}`);
+        if (intake.actionsTimeline) intakeLines.push(`  Their actions: ${intake.actionsTimeline}`);
+        if (intake.itemCondition) intakeLines.push(`  Item condition: ${intake.itemCondition}`);
+        if (intake.returnPolicyOffered) intakeLines.push(`  Return offered by seller: ${intake.returnPolicyOffered}`);
+        if (intake.deliveryClaim) intakeLines.push(`  Delivery claim: ${intake.deliveryClaim}`);
+        if (intake.firstComplaintTime) intakeLines.push(`  First complaint raised: ${intake.firstComplaintTime}`);
+        if (intake.requestedOutcome) intakeLines.push(`  Requested outcome: ${intake.requestedOutcome}`);
+        if (intake.requestedOutcomeReason) intakeLines.push(`  Reason: ${intake.requestedOutcomeReason}`);
+      } catch { /* skip malformed */ }
+    }
+    intakeSection = intakeLines.join("\n");
+  }
+
   const evidenceText = rawEvidence.length > 0
     ? rawEvidence.map((e,i) => [
         `Evidence #${i+1}`,
@@ -100,8 +127,11 @@ DISPUTE CONTEXT:
 - Dispute raised at: ${disputeContext.disputeRaisedAt}
 - Time since deposit: ${disputeContext.timeElapsedSinceDeposit}
 ${milestoneSection}
+STRUCTURED INTAKE:
+${intakeSection || "Not provided"}
+
 FREEFORM EVIDENCE:
-${evidenceText}
+${evidenceText || "No freeform evidence."}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SCORING RUBRIC — fill all five scores
@@ -366,6 +396,38 @@ const GOLDEN = [
     ctx:ctx({amount:"0.9",timeElapsedSinceDeposit:"10 days",createdAt:new Date(Date.now()-10*86400000).toISOString()}),
     ev:[ev(D,"IPFS://Qm: Evidence: imgur.com/sc1 sc2 sc3 sc4 sc5 sc6 sc7 sc8 sc9 sc10 sc11 sc12 sc13 sc14 sc15 sc16 sc17 sc18 sc19 sc20 [screenshots of old emails, weather app, random websites, our calendar, news articles — nothing about this escrow or delivery]",60),
         ev(B,"IPFS://Qm: Mobile app delivered and verified live at App Store (apps.apple.com/clientapp). 51 screens implemented. Client has downloaded and run the app — TestFlight analytics show 14 sessions.",300)] },
+
+  // ── Physical goods must-pass cases ──────────────────────────────────────────
+
+  { id:201, label:"Physical — Shipped with tracking, buyer remorse — must RELEASE",
+    exp:"beneficiary", checkFraud:false,
+    doctrines:["physical_goods","acceptance_by_conduct","buyers_remorse"],
+    expectChallenges: null,
+    ctx:ctx({amount:"0.5",timeElapsedSinceDeposit:"10 days",createdAt:new Date(Date.now()-10*86400000).toISOString()}),
+    ev:[
+      ev(B,'INTAKE_JSON:{"goodsType":"physical","actionsTimeline":"Shipped March 3rd via FedEx. Tracking 7489234567890. Carrier confirmed delivered March 6th signed by buyer.","trackingNumber":"7489234567890","deliveryClaim":"complete","returnPolicyOffered":"yes"}',400),
+      ev(D,'INTAKE_JSON:{"goodsType":"physical","actionsTimeline":"Item arrived fine. I just changed my mind and found a cheaper option elsewhere.","deliveryClaim":"complete","requestedOutcome":"refund","requestedOutcomeReason":"Changed my mind."}',200),
+    ]},
+
+  { id:202, label:"Physical — Never shipped, buyer disputes after 30 days — must REFUND",
+    exp:"depositor", checkFraud:false,
+    doctrines:["physical_goods","non_delivery","anticipatory_breach"],
+    expectChallenges: null,
+    ctx:ctx({amount:"1.0",timeElapsedSinceDeposit:"30 days",createdAt:new Date(Date.now()-30*86400000).toISOString()}),
+    ev:[
+      ev(D,'INTAKE_JSON:{"goodsType":"physical","actionsTimeline":"Paid March 1st. Sent my address. Nothing arrived after 30 days and seller stopped responding after 10 days.","deliveryClaim":"none","firstComplaintTime":"March 15th","requestedOutcome":"refund","requestedOutcomeReason":"Never arrived."}',2880),
+      ev(B,'INTAKE_JSON:{"goodsType":"physical","actionsTimeline":"I shipped it but lost the tracking number.","trackingNumber":"","deliveryClaim":"complete","returnPolicyOffered":"no"}',60),
+    ]},
+
+  { id:203, label:"Physical — Buyer refuses return but wants refund — must RELEASE",
+    exp:"beneficiary", checkFraud:false,
+    doctrines:["physical_goods","return_path_offered","buyers_remorse"],
+    expectChallenges: null,
+    ctx:ctx({amount:"0.8",timeElapsedSinceDeposit:"10 days",createdAt:new Date(Date.now()-10*86400000).toISOString()}),
+    ev:[
+      ev(D,'INTAKE_JSON:{"goodsType":"physical","actionsTimeline":"Item has a scratch. I want a refund but I refuse to ship it back because it is too much hassle.","itemCondition":"Minor surface scratch.","deliveryClaim":"partial","firstComplaintTime":"Day of arrival","requestedOutcome":"refund","requestedOutcomeReason":"I don\'t want to deal with returning it."}',180),
+      ev(B,'INTAKE_JSON:{"goodsType":"physical","actionsTimeline":"Shipped March 5th tracking 7489234567897, delivered March 7th. Offered full return with prepaid label. Buyer refuses to return item but demands money back.","trackingNumber":"7489234567897","deliveryClaim":"complete","returnPolicyOffered":"yes"}',240),
+    ]},
 ];
 
 // ─── Runner ───────────────────────────────────────────────────────────────────
