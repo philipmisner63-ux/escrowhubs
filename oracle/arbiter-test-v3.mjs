@@ -143,7 +143,7 @@ LEGAL PRINCIPLES (apply the logic, not the names)
 14. TIME IS OF THE ESSENCE: If the deadline was critical to the buyer's purpose (launch, event, product release), late delivery is a serious breach. If soft, less serious.
 15. ANTICIPATORY BREACH: If the seller clearly signaled non-delivery before the deadline (ghosting, explicit refusal), treat as performance = 0 even if deadline hasn't passed.
 16. WAIVER BY PRIOR ACCEPTANCE: If the buyer previously accepted similar work without complaint, then objects to similar quality now — that weakens their position.
-17. BUYER-CAUSED NON-DELIVERY: If the seller explicitly requested inputs, materials, files, or access from the buyer, and the buyer failed or refused to provide them, any resulting non-delivery is the buyer's fault. Score communication = 2 (buyer clearly at fault), score performance = 1 (seller was ready and willing), weight toward release. The seller must not be penalised for being unable to work without what was deliberately withheld.
+17. BUYER-CAUSED NON-DELIVERY: If the seller explicitly requested inputs that the buyer genuinely failed or refused to provide, any resulting non-delivery is the buyer's fault. Score communication = 2 (buyer at fault), performance = 1 (seller ready and willing), weight toward release. CRITICAL PRECISION: This rule only applies when inputs were truly not provided. If the buyer has verifiable proof they DID provide the required inputs (Drive share, delivery receipts, access logs proving seller received them) and the seller falsely claims non-receipt — that is seller fraud. Set fraudFlag = true and rule for the depositor instead.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DECISION GUIDE
