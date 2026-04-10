@@ -774,6 +774,7 @@ async function run() {
 
       const r = {
         id:_m.id, cat:_m.cat, label:_m.label,
+        doctrines:_m.doctrines ?? [],
         expected:_m.exp, expectedAuto:_m.auto,
         ruling:d.ruling, onChain:d._onChainRuling,
         confidence:d.confidence, confBucket:computeConfidenceBucket(d.confidence),
@@ -783,6 +784,7 @@ async function run() {
         matches, reasoning:d.reasoning, notes:d.notes ?? null,
         unverifiedClaims:(d.unverifiedClaims??[]).length,
         vagueEvidence:(d.vagueEvidence??[]).length,
+        hadChallenges: (d.unverifiedClaims?.length||0) + (d.vagueEvidence?.length||0) > 0,
       };
       results.push(r);
 
