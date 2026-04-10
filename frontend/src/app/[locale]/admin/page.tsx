@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useReadContracts, useWriteContract, useWaitForTransactionReceipt, useChainId } from "wagmi";
 import { formatEther, parseEther, isAddress } from "viem";
 import { Nav } from "@/components/nav";
@@ -58,6 +58,41 @@ export default function AdminPage() {
   const [setFeesHash,   setSetFeesHash]   = useState<`0x${string}` | undefined>();
   const [setTreasuryHash, setSetTreasuryHash] = useState<`0x${string}` | undefined>();
   const [txError, setTxError] = useState("");
+
+  // Escalation queue
+  const [escalations, setEscalations] = useState<any[]>([]);
+  const [loadingEsc, setLoadingEsc] = useState(false);
+  const [selectedEsc, setSelectedEsc] = useState<any | null>(null);
+  const [review, setReview] = useState("");
+  const [arbiterRuling, setArbiterRuling] = useState<"RELEASE"|"REFUND"|"">("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewResult, setReviewResult] = useState<string | null>(null);
+
+  async function loadEscalations() {
+    setLoadingEsc(true);
+    try {
+      const res = await fetch("/api/admin/escalations");
+      if (res.ok) { const data = await res.json(); setEscalations(data.escalations ?? []); }
+    } catch { /* ignore */ }
+    setLoadingEsc(false);
+  }
+
+  async function submitReview() {
+    if (!selectedEsc || !review.trim()) return;
+    setSubmittingReview(true);
+    setReviewResult(null);
+    try {
+      const res = await fetch("/api/admin/escalations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ escrowAddress: selectedEsc.contractAddress, chainId: selectedEsc.chainId ?? 8453, review: review.trim(), arbiterRuling }),
+      });
+      const data = await res.json();
+      if (res.ok) { setReviewResult("Review submitted. Tx: " + data.txHash); setReview(""); setArbiterRuling(""); await loadEscalations(); }
+      else setReviewResult("Error: " + data.error);
+    } catch (err: any) { setReviewResult("Error: " + err.message); }
+    setSubmittingReview(false);
+  }
 
   const isOwner = isConnected && wallet?.toLowerCase() === OWNER_ADDRESS.toLowerCase();
 
@@ -127,6 +162,9 @@ export default function AdminPage() {
       setTxError(e instanceof Error ? e.message : "Transaction failed");
     }
   };
+
+  // Load escalations on mount and when admin panel is visible
+  useEffect(() => { loadEscalations(); }, []);
 
   return (
     <div className="min-h-screen bg-[#050510]">
@@ -253,6 +291,134 @@ export default function AdminPage() {
                 ⚠️ {txError}
               </div>
             )}
+
+            {/* ── Escalation Queue ─────────────────────────────────────── */}
+            <GlassCard className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🔔</span>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-violet-300">
+                    Escalation Queue
+                  </h3>
+                  {escalations.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold">
+                      {escalations.length}
+                    </span>
+                  )}
+                </div>
+                <button onClick={loadEscalations} disabled={loadingEsc}
+                  className="text-xs text-slate-400 hover:text-white transition-colors">
+                  {loadingEsc ? "Loading…" : "↻ Refresh"}
+                </button>
+              </div>
+
+              {escalations.length === 0 ? (
+                <p className="text-sm text-slate-500 text-center py-4">
+                  No disputes awaiting review ✓
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {escalations.map((esc: any) => (
+                    <div key={esc.key}
+                      className={`rounded-xl border p-4 cursor-pointer transition-colors ${selectedEsc?.key === esc.key ? "border-violet-400/50 bg-violet-400/5" : "border-white/10 hover:border-violet-400/30"}`}
+                      onClick={() => setSelectedEsc(selectedEsc?.key === esc.key ? null : esc)}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${esc.aiRuling === "RELEASE" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
+                              AI: {esc.aiRuling}
+                            </span>
+                            <span className="text-xs text-slate-400">{esc.confidence}/100 confidence</span>
+                            <span className="text-xs text-slate-500">{esc.chainName} · {esc.amount} {esc.nativeSymbol}</span>
+                          </div>
+                          <p className="text-xs text-slate-300 font-mono truncate">{esc.contractAddress}</p>
+                          {esc.reasoning && (
+                            <p className="text-xs text-slate-400 mt-1 line-clamp-2">{esc.reasoning}</p>
+                          )}
+                          {esc.scores && (
+                            <p className="text-xs text-slate-500 mt-1">
+                              P:{esc.scores.performance} A:{esc.scores.acceptance} C:{esc.scores.communication} CT:{esc.scores.complaintTimeliness} F:{esc.scores.fraudFlag ? 1 : 0}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500 shrink-0">
+                          {Math.round((Date.now() - esc.escalatedAt) / 3600000)}h ago
+                        </div>
+                      </div>
+
+                      {/* Review form — expands when selected */}
+                      {selectedEsc?.key === esc.key && (
+                        <div className="mt-4 pt-4 border-t border-white/5 space-y-3"
+                          onClick={e => e.stopPropagation()}>
+
+                          <div>
+                            <p className="text-xs text-slate-400 mb-1 font-medium">Depositor (buyer)</p>
+                            <p className="text-xs text-slate-300 font-mono">{esc.depositor}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-400 mb-1 font-medium">Beneficiary (seller)</p>
+                            <p className="text-xs text-slate-300 font-mono">{esc.beneficiary}</p>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-violet-300 mb-1">
+                              Your assessment
+                            </label>
+                            <p className="text-xs text-slate-500 mb-2">
+                              Write your read on this case. Be specific — reference the evidence. 
+                              This is submitted on-chain as privileged arbiter evidence and the AI will factor it in.
+                            </p>
+                            <textarea
+                              className="w-full rounded-xl bg-white/5 border border-violet-400/20 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-violet-400/50 transition-colors resize-none"
+                              rows={4}
+                              placeholder="e.g. Seller has FedEx tracking confirming delivery March 6th, signed by buyer. Buyer raised dispute 9 days later with no prior complaint. This is acceptance by conduct — lean RELEASE."
+                              value={review}
+                              onChange={e => setReview(e.target.value)}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-violet-300 mb-1">
+                              Recommended ruling (optional)
+                            </label>
+                            <select
+                              className="w-full rounded-xl bg-[#1a1a2e] border border-violet-400/20 px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-400/50 transition-colors cursor-pointer"
+                              value={arbiterRuling}
+                              onChange={e => setArbiterRuling(e.target.value as any)}>
+                              <option value="">— No explicit recommendation (let AI weigh your assessment) —</option>
+                              <option value="RELEASE">RELEASE — release payment to seller</option>
+                              <option value="REFUND">REFUND — return funds to buyer</option>
+                            </select>
+                          </div>
+
+                          {reviewResult && (
+                            <div className={`text-xs px-3 py-2 rounded-lg ${reviewResult.startsWith("Error") ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                              {reviewResult}
+                            </div>
+                          )}
+
+                          <div className="flex justify-between items-center pt-1">
+                            <p className="text-xs text-slate-500">
+                              Submitted on-chain from oracle wallet · AI re-evaluates on next poll
+                            </p>
+                            <button
+                              onClick={submitReview}
+                              disabled={!review.trim() || submittingReview}
+                              className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${
+                                !review.trim() || submittingReview
+                                  ? "bg-white/5 text-slate-500 cursor-not-allowed"
+                                  : "bg-violet-500/20 text-violet-300 border border-violet-400/30 hover:bg-violet-500/30 hover:border-violet-400/60"
+                              }`}>
+                              {submittingReview ? "Submitting…" : "Submit Review →"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </GlassCard>
 
           </div>
         )}

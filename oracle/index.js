@@ -1277,9 +1277,74 @@ function startChainListener(chainConfig) {
   poll();
   const interval = setInterval(poll, POLL_INTERVAL_MS);
 
+  // Scan for ARBITER_REVIEW evidence submissions on every poll cycle
+  setInterval(checkArbiterReviews, POLL_INTERVAL_MS);
+
   console.log(`🔭 ${tag} Listening for disputes on chain ${chainId} | Arbiter: ${arbiterAddress}`);
 
   return { chainId, name, interval };
+
+  // ─── Arbiter review scanner ───────────────────────────────────────────────
+  async function checkArbiterReviews() {
+    try {
+      const pending = EscalationManager.getPending().filter(e => e.chainName === name);
+      for (const esc of pending) {
+        const addr = esc.contractAddress;
+        const evidence = await fetchEvidence(addr).catch(() => []);
+        const reviewItems = evidence.filter(ev =>
+          ev.uri?.startsWith(ARBITER_REVIEW_PREFIX) &&
+          ev.submitter?.toLowerCase() === account.address.toLowerCase()
+        );
+        if (!reviewItems.length) continue;
+
+        console.log(`📋 ${tag} [ARBITER_REVIEW] Admin review found for ${addr} — re-evaluating`);
+        const revCtx = {
+          escrowType: esc.escrowType, contractAddress: addr,
+          chainId, chainName: name, nativeSymbol: nativeCurrency?.symbol ?? "ETH",
+          depositor: { address: esc.depositor }, beneficiary: { address: esc.beneficiary },
+          amount: esc.amount, disputeRaisedBy: "depositor",
+          disputeRaisedAt: new Date(esc.escalatedAt).toISOString(),
+          timeElapsedSinceDeposit: humanElapsed(Date.now() - esc.escalatedAt),
+          milestoneIndex: null, totalMilestones: null, completedMilestones: null,
+          milestoneDescription: null, milestoneAmount: null, depositTxHash: null,
+          createdAt: new Date(esc.escalatedAt - 86400000).toISOString(),
+        };
+
+        const newDecision = await callAI(revCtx, evidence);
+        console.log(`🤖 ${tag} [ARBITER_REVIEW] Post-review: ${newDecision._onChainRuling} @ ${newDecision.confidence}/100`);
+
+        if (shouldAutoResolve(newDecision)) {
+          const resolver = chainResolvers.get(addr) ?? chainResolvers.get(esc.key);
+          if (resolver) {
+            try {
+              const txHash = await resolver(newDecision._onChainRuling);
+              console.log(`✅ ${tag} [ARBITER_REVIEW] Resolved after admin review: ${txHash}`);
+              appendDecision({
+                timestamp: new Date().toISOString(),
+                contractAddress: addr, chainId, chainName: name,
+                escrowType: esc.escrowType, disputeContext: revCtx,
+                decision: newDecision, scores: newDecision.scores,
+                resolution: "arbiter_review", txHash,
+              });
+              EscalationManager.resolve(esc.key);
+              await notifyParties(addr, "dispute_resolved", {
+                amount: esc.amount, symbol: nativeCurrency?.symbol ?? "ETH",
+                ruling: newDecision._onChainRuling, chainId,
+              }, [esc.depositor, esc.beneficiary]).catch(() => {});
+              if (DISCORD_WEBHOOK) {
+                await fetch(DISCORD_WEBHOOK, {
+                  method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ content: `✅ **Admin review resolved dispute**\n\`${addr}\` → **${newDecision._onChainRuling}** @ ${newDecision.confidence}/100\nTx: ${txHash}` })
+                }).catch(() => {});
+              }
+            } catch(err) { console.error(`❌ ${tag} [ARBITER_REVIEW] exec failed:`, err.message); }
+          }
+        } else {
+          console.log(`⚠️  ${tag} [ARBITER_REVIEW] Still below threshold (${newDecision.confidence}/100) — awaiting more input`);
+        }
+      }
+    } catch(err) { console.error(`❌ ${tag} Arbiter review check error:`, err.message); }
+  }
 }
 
 // ─── Start ────────────────────────────────────────────────────────────────────
@@ -1311,6 +1376,13 @@ for (const chain of CHAINS) {
 
 // Start Telegram bot long-poll loop (runs alongside chain listeners)
 startTelegramBot();
+
+// Escalation timer: 5-min checks for reminders + 48h auto-fallback
+setInterval(
+  () => runEscalationTimers(chainResolvers).catch(err => console.error("Escalation timer error:", err.message)),
+  ESCALATION_CHECK_MS
+);
+console.log("Escalation timer started (48h fallback, 24h + 47h reminders)");
 
 // Graceful shutdown
 process.on("SIGTERM", () => { console.log("Oracle shutting down…"); process.exit(0); });
