@@ -27,6 +27,12 @@ const EVENT_META = {
   dispute_opened:      { emoji: "⚠️",  title: "Dispute Opened",                       desc: d => `A dispute has been raised on this escrow.` },
   dispute_resolved:    { emoji: "⚖️",  title: "Dispute Resolved",                     desc: d => `The dispute has been resolved.${d.ruling ? ` Ruling: ${d.ruling}.` : ""}` },
   milestone_completed: { emoji: "🏁", title: "Milestone Completed",                  desc: d => `Milestone #${d.milestoneIndex ?? "?"} has been completed.` },
+  return_required:     { emoji: "📦", title: "Return Required — Action Needed",
+    desc: d => `The AI arbiter has ruled that a refund may be issued, but you must first return the item to the seller.\n\nPlease ship the item back and submit your tracking number in the evidence panel within 72 hours.\n\nIf you do not return the item, the ruling will be changed to release payment to the seller.\n\n<a href="${d.escrowUrl}">Submit Return Tracking →</a>`
+  },
+  return_confirmed:    { emoji: "✅", title: "Return Confirmed — Refund Approved",
+    desc: d => `Your return delivery has been confirmed. The refund will now be processed to your wallet.\n\n<a href="${d.escrowUrl}">View Escrow →</a>`
+  },
   evidence_requested:  { emoji: "📋", title: "We need a bit more from you",           desc: d => {
     if (d.type === "vague_evidence") {
       return `The AI arbiter reviewed what you submitted, but needs a little more detail to make a fair decision.\n\n<b>You said:</b> "${d.submittedText}"\n\n<b>Can you help us by answering this?</b>\n${d.clarificationPrompt}\n\nYou have ${d.windowHours || 4} hours to add more detail using the evidence panel on your escrow page. This helps ensure a fair outcome.\n\n<a href="${d.escrowUrl}">Open Evidence Panel →</a>`;
@@ -60,7 +66,7 @@ function getPrefsForWallet(wallet) {
 function linkChatId(wallet, chatId) {
   const all   = loadPrefs();
   const key   = wallet.toLowerCase();
-  const ALL_EVENTS = ["escrow_created","escrow_funded","funds_released","dispute_opened","dispute_resolved","milestone_completed","evidence_requested"];
+  const ALL_EVENTS = ["escrow_created","escrow_funded","funds_released","dispute_opened","dispute_resolved","milestone_completed","evidence_requested","return_required","return_confirmed"];
   const existing   = all[key] ?? {};
   all[key] = {
     ...existing,

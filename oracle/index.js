@@ -78,6 +78,8 @@ const POLL_INTERVAL_MS         = parseInt(process.env.POLL_INTERVAL_MS ?? "30000
 const AUTO_RESOLVE_MIN_CONFIDENCE = 70;
 const CHALLENGE_WINDOW_MS          = 4 * 60 * 60 * 1000; // 4 hours for challenged party to respond
 const CHALLENGE_POLL_INTERVAL_MS   = 2 * 60 * 1000;      // check for new evidence every 2 min
+const RETURN_WINDOW_MS             = 72 * 60 * 60 * 1000; // 72h for buyer to submit return tracking
+const RETURN_POLL_INTERVAL_MS      = 10 * 60 * 1000;     // check for return tracking every 10 min
 const DECISIONS_FILE           = path.join(__dirname, "decisions.json");
 
 if (!PRIVATE_KEY || !ANTHROPIC_KEY) {
@@ -326,6 +328,17 @@ LEGAL PRINCIPLES (apply the logic, not the names)
 15. ANTICIPATORY BREACH: If the seller clearly signaled non-delivery before the deadline (ghosting, explicit refusal), treat as performance = 0 even if the deadline hasn't passed.
 16. WAIVER BY PRIOR ACCEPTANCE: If the buyer previously accepted similar work in earlier milestones without complaint, then objects to similar quality now — that weakens their position.
 17. BUYER-CAUSED NON-DELIVERY: If the seller explicitly requested inputs that the buyer genuinely failed or refused to provide, any resulting non-delivery is the buyer's fault. Score communication = 2 (buyer at fault), performance = 1 (seller ready and willing), weight toward release. CRITICAL PRECISION: This rule only applies when inputs were truly not provided. If the buyer has verifiable proof they DID provide the required inputs (Drive share, delivery receipts, access logs proving seller received them) and the seller falsely claims non-receipt — that is seller fraud. Set fraudFlag = true and rule for the depositor instead.
+18. RETURN-PATH OFFERED (physical goods): If the seller shipped a physical item and offered a reasonable return or replacement path — and the buyer refused to return the item, never shipped it back, or cannot provide tracking — rule for the seller (release). A buyer cannot keep a physical product AND receive a refund. If the seller offered return acceptance and the buyer refused: score communication = 2 (buyer at fault), weight heavily toward release. If the buyer has submitted a valid tracking number showing the item is on its way back: note this in the ruling and flag awaitingReturn = true — the oracle will wait for delivery confirmation before executing any refund.
+
+PHYSICAL GOODS EVIDENCE RULES (apply when the dispute involves a tangible shipped item):
+- Delivery proof for physical goods: carrier tracking numbers, shipping labels, delivery confirmation, signed receipt, photo of packaged item, courier scan history
+- A valid tracking number showing "Delivered" to the buyer's address = performance: 2
+- A tracking number showing "In Transit" or "Label Created" is partial evidence = performance: 1
+- No tracking and no delivery confirmation = performance: 0
+- Buyer claims item is defective: they must describe the specific defect AND either have photos of the defect or have offered to return the item
+- Seller offered return/replacement and buyer refused: communication: 2 (buyer fault), lean release
+- Buyer returned item with tracking confirmation: this is legitimate grounds for refund
+- Do NOT issue a refund for physical goods if the buyer cannot prove they are willing to return the item
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DECISION GUIDE
@@ -371,6 +384,7 @@ OUTPUT — single JSON object, nothing else
     { "factor": "<observation>", "weight": "high|medium|low", "favoredParty": "depositor|beneficiary" }
   ],
   "escalateToManual": <true if evidence genuinely ambiguous, else false>,
+  "awaitingReturn": <true ONLY if buyer submitted valid return tracking and physical goods are in transit back to seller; false otherwise>,
   "unverifiedClaims": [
     {
       "party": "depositor" or "beneficiary",
@@ -677,6 +691,92 @@ async function waitForChallengeResponse(escrowAddress, prevEvidenceCount, fetchE
   return await fetchEvidenceFn(escrowAddress).catch(() => null);
 }
 
+// ─── Physical goods detection ────────────────────────────────────────────────
+
+/**
+ * Detect whether an escrow involves physical goods from intake or evidence text.
+ * Looks for explicit goodsType field in structured intake, or physical goods
+ * signals in freeform evidence (tracking keywords, carrier names, shipping refs).
+ */
+function detectPhysicalGoods(evidence) {
+  const physicalSignals = [
+    /tracking.?num/i, /fedex|ups|usps|dhl|royal.?mail|australia.?post|canada.?post/i,
+    /shipped|shipping|package|parcel|courier|carrier/i,
+    /physical.?goods?|physical.?product/i, /INTAKE_JSON:/,
+  ];
+
+  for (const ev of evidence) {
+    // Structured intake — check goodsType field
+    if (ev.uri?.startsWith("INTAKE_JSON:")) {
+      try {
+        const intake = JSON.parse(ev.uri.slice("INTAKE_JSON:".length));
+        if (intake.goodsType === "physical") return true;
+      } catch { /* continue */ }
+    }
+    // Freeform — look for shipping signals
+    const text = ev.uri ?? "";
+    if (physicalSignals.some(rx => rx.test(text))) return true;
+  }
+  return false;
+}
+
+/**
+ * Wait for a buyer to submit a return tracking number after a refund ruling.
+ * Polls for new evidence every RETURN_POLL_INTERVAL_MS for up to RETURN_WINDOW_MS.
+ *
+ * Returns:
+ *   "confirmed"  — buyer submitted tracking showing delivery back to seller
+ *   "in_transit" — buyer submitted tracking, item on the way
+ *   "refused"    — buyer submitted no tracking / explicitly refused
+ *   "timeout"    — window expired, no tracking received
+ */
+async function waitForReturnTracking(escrowAddress, depositorAddress, prevEvidenceCount, fetchEvidenceFn, notifyFn) {
+  const deadline = Date.now() + RETURN_WINDOW_MS;
+  const APP_URL  = "https://app.escrowhubs.io";
+  console.log(`📦 [RETURN] Waiting up to 72h for buyer return tracking on ${escrowAddress.slice(0,10)}…`);
+
+  // Notify buyer immediately
+  await notifyFn(escrowAddress, "return_required", {
+    escrowUrl: `${APP_URL}/escrow/${escrowAddress}`,
+    windowHours: 72,
+  }, [depositorAddress]).catch(() => {});
+
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, RETURN_POLL_INTERVAL_MS));
+    try {
+      const fresh = await fetchEvidenceFn(escrowAddress);
+      if (fresh.length > prevEvidenceCount) {
+        const newItems = fresh.slice(prevEvidenceCount);
+        for (const ev of newItems) {
+          const text = ev.uri ?? "";
+          // Check for tracking keywords in new evidence
+          if (/tracking|shipped.?back|returned?|on.?way/i.test(text)) {
+            // Delivered confirmation
+            if (/delivered|confirmed|received/i.test(text)) {
+              console.log(`✅ [RETURN] Return delivery confirmed for ${escrowAddress.slice(0,10)}`);
+              return "confirmed";
+            }
+            console.log(`📦 [RETURN] Return in transit for ${escrowAddress.slice(0,10)}`);
+            // Continue waiting for delivery confirmation
+            prevEvidenceCount = fresh.length;
+          }
+          // Explicit refusal
+          if (/won.?t return|not returning|keeping|refuse/i.test(text)) {
+            console.log(`🚫 [RETURN] Buyer refused to return item — ${escrowAddress.slice(0,10)}`);
+            return "refused";
+          }
+        }
+        prevEvidenceCount = fresh.length;
+      }
+      const remaining = Math.round((deadline - Date.now()) / 3600000);
+      console.log(`   [RETURN] No return tracking yet — ${remaining}h remaining`);
+    } catch { /* ignore transient errors */ }
+  }
+
+  console.log(`⌛ [RETURN] 72h window expired — no return tracking received for ${escrowAddress.slice(0,10)}`);
+  return "timeout";
+}
+
 function startChainListener(chainConfig) {
   const { chainId, name, rpcUrl, factoryAddress, arbiterAddress, nativeCurrency } = chainConfig;
   const tag = `[${name}/${chainId}]`;
@@ -860,14 +960,47 @@ function startChainListener(chainConfig) {
 
       const urgency  = logDecisionSummary(`${tag} [SIMPLE]`, decision);
 
+      // ── Physical goods return window ─────────────────────────────────────────
+      const isPhysical = detectPhysicalGoods(currentEvidence);
+      let effectiveRuling = decision._onChainRuling;
+
+      if (isPhysical && decision._onChainRuling === "REFUND" && shouldAutoResolve(decision) && !decision.awaitingReturn) {
+        console.log(`📦 ${tag} [SIMPLE] Physical goods detected — opening 72h return window before executing refund`);
+        const returnStatus = await waitForReturnTracking(
+          escrowAddress, disputeContext.depositor.address,
+          currentEvidence.length, fetchEvidence, notifyParties
+        );
+        if (returnStatus === "refused" || returnStatus === "timeout") {
+          console.log(`↩️  ${tag} [SIMPLE] Buyer did not return item — flipping ruling to RELEASE`);
+          effectiveRuling = "RELEASE";
+          decision._physicalReturnOutcome = returnStatus;
+          decision._originalRuling = "REFUND";
+          decision._onChainRuling = "RELEASE";
+        } else if (returnStatus === "confirmed") {
+          console.log(`✅ ${tag} [SIMPLE] Return confirmed — executing REFUND`);
+          decision._physicalReturnOutcome = "confirmed";
+        }
+      }
+
+      if (isPhysical && decision.awaitingReturn) {
+        console.log(`📦 ${tag} [SIMPLE] AI flagged awaitingReturn — buyer tracking in transit, waiting for delivery`);
+        const returnStatus = await waitForReturnTracking(
+          escrowAddress, disputeContext.depositor.address,
+          currentEvidence.length, fetchEvidence, notifyParties
+        );
+        effectiveRuling = returnStatus === "confirmed" ? "REFUND" : "RELEASE";
+        decision._physicalReturnOutcome = returnStatus;
+        decision._onChainRuling = effectiveRuling;
+      }
+
       let txHash = "pending_manual_review";
       if (shouldAutoResolve(decision)) {
-        txHash = await executeSimpleResolution(escrowAddress, decision._onChainRuling);
+        txHash = await executeSimpleResolution(escrowAddress, effectiveRuling);
       } else {
         await notifyDiscord(disputeContext, decision, urgency);
       }
 
-      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, scores: decision.scores ?? null, evidenceCount: currentEvidence.length, hadIntake: !!intakeContext, txHash });
+      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, scores: decision.scores ?? null, evidenceCount: currentEvidence.length, hadIntake: !!intakeContext, isPhysicalGoods: isPhysical, txHash });
       processed.add(escrowAddress);
 
       // ── Notify parties ──
@@ -962,14 +1095,33 @@ function startChainListener(chainConfig) {
 
       const urgency  = logDecisionSummary(`${tag} [MILESTONE]`, decision);
 
+      // ── Physical goods return window (milestone) ──────────────────────────────
+      const isPhysical = detectPhysicalGoods(currentEvidence);
+      let effectiveRuling = decision._onChainRuling;
+
+      if (isPhysical && decision._onChainRuling === "REFUND" && shouldAutoResolve(decision) && !decision.awaitingReturn) {
+        console.log(`📦 ${tag} [MILESTONE] Physical goods — opening 72h return window`);
+        const returnStatus = await waitForReturnTracking(
+          escrowAddress, disputeContext.depositor.address,
+          currentEvidence.length, fetchEvidence, notifyParties
+        );
+        if (returnStatus === "refused" || returnStatus === "timeout") {
+          effectiveRuling = "RELEASE";
+          decision._physicalReturnOutcome = returnStatus;
+          decision._onChainRuling = "RELEASE";
+        } else if (returnStatus === "confirmed") {
+          decision._physicalReturnOutcome = "confirmed";
+        }
+      }
+
       let txHash = "pending_manual_review";
       if (shouldAutoResolve(decision)) {
-        txHash = await executeMilestoneResolution(escrowAddress, milestoneIndex, decision._onChainRuling);
+        txHash = await executeMilestoneResolution(escrowAddress, milestoneIndex, effectiveRuling);
       } else {
         await notifyDiscord(disputeContext, decision, urgency);
       }
 
-      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, scores: decision.scores ?? null, evidenceCount: currentEvidence.length, hadIntake: !!intakeContext, txHash });
+      appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, scores: decision.scores ?? null, evidenceCount: currentEvidence.length, hadIntake: !!intakeContext, isPhysicalGoods: isPhysical, txHash });
       processed.add(disputeKey);
 
       // ── Notify parties ──

@@ -420,6 +420,7 @@ function ActionRow({ title, desc, action }: { title: string; desc: string; actio
 // ─── Intake form state ────────────────────────────────────────────────────────
 
 type IntakeForm = {
+  goodsType: "physical" | "digital" | "service" | "";
   agreementSummary: string;
   deadlineImportant: boolean;
   deadlineReason: string;
@@ -435,7 +436,7 @@ type IntakeForm = {
 };
 
 const EMPTY_INTAKE: IntakeForm = {
-  agreementSummary: "", deadlineImportant: false, deadlineReason: "",
+  goodsType: "", agreementSummary: "", deadlineImportant: false, deadlineReason: "",
   actionsTimeline: "", counterpartyTimeline: "", deliveryClaim: "",
   buyerUseClaim: "", evidence: "", firstComplaintTime: "",
   complaintEvidence: "", requestedOutcome: "", requestedOutcomeReason: "",
@@ -458,6 +459,7 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
 
   // Validate required intake fields
   const intakeValid =
+    form.goodsType !== "" &&
     form.agreementSummary.trim().length > 20 &&
     form.actionsTimeline.trim().length > 10 &&
     form.counterpartyTimeline.trim().length > 10 &&
@@ -472,6 +474,7 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
     try {
       const payload = {
         role,
+        goodsType: form.goodsType || "service",
         agreementSummary: form.agreementSummary.trim(),
         deadlineImportant: form.deadlineImportant,
         deadlineReason: form.deadlineReason.trim(),
@@ -559,7 +562,7 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
         <textarea
           className={inputCls + " resize-none"}
           rows={4}
-          placeholder={"e.g.\nhttps://github.com/project/repo/commit/abc123\nipfs://QmDeliveryProof...\nhttps://screenshot-url.com/img.png"}
+          placeholder={form.goodsType === "physical" ? "e.g.\nFedEx tracking: 7489 2345 6789\nPhoto of packaged item: https://imgur.com/pkg\nSeller confirmation of shipment" : "e.g.\nhttps://github.com/project/repo/commit/abc123\nipfs://QmDeliveryProof...\nhttps://screenshot-url.com/img.png"}
           value={freeformText}
           onChange={e => setFreeformText(e.target.value)}
         />
@@ -590,6 +593,24 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
           <h3 className="text-sm font-semibold uppercase tracking-widest text-violet-300">AI Arbiter — Your Statement</h3>
           <p className="text-xs text-slate-400 mt-0.5">Answer these questions so the AI arbiter can evaluate your case fairly. Take your time — there are no wrong answers, just be honest.</p>
         </div>
+      </div>
+
+      {/* Q0 — Goods type */}
+      <div>
+        <label className={labelCls}>What are you buying or selling in this escrow? *</label>
+        <p className={hintCls + " mb-2"}>This helps the AI arbiter apply the right rules if there&apos;s a dispute.</p>
+        <select className={selectCls} value={form.goodsType}
+          onChange={e => set("goodsType", e.target.value as IntakeForm["goodsType"])}>
+          <option value="">— Select —</option>
+          <option value="physical">Physical goods — a real item that gets shipped (product, merchandise, hardware)</option>
+          <option value="digital">Digital work — files, code, designs, software, content</option>
+          <option value="service">Service — consulting, freelance work, ongoing support</option>
+        </select>
+        {form.goodsType === "physical" && (
+          <p className="text-xs text-amber-400/80 mt-2 bg-amber-400/10 rounded-lg px-3 py-2">
+            📦 Physical goods: if a refund is issued, you will be asked to return the item with tracking before the refund is processed. Keep your shipping receipt.
+          </p>
+        )}
       </div>
 
       {/* Q1 — Agreement */}
