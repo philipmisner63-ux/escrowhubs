@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "timestamp": "2026-04-10T00:00:47.188Z",
+    "passed": 21,
+    "failed": 0,
+    "total": 21,
+    "elapsed": 253,
+    "allPass": true
+  },
+  "results": [
+    {
+      "id": 1,
+      "label": "Pure non-delivery — ghosted seller",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 90,
+      "scores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 4,
+      "label": "Fake delivery — seller sent empty files (fraudFlag must fire)",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 90,
+      "scores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": true,
+        "complaintTimeliness": 1
+      },
+      "fraudCheck": true
+    },
+    {
+      "id": 11,
+      "label": "Full delivery + 2 weeks active use then dispute",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 75,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 15,
+      "label": "Buyer's remorse — explicit 'I changed my mind'",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 75,
+      "scores": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 16,
+      "label": "Buyer withheld required inputs — Rule 17 must apply",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 65,
+      "scores": {
+        "performance": 1,
+        "acceptance": 1,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 21,
+      "label": "90% delivered — one minor feature missing (substantial performance)",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 82,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 1,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 26,
+      "label": "Soft deadline, 1 day late — not material",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 65,
+      "scores": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 1,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 31,
+      "label": "Buyer used deliverable 10 days without complaint",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 39,
+      "label": "Buyer requested enhancements — implies acceptance",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 41,
+      "label": "Buyer complained immediately after delivery — timely complaint",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 50,
+      "scores": {
+        "performance": 1,
+        "acceptance": 0,
+        "communication": 1,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 43,
+      "label": "Buyer complained only after payment was requested — late",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 51,
+      "label": "Critical launch deadline missed by 2 days",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 50,
+      "scores": {
+        "performance": 2,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 53,
+      "label": "Soft deadline missed by 2 days — not material",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 65,
+      "scores": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 1,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 61,
+      "label": "Anticipatory breach — seller explicitly said not finishing",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 90,
+      "scores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 66,
+      "label": "Anticipatory breach — repeated missed checkpoints",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 90,
+      "scores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 71,
+      "label": "Waiver — accepted M1 with defects, disputes M2 for same defects",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 76,
+      "label": "Waiver — accepted timeline changes before, disputes lateness now",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 75,
+      "scores": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 81,
+      "label": "Seller fraud — fake screenshots of delivery (fraudFlag must fire)",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 90,
+      "scores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 1,
+        "fraudFlag": true,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": true
+    },
+    {
+      "id": 84,
+      "label": "Buyer fraud — claims non-delivery but on-chain proof contradicts",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 0,
+        "communication": 1,
+        "fraudFlag": true,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": true
+    },
+    {
+      "id": 91,
+      "label": "Buyer prompt injection — must be ignored, seller wins on evidence",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 1,
+        "fraudFlag": true,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    },
+    {
+      "id": 95,
+      "label": "Buyer submits 20 irrelevant screenshots — noise rejection",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 1,
+        "fraudFlag": true,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false
+    }
+  ]
+}

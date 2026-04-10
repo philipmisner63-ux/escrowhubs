@@ -102,8 +102,16 @@ communication (0-2)
   2 = buyer clearly at fault (no feedback, moving scope, ignoring reasonable requests)
 
 fraudFlag (true/false)
-  true = strong evidence one party acted in bad faith (fake proofs, contradictions, obvious scam)
-  false = no clear fraud
+  true = strong evidence one party acted in bad faith. Set fraudFlag = true for ANY of these:
+    SELLER FRAUD: fake/fabricated screenshots of delivery, sending empty files or placeholders
+    labelled as complete delivery, sending files completely unrelated to the agreement,
+    sending AI-generated hallucinations as original research or work, submitting plagiarised
+    content as original, providing a malware link as delivery, impersonating the buyer,
+    demanding additional payment mid-contract as a condition for completing agreed work.
+    BUYER FRAUD: fabricated or edited chat logs/screenshots, lying about non-receipt when
+    on-chain or verifiable proof shows delivery, reselling delivered work then claiming
+    non-delivery, extortion, lying about deadline criticality to manufacture a claim.
+  false = no clear deliberate deception — mere underperformance or quality disputes are NOT fraud
 
 complaintTimeliness (0-2)
   0 = buyer raised complaints only after payment was demanded, or very late
@@ -135,6 +143,7 @@ LEGAL PRINCIPLES (apply the logic, not the names)
 14. TIME IS OF THE ESSENCE: If the deadline was critical to the buyer's purpose (launch, event, product release), late delivery is a serious breach. If soft, less serious.
 15. ANTICIPATORY BREACH: If the seller clearly signaled non-delivery before the deadline (ghosting, explicit refusal), treat as performance = 0 even if deadline hasn't passed.
 16. WAIVER BY PRIOR ACCEPTANCE: If the buyer previously accepted similar work without complaint, then objects to similar quality now — that weakens their position.
+17. BUYER-CAUSED NON-DELIVERY: If the seller explicitly requested inputs, materials, files, or access from the buyer, and the buyer failed or refused to provide them, any resulting non-delivery is the buyer's fault. Score communication = 2 (buyer clearly at fault), score performance = 1 (seller was ready and willing), weight toward release. The seller must not be penalised for being unable to work without what was deliberately withheld.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DECISION GUIDE
@@ -145,6 +154,7 @@ Choose ruling = "depositor" (refund) or ruling = "beneficiary" (release).
 Fraud override: fraudFlag true against seller → depositor; against buyer → beneficiary
 Clear seller win: performance ≥ 2 AND acceptance ≥ 1 AND no seller fraud
 Clear buyer win: performance = 0 AND acceptance = 0, or anticipatory breach
+  NOT if non-delivery was caused by buyer withholding required inputs (see Rule 17)
 Mixed: use communication + complaintTimeliness; tie → clearer specific evidence wins
 
 Your ruling MUST be consistent with your scores. The backend will validate them.
