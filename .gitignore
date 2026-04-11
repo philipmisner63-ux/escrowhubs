@@ -63,3 +63,4 @@ oracle/oracle-state.*.json
 
 # Notifications cache
 **/notifications.json
+oracle/.env*
