@@ -84,5 +84,39 @@ module.exports = {
       max_restarts:  10,
       restart_delay: 3000,
     },
+
+    // ─── BSC Oracle ──────────────────────────────────────────────────────────
+    {
+      name:   "oracle-bsc",
+      script: "index.js",
+      cwd:    "/root/blockdag-escrow/oracle",
+      interpreter: "node",
+      interpreter_args: "--experimental-vm-modules",
+      env: {
+        ENV_FILE:    ".env.bsc",
+        CHAINS_FILE: "chains.bsc.json",
+        NODE_ENV:    "production",
+      },
+      watch:         false,
+      autorestart:   true,
+      max_restarts:  10,
+      restart_delay: 5000,
+    },
+
+    // ─── BSC Frontend ────────────────────────────────────────────────────────
+    {
+      name:   "frontend-bsc",
+      script: "node_modules/.bin/next",
+      args:   "start -p 3003",
+      cwd:    "/root/blockdag-escrow/frontend-bsc",
+      env: {
+        NODE_ENV:              "production",
+        NODE_OPTIONS:          "--max-old-space-size=768",
+      },
+      watch:         false,
+      autorestart:   true,
+      max_restarts:  10,
+      restart_delay: 3000,
+    },
   ],
 };

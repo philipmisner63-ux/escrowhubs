@@ -1,0 +1,484 @@
+{
+  "meta": {
+    "version": "fuzz-v1.0",
+    "seed": 12345,
+    "count": 10,
+    "elapsed": 122,
+    "doctrine": null,
+    "fraudOnly": false,
+    "timestamp": "2026-04-10T00:59:15.950Z",
+    "rulingAccuracy": "7/10",
+    "exactScoreMatch": "1/10",
+    "avgScoreDelta": "2.10",
+    "fraudDetectionRate": "0/1",
+    "scoreMismatches": 0,
+    "regressionThreshold": 85,
+    "regressionTriggered": true
+  },
+  "summary": {
+    "perfDist": {
+      "0": 2,
+      "1": 2,
+      "2": 6
+    },
+    "accDist": {
+      "0": 2,
+      "1": 5,
+      "2": 3
+    },
+    "confBuckets": {
+      "50": 1,
+      "65": 2,
+      "75": 0,
+      "82": 1,
+      "90": 6,
+      "95": 0
+    }
+  },
+  "results": [
+    {
+      "id": "fuzz-1-12345",
+      "latentTruth": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 1,
+        "complaintTimeliness": 2,
+        "fraudFlag": false
+      },
+      "expectedRuling": "beneficiary",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "none",
+        "addNoise": false,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "Polygon",
+          "id": 137,
+          "symbol": "MATIC"
+        },
+        "amount": "0.1",
+        "doctrineHint": null
+      },
+      "aiRuling": "beneficiary",
+      "onChain": "RELEASE",
+      "confidence": 90,
+      "aiScores": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "Seller claims complete delivery of all API endpoints with testing and documentation, constituting substantial performance. Buyer's own evidence reveals engagement during development and complaint raised after delivery with specific defects noted, indicating mixed acceptance (used/reviewed the work but rejected final output). Buyer changed requirements twice mid-project without acknowledging impact, placing communication fault on buyer side per rule 17.",
+      "rulingMatch": true,
+      "scoreMatch": false,
+      "scoreDiff": 1,
+      "scoreDiffs": {
+        "communication": "AI:2 vs Truth:1"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-2-12345",
+      "latentTruth": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "complaintTimeliness": 1,
+        "fraudFlag": false
+      },
+      "expectedRuling": "beneficiary",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "critical",
+        "addNoise": false,
+        "addContradiction": true,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "Base",
+          "id": 8453,
+          "symbol": "ETH"
+        },
+        "amount": "0.5",
+        "doctrineHint": null
+      },
+      "aiRuling": "beneficiary",
+      "onChain": "RELEASE",
+      "confidence": 82,
+      "aiScores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 1,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "reasoning": "The buyer's own evidence demonstrates acceptance by conduct: they requested enhancements ('Can we add dark mode?'), which implies the base product was accepted and functional. The seller delivered a codebase that passes all tests and has been deployed to the buyer's server, establishing substantial performance. The buyer raised the dispute 18 days after deposit without evidence of timely complaint during delivery, only after needing the asset for a paid ad campaign.",
+      "rulingMatch": true,
+      "scoreMatch": false,
+      "scoreDiff": 2,
+      "scoreDiffs": {
+        "communication": "AI:1 vs Truth:2",
+        "complaintTimeliness": "AI:0 vs Truth:1"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-3-12345",
+      "latentTruth": {
+        "performance": 2,
+        "acceptance": 0,
+        "communication": 1,
+        "complaintTimeliness": 2,
+        "fraudFlag": false
+      },
+      "expectedRuling": "depositor",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "critical",
+        "addNoise": false,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "BlockDAG",
+          "id": 1404,
+          "symbol": "BDAG"
+        },
+        "amount": "0.75",
+        "doctrineHint": null
+      },
+      "aiRuling": "beneficiary",
+      "onChain": "RELEASE",
+      "confidence": 90,
+      "aiScores": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 2,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "The seller claims all 22 agreed features were shipped and are live in production, indicating substantial/complete delivery. The buyer raised concerns on the same day as delivery, demonstrating prompt complaint timeliness. However, the seller's claim that the buyer provided feedback late suggests buyer-caused delays, shifting communication fault to the buyer. With the work live in production and the buyer's late feedback contributing to delays, the evidence leans toward release despite the missed critical deadline.",
+      "rulingMatch": false,
+      "scoreMatch": false,
+      "scoreDiff": 4,
+      "scoreDiffs": {
+        "acceptance": "AI:1 vs Truth:0",
+        "communication": "AI:2 vs Truth:1",
+        "fraudFlag": "AI:undefined vs Truth:false"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-4-12345",
+      "latentTruth": {
+        "performance": 2,
+        "acceptance": 1,
+        "communication": 0,
+        "complaintTimeliness": 1,
+        "fraudFlag": false
+      },
+      "expectedRuling": "beneficiary",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "critical",
+        "addNoise": true,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "BlockDAG",
+          "id": 1404,
+          "symbol": "BDAG"
+        },
+        "amount": "2.0",
+        "doctrineHint": null
+      },
+      "aiRuling": "depositor",
+      "onChain": "REFUND",
+      "confidence": 50,
+      "aiScores": {
+        "performance": 1,
+        "acceptance": 1,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 1
+      },
+      "reasoning": "The seller failed to meet critical delivery deadlines without communication, constituting a material breach under Rule 14 (time is of the essence for paid ad campaign launch). While the seller claims complete delivery of 22 features, the buyer's evidence indicates multiple missed deadlines without notice and disputes over the final version despite approving early drafts. The seller's silence on missed deadlines (communication score 0) combined with mixed acceptance and partial performance does not support full release, especially given the time-critical nature of the deliverable.",
+      "rulingMatch": false,
+      "scoreMatch": false,
+      "scoreDiff": 1,
+      "scoreDiffs": {
+        "performance": "AI:1 vs Truth:2"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-5-12345",
+      "latentTruth": {
+        "performance": 1,
+        "acceptance": 1,
+        "communication": 2,
+        "complaintTimeliness": 0,
+        "fraudFlag": false
+      },
+      "expectedRuling": "beneficiary",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "soft",
+        "addNoise": true,
+        "addContradiction": true,
+        "disputeRaisedBy": "beneficiary",
+        "chain": {
+          "name": "BlockDAG",
+          "id": 1404,
+          "symbol": "BDAG"
+        },
+        "amount": "1.0",
+        "doctrineHint": null
+      },
+      "aiRuling": "depositor",
+      "onChain": "REFUND",
+      "confidence": 65,
+      "aiScores": {
+        "performance": 1,
+        "acceptance": 0,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "reasoning": "The seller admits to delivering a non-functional product with a critical endpoint returning a 500 error, indicating partial but incomplete delivery (performance=1). The buyer explicitly states they haven't used the deliverable and it didn't work when briefly tested, showing no acceptance (acceptance=0). The buyer only raised quality concerns after the seller requested payment release, demonstrating poor complaint timeliness (complaintTimeliness=0). While the seller communicated transparently about issues, the core issue is incomplete functionality, not communication problems.",
+      "rulingMatch": false,
+      "scoreMatch": false,
+      "scoreDiff": 1,
+      "scoreDiffs": {
+        "acceptance": "AI:0 vs Truth:1"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-6-12345",
+      "latentTruth": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "complaintTimeliness": 2,
+        "fraudFlag": false
+      },
+      "expectedRuling": "beneficiary",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "none",
+        "addNoise": true,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "Polygon",
+          "id": 137,
+          "symbol": "MATIC"
+        },
+        "amount": "0.2",
+        "doctrineHint": null
+      },
+      "aiRuling": "beneficiary",
+      "onChain": "RELEASE",
+      "confidence": 95,
+      "aiScores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "The buyer's own evidence demonstrates acceptance of the base product by requesting enhancements ('Can we add dark mode?'), which implies the delivered work met the original requirements. The seller provided documented daily updates with screenshots and progress reports, and the platform is confirmed running at the agreed URL with all functionality. The buyer reported issues within 2 hours but then immediately requested feature additions rather than rejecting the work, constituting acceptance by conduct. The mention of budget pressure and internal changes suggests buyer's remorse rather than legitimate non-performance.",
+      "rulingMatch": true,
+      "scoreMatch": true,
+      "scoreDiff": 0,
+      "scoreDiffs": {},
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-7-12345",
+      "latentTruth": {
+        "performance": 0,
+        "acceptance": 1,
+        "communication": 0,
+        "complaintTimeliness": 2,
+        "fraudFlag": false
+      },
+      "expectedRuling": "depositor",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "soft",
+        "addNoise": false,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "Base",
+          "id": 8453,
+          "symbol": "ETH"
+        },
+        "amount": "3.0",
+        "doctrineHint": null
+      },
+      "aiRuling": "depositor",
+      "onChain": "REFUND",
+      "confidence": 90,
+      "aiScores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "The seller's own evidence admits the delivery link returned a 404 error and was never corrected, constituting no meaningful delivery (performance 0). The buyer withdrew approval at the end and filed complaint promptly upon discovering the problem with screenshots (complaintTimeliness 2). Multiple promised delivery dates passed without communication from the seller, indicating communication failure on seller's part (communication 0). No evidence of buyer acceptance or use of any delivered work (acceptance 0).",
+      "rulingMatch": true,
+      "scoreMatch": false,
+      "scoreDiff": 1,
+      "scoreDiffs": {
+        "acceptance": "AI:0 vs Truth:1"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-8-12345",
+      "latentTruth": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 2,
+        "complaintTimeliness": 0,
+        "fraudFlag": false
+      },
+      "expectedRuling": "depositor",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "critical",
+        "addNoise": false,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "BlockDAG",
+          "id": 1404,
+          "symbol": "BDAG"
+        },
+        "amount": "0.2",
+        "doctrineHint": null
+      },
+      "aiRuling": "depositor",
+      "onChain": "REFUND",
+      "confidence": 90,
+      "aiScores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": true,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "The evidence exhibits clear internal contradictions indicative of fabricated or manipulated submissions. The buyer's evidence contains seller-like statements ('we fulfilled all our obligations as the buyer' and 'tied to our product launch'), while the seller's evidence contains contradictory claims (acknowledging 'clear feedback' but also stating 'never reviewed what I sent'). These inconsistencies, combined with role-confused statements, constitute strong evidence of bad faith manipulation. The buyer has not used any part of the deliverable and raised the dispute promptly (10 days post-deposit, 1 day before evidence submission).",
+      "rulingMatch": true,
+      "scoreMatch": false,
+      "scoreDiff": 6,
+      "scoreDiffs": {
+        "communication": "AI:0 vs Truth:2",
+        "complaintTimeliness": "AI:2 vs Truth:0",
+        "fraudFlag": "AI:true vs Truth:false"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-9-12345",
+      "latentTruth": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 0,
+        "complaintTimeliness": 2,
+        "fraudFlag": true
+      },
+      "expectedRuling": "beneficiary",
+      "meta": {
+        "fraudSide": "buyer",
+        "deadlineType": "soft",
+        "addNoise": false,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "Polygon",
+          "id": 137,
+          "symbol": "MATIC"
+        },
+        "amount": "5.0",
+        "doctrineHint": null
+      },
+      "aiRuling": "beneficiary",
+      "onChain": "RELEASE",
+      "confidence": 90,
+      "aiScores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 1,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "The buyer's evidence demonstrates substantial delivery and acceptance: the delivered video has been actively used on their YouTube channel with 14,000 views, indicating clear acceptance by conduct and benefit derived from the work. The buyer raised concerns on the same day as delivery, showing timely complaint behavior. While the buyer claims missed checkpoints and references a non-existent auditor report, the seller claims the final version matched approved design stages, and most critically, the buyer's continued public use of the video for 30 days constitutes strong acceptance.",
+      "rulingMatch": true,
+      "scoreMatch": false,
+      "scoreDiff": 3,
+      "scoreDiffs": {
+        "communication": "AI:1 vs Truth:0",
+        "fraudFlag": "AI:false vs Truth:true"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": true
+    },
+    {
+      "id": "fuzz-10-12345",
+      "latentTruth": {
+        "performance": 1,
+        "acceptance": 1,
+        "communication": 1,
+        "complaintTimeliness": 2,
+        "fraudFlag": false
+      },
+      "expectedRuling": "depositor",
+      "meta": {
+        "fraudSide": null,
+        "deadlineType": "critical",
+        "addNoise": false,
+        "addContradiction": false,
+        "disputeRaisedBy": "depositor",
+        "chain": {
+          "name": "Base",
+          "id": 8453,
+          "symbol": "ETH"
+        },
+        "amount": "3.0",
+        "doctrineHint": null
+      },
+      "aiRuling": "depositor",
+      "onChain": "REFUND",
+      "confidence": 65,
+      "aiScores": {
+        "performance": 1,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "reasoning": "Both parties acknowledge the work was only partially completed, with the seller admitting they stopped responding before finishing (performance = 1). The buyer clearly rejected the delivery within 2 hours and never deployed or integrated the files (acceptance = 0). The seller's abandonment before completion constitutes a communication failure (communication = 0), and the buyer raised issues promptly within 2 hours of receiving the delivery link (complaintTimeliness = 2).",
+      "rulingMatch": true,
+      "scoreMatch": false,
+      "scoreDiff": 2,
+      "scoreDiffs": {
+        "acceptance": "AI:0 vs Truth:1",
+        "communication": "AI:0 vs Truth:1"
+      },
+      "scoreMismatch": false,
+      "hadChallenges": false
+    }
+  ]
+}

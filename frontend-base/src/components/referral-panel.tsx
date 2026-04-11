@@ -10,7 +10,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 
 const ZERO = "0x0000000000000000000000000000000000000000" as const;
-const APP_URL = "https://app.escrowhubs.io";
+const APP_URL = "https://base.escrowhubs.io";
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (

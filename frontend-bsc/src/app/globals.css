@@ -1,0 +1,261 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Explicit content sources — ensures all component files are scanned for utility classes */
+@source "../../components/**/*.{js,ts,jsx,tsx}";
+@source "../../app/**/*.{js,ts,jsx,tsx}";
+@source "../../i18n/**/*.{js,ts,jsx,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: 0 0% 3%;
+  --foreground: 210 40% 98%;
+  --card: 0 0% 6%;
+  --card-foreground: 210 40% 98%;
+  --popover: 0 0% 6%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 188 100% 50%;
+  --primary-foreground: 0 0% 3%;
+  --secondary: 220 14% 14%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 220 14% 12%;
+  --muted-foreground: 215 20% 55%;
+  --accent: 188 100% 50%;
+  --accent-foreground: 0 0% 3%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 220 14% 18%;
+  --input: 220 14% 14%;
+  --ring: 188 100% 50%;
+  --radius: 0.75rem;
+
+  /* Neon accent palette */
+  --neon-cyan: #00f5ff;
+  --neon-blue: #0066ff;
+  --neon-purple: #7c3aed;
+  --neon-green: #00ff88;
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Animated background grid */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glow effect base */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.3), 0 0 60px rgba(0, 245, 255, 0.1);
+}
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.3), 0 0 60px rgba(0, 102, 255, 0.1);
+}
+
+/* Glass card */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Neon text */
+.neon-text {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.8), 0 0 20px rgba(0, 245, 255, 0.4);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 245, 255, 0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 245, 255, 0.4); }
+
+/* ── Neon Glow Effects ─────────────────────────────────────────────────────── */
+
+/* Feature cards — cyan/blue glow */
+.card-glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.08), 0 0 30px rgba(0, 245, 255, 0.03);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+/* Feature cards — purple glow */
+.card-glow-purple {
+  box-shadow: 0 0 15px rgba(167, 139, 250, 0.08), 0 0 30px rgba(167, 139, 250, 0.03);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+/* Feature cards — blue glow */
+.card-glow-blue {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1), 0 0 30px rgba(59, 130, 246, 0.04);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+/* AI step cards — emerald glow */
+.card-glow-emerald {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.1), 0 0 24px rgba(16, 185, 129, 0.04);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+/* Stats cards */
+.card-glow-stats {
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.06);
+  transition: box-shadow 0.3s ease;
+}
+/* CTA button glow */
+.btn-glow {
+  box-shadow: 0 0 12px rgba(0, 245, 255, 0.25), 0 0 24px rgba(0, 245, 255, 0.08);
+  transition: box-shadow 0.3s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* Hero section background glow */
+.hero-glow {
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    linear-gradient(to bottom, #080a10, #060608);
+}
+
+/* Quick action cards */
+.card-glow-action {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+/* ── Hover states (motion-safe only) ──────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .card-glow-cyan:hover {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.18), 0 0 40px rgba(0, 245, 255, 0.07);
+    transform: translateY(-1px);
+  }
+  .card-glow-purple:hover {
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.2), 0 0 40px rgba(167, 139, 250, 0.08);
+    transform: translateY(-1px);
+  }
+  .card-glow-blue:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.22), 0 0 40px rgba(59, 130, 246, 0.09);
+    transform: translateY(-1px);
+  }
+  .card-glow-emerald:hover {
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.22), 0 0 36px rgba(16, 185, 129, 0.09);
+  }
+  .card-glow-stats:hover {
+    box-shadow: 0 0 28px rgba(0, 245, 255, 0.14);
+  }
+  .btn-glow:hover {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.45), 0 0 40px rgba(0, 245, 255, 0.15);
+    transform: scale(1.02);
+  }
+  .card-glow-action:hover {
+    box-shadow: 0 0 18px rgba(0, 245, 255, 0.12), 0 0 36px rgba(0, 245, 255, 0.05);
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Mobile: reduce glow intensity ───────────────────────────────────────── */
+@media (max-width: 767px) {
+  .card-glow-cyan   { box-shadow: 0 0 8px rgba(0, 245, 255, 0.05); }
+  .card-glow-purple { box-shadow: 0 0 8px rgba(167, 139, 250, 0.05); }
+  .card-glow-blue   { box-shadow: 0 0 8px rgba(59, 130, 246, 0.06); }
+  .card-glow-emerald{ box-shadow: 0 0 6px rgba(16, 185, 129, 0.06); }
+  .card-glow-stats  { box-shadow: 0 0 10px rgba(0, 245, 255, 0.04); }
+  .btn-glow         { box-shadow: 0 0 8px rgba(0, 245, 255, 0.15); }
+}
+
+/* ── Driver.js Tour Overrides ─────────────────────────────────────────────── */
+.eh-tour-popover.driver-popover {
+  background: #0f0f1a;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.15), 0 20px 60px rgba(0, 0, 0, 0.6);
+  padding: 20px 24px 16px;
+  max-width: 320px;
+  color: #fff;
+}
+.eh-tour-popover .driver-popover-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.eh-tour-popover .driver-popover-description {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+.eh-tour-popover .driver-popover-progress-text {
+  font-size: 0.7rem;
+  color: #475569;
+}
+.eh-tour-popover .driver-popover-footer {
+  margin-top: 16px;
+  gap: 8px;
+}
+.eh-tour-popover .driver-popover-next-btn,
+.eh-tour-popover .driver-popover-done-btn {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #06b6d4;
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.eh-tour-popover .driver-popover-next-btn:hover,
+.eh-tour-popover .driver-popover-done-btn:hover {
+  background: rgba(6, 182, 212, 0.25);
+}
+.eh-tour-popover .driver-popover-prev-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.eh-tour-popover .driver-popover-prev-btn:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: #94a3b8;
+}
+.eh-tour-popover .driver-popover-close-btn {
+  color: #475569;
+  font-size: 1.1rem;
+  top: 12px;
+  right: 14px;
+}
+.eh-tour-popover .driver-popover-close-btn:hover {
+  color: #94a3b8;
+}
+/* Highlight border */
+.driver-active-element {
+  outline: 2px solid rgba(6, 182, 212, 0.5) !important;
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+/* Arrow */
+.eh-tour-popover .driver-popover-arrow-side-top::before,
+.eh-tour-popover .driver-popover-arrow-side-bottom::before {
+  border-color: #0f0f1a transparent transparent transparent;
+}

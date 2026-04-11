@@ -80,6 +80,7 @@ const CHALLENGE_WINDOW_MS          = 4 * 60 * 60 * 1000; // 4 hours for challeng
 const CHALLENGE_POLL_INTERVAL_MS   = 2 * 60 * 1000;      // check for new evidence every 2 min
 const RETURN_WINDOW_MS             = 72 * 60 * 60 * 1000; // 72h for buyer to submit return tracking
 const RETURN_POLL_INTERVAL_MS      = 10 * 60 * 1000;     // check for return tracking every 10 min
+const ESCALATION_CHECK_MS          = 5 * 60 * 1000;       // check escalations every 5 min
 const DECISIONS_FILE           = path.join(__dirname, "decisions.json");
 
 if (!PRIVATE_KEY || !ANTHROPIC_KEY) {
@@ -1150,7 +1151,8 @@ function startChainListener(chainConfig) {
       if (currentBlock <= lastBlock) return;
 
       const fromBlock = lastBlock + 1n;
-      const toBlock   = currentBlock;
+      const MAX_CHUNK = BigInt(parseInt(process.env.MAX_BLOCKS_PER_QUERY ?? '50'));
+      const toBlock   = currentBlock - fromBlock > MAX_CHUNK ? fromBlock + MAX_CHUNK - 1n : currentBlock;
 
       // SimpleEscrow Disputed events
       const simpleLogs = await publicClient.getLogs({

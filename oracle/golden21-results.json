@@ -1,10 +1,10 @@
 {
   "meta": {
-    "timestamp": "2026-04-10T00:00:47.188Z",
-    "passed": 21,
+    "timestamp": "2026-04-10T02:07:05.656Z",
+    "passed": 24,
     "failed": 0,
-    "total": 21,
-    "elapsed": 253,
+    "total": 24,
+    "elapsed": 288,
     "allPass": true
   },
   "results": [
@@ -22,7 +22,14 @@
         "fraudFlag": false,
         "complaintTimeliness": 2
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "non_delivery",
+        "anticipatory_breach"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 4,
@@ -34,11 +41,18 @@
       "scores": {
         "performance": 0,
         "acceptance": 0,
-        "communication": 0,
+        "communication": 1,
         "fraudFlag": true,
         "complaintTimeliness": 1
       },
-      "fraudCheck": true
+      "fraudCheck": true,
+      "doctrines": [
+        "non_delivery",
+        "fraud_seller"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 1
     },
     {
       "id": 11,
@@ -46,15 +60,22 @@
       "pass": true,
       "ruling": "beneficiary",
       "expected": "beneficiary",
-      "confidence": 75,
+      "confidence": 82,
       "scores": {
         "performance": 2,
         "acceptance": 2,
-        "communication": 0,
+        "communication": 1,
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "acceptance_by_conduct",
+        "late_complaint"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 1,
+      "vagueEvidence": 1
     },
     {
       "id": 15,
@@ -70,7 +91,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "buyers_remorse"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 1,
+      "vagueEvidence": 1
     },
     {
       "id": 16,
@@ -81,12 +108,19 @@
       "confidence": 65,
       "scores": {
         "performance": 1,
-        "acceptance": 1,
+        "acceptance": 0,
         "communication": 2,
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "buyer_fault_communication",
+        "buyer_caused_non_delivery"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 1
     },
     {
       "id": 21,
@@ -102,7 +136,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "substantial_performance"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 26,
@@ -118,7 +158,14 @@
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "substantial_performance",
+        "time_not_critical"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 31,
@@ -134,7 +181,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "acceptance_by_conduct"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 39,
@@ -150,7 +203,14 @@
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "acceptance_by_conduct",
+        "scope_creep"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 41,
@@ -166,7 +226,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 2
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "timely_complaint"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 43,
@@ -182,7 +248,14 @@
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "late_complaint",
+        "acceptance_by_conduct"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 1,
+      "vagueEvidence": 1
     },
     {
       "id": 51,
@@ -198,7 +271,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 2
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "time_is_of_the_essence"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 1
     },
     {
       "id": 53,
@@ -206,15 +285,22 @@
       "pass": true,
       "ruling": "beneficiary",
       "expected": "beneficiary",
-      "confidence": 65,
+      "confidence": 50,
       "scores": {
         "performance": 2,
         "acceptance": 1,
-        "communication": 1,
+        "communication": 0,
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "time_not_critical",
+        "substantial_performance"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 1,
+      "vagueEvidence": 1
     },
     {
       "id": 61,
@@ -230,7 +316,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 2
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "anticipatory_breach"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 66,
@@ -246,7 +338,13 @@
         "fraudFlag": false,
         "complaintTimeliness": 2
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "anticipatory_breach"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 71,
@@ -254,15 +352,22 @@
       "pass": true,
       "ruling": "beneficiary",
       "expected": "beneficiary",
-      "confidence": 90,
+      "confidence": 82,
       "scores": {
         "performance": 2,
         "acceptance": 2,
-        "communication": 2,
+        "communication": 1,
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "waiver",
+        "milestone"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 1
     },
     {
       "id": 76,
@@ -270,15 +375,22 @@
       "pass": true,
       "ruling": "beneficiary",
       "expected": "beneficiary",
-      "confidence": 75,
+      "confidence": 65,
       "scores": {
         "performance": 2,
         "acceptance": 1,
-        "communication": 2,
+        "communication": 1,
         "fraudFlag": false,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "waiver",
+        "time_not_critical"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 1
     },
     {
       "id": 81,
@@ -294,7 +406,13 @@
         "fraudFlag": true,
         "complaintTimeliness": 2
       },
-      "fraudCheck": true
+      "fraudCheck": true,
+      "doctrines": [
+        "fraud_seller"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 84,
@@ -310,7 +428,14 @@
         "fraudFlag": true,
         "complaintTimeliness": 0
       },
-      "fraudCheck": true
+      "fraudCheck": true,
+      "doctrines": [
+        "fraud_buyer",
+        "on_chain_evidence"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 1,
+      "vagueEvidence": 0
     },
     {
       "id": 91,
@@ -326,7 +451,13 @@
         "fraudFlag": true,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "injection_resistance"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     },
     {
       "id": 95,
@@ -342,7 +473,86 @@
         "fraudFlag": true,
         "complaintTimeliness": 0
       },
-      "fraudCheck": false
+      "fraudCheck": false,
+      "doctrines": [
+        "vague_evidence",
+        "noise_rejection"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 1
+    },
+    {
+      "id": 201,
+      "label": "Physical — Shipped with tracking, buyer remorse — must RELEASE",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 90,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 0
+      },
+      "fraudCheck": false,
+      "doctrines": [
+        "physical_goods",
+        "acceptance_by_conduct",
+        "buyers_remorse"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
+    },
+    {
+      "id": 202,
+      "label": "Physical — Never shipped, buyer disputes after 30 days — must REFUND",
+      "pass": true,
+      "ruling": "depositor",
+      "expected": "depositor",
+      "confidence": 90,
+      "scores": {
+        "performance": 0,
+        "acceptance": 0,
+        "communication": 0,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false,
+      "doctrines": [
+        "physical_goods",
+        "non_delivery",
+        "anticipatory_breach"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 2,
+      "vagueEvidence": 1
+    },
+    {
+      "id": 203,
+      "label": "Physical — Buyer refuses return but wants refund — must RELEASE",
+      "pass": true,
+      "ruling": "beneficiary",
+      "expected": "beneficiary",
+      "confidence": 95,
+      "scores": {
+        "performance": 2,
+        "acceptance": 2,
+        "communication": 2,
+        "fraudFlag": false,
+        "complaintTimeliness": 2
+      },
+      "fraudCheck": false,
+      "doctrines": [
+        "physical_goods",
+        "return_path_offered",
+        "buyers_remorse"
+      ],
+      "challengeOK": true,
+      "unverifiedClaims": 0,
+      "vagueEvidence": 0
     }
   ]
 }

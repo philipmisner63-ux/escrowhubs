@@ -1,0 +1,13 @@
+[
+  {
+    "chainId": 137,
+    "name": "Polygon",
+    "nativeCurrency": { "name": "POL", "symbol": "POL", "decimals": 18 },
+    "rpcUrlEnvVar": "POLYGON_RPC_URL",
+    "rpcUrlFallback": "https://polygon-mainnet.g.alchemy.com/v2/YUs_6FzIKG617Yt8pMqay",
+    "factoryAddressEnvVar": "NEXT_PUBLIC_FACTORY_ADDRESS",
+    "factoryAddressFallback": "0x93e86fac9a15add437363f7bbec776bdbc932411",
+    "arbiterAddressEnvVar": "AI_ARBITER_ADDRESS",
+    "arbiterAddressFallback": "0x79e78c1ed9a8e239a8334294bf4f0d356f858416"
+  }
+]

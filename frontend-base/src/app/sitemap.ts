@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = "https://app.escrowhubs.io";
+const BASE_URL = "https://base.escrowhubs.io";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

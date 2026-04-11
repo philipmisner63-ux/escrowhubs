@@ -1,0 +1,16 @@
+{
+  "name": "EscrowHubs — Trustless Escrow on BlockDAG",
+  "short_name": "EscrowHubs",
+  "description": "Create secure, trustless escrow agreements powered by BlockDAG.",
+  "start_url": "/en",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "blockchain"],
+  "icons": [
+    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

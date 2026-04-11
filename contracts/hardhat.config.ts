@@ -49,11 +49,30 @@ const config: HardhatUserConfig = {
         ? [process.env.DEPLOYER_PRIVATE_KEY]
         : [],
     },
+    bsc: {
+      type: "http" as const,
+      url: process.env.BSC_RPC_URL ?? "https://bsc-dataseed.binance.org",
+      chainId: 56,
+      accounts: process.env.DEPLOYER_PRIVATE_KEY
+        ? [process.env.DEPLOYER_PRIVATE_KEY]
+        : [],
+    },
+    celo: {
+      type: "http" as const,
+      url: process.env.CELO_RPC_URL ?? "https://forno.celo.org",
+      chainId: 42220,
+      accounts: process.env.DEPLOYER_PRIVATE_KEY
+        ? [process.env.DEPLOYER_PRIVATE_KEY]
+        : [],
+    },
   },
   etherscan: {
     apiKey: {
       base:        process.env.BASESCAN_API_KEY ?? "",
       baseSepolia: process.env.BASESCAN_API_KEY ?? "",
+      bsc:         process.env.BSCSCAN_API_KEY ?? "",
+      bscTestnet:  process.env.BSCSCAN_API_KEY ?? "",
+      celo:        process.env.CELOSCAN_API_KEY ?? "",
     },
     customChains: [
       {
@@ -70,6 +89,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL:     "https://api-sepolia.basescan.org/api",
           browserURL: "https://sepolia.basescan.org",
+        },
+      },
+      {
+        network: "celo",
+        chainId: 42220,
+        urls: {
+          apiURL:     "https://api.celoscan.io/api",
+          browserURL: "https://celoscan.io",
         },
       },
     ],

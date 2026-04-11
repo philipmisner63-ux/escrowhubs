@@ -1,5 +1,5 @@
 /**
- * Chain Registry — Base L2 deployment.
+ * Chain Registry — Base L2 deployment (+ Celo with MiniPay support).
  * Single source of truth for chain configuration.
  */
 
@@ -21,8 +21,21 @@ export const baseMainnet = defineChain({
   },
 });
 
+export const celoMainnet = defineChain({
+  id: 42220,
+  name: "Celo",
+  nativeCurrency: { name: "CELO", symbol: "CELO", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://forno.celo.org"] },
+  },
+  blockExplorers: {
+    default: { name: "Celoscan", url: "https://celoscan.io" },
+  },
+});
+
 export const SUPPORTED_CHAINS: readonly [Chain, ...Chain[]] = [
   baseMainnet,
+  celoMainnet,
 ] as const;
 
 export const DEFAULT_CHAIN_ID = 8453;

@@ -7,6 +7,7 @@ import { wagmiConfig } from "@/lib/wagmi";
 import { ToastProvider, useToast } from "@/components/toast";
 import { useWalletTimeout } from "@/lib/hooks/useWalletTimeout";
 import { SupportButton } from "@/components/SupportButton";
+import { useMiniPay } from "@/lib/hooks/useMiniPay";
 import { FeedbackButton } from "@/components/feedback-button";
 import "@rainbow-me/rainbowkit/styles.css";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
@@ -20,6 +21,12 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Auto-connects when running inside MiniPay (Celo wallet, 10M+ users)
+function MiniPayAutoConnect() {
+  useMiniPay();
+  return null;
+}
 
 // Must be a child of WagmiProvider + ToastProvider to access their contexts
 function WalletTimeoutGuard() {
@@ -46,6 +53,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <ToastProvider>
             <WalletTimeoutGuard />
+            <MiniPayAutoConnect />
             <SupportButton />
             <FeedbackButton />
             {children}

@@ -57,7 +57,7 @@
     "why2": "No accounts — just connect and go",
     "why3": "No unilateral withdrawals",
     "why4": "AI arbitration — fast, unbiased, on-chain",
-    "why5": "Multi-chain: Base, Polygon, BlockDAG",
+    "why5": "Multi-chain: Base, Polygon, BNB Chain",
     "heroQuote": "Safer than trust. Simpler than multisig."
   },
   "dashboard": {
@@ -201,20 +201,20 @@
   },
   "meta": {
     "home": {
-      "title": "EscrowHubs — Trustless Escrow on BlockDAG",
-      "description": "Create secure, trustless escrow agreements powered by BlockDAG. Simple escrow, milestone payments, and AI-powered dispute resolution. 0.5% fees."
+      "title": "EscrowHubs — Trustless Multi-Chain Escrow",
+      "description": "Secure P2P escrow on Base, Polygon, and BNB Chain. Funds stay locked until both sides agree — or the AI arbiter rules. No accounts, no custody, no middlemen."
     },
     "dashboard": {
       "title": "Dashboard — EscrowHubs",
-      "description": "Manage your active escrow agreements on Base."
+      "description": "Manage your active escrow agreements, track milestones, and monitor payments on Base."
     },
     "create": {
       "title": "Create Escrow — EscrowHubs",
-      "description": "Set up a new escrow on Base in minutes. Simple, milestone, or AI arbiter escrow."
+      "description": "Deploy a secure escrow on Base in minutes. Simple, milestone, or AI arbiter — enforced by smart contracts."
     },
     "howItWorks": {
       "title": "How It Works — EscrowHubs",
-      "description": "Learn how trustless escrow works on Base with step-by-step guides."
+      "description": "Learn how trustless escrow works on Base. Step-by-step guides for simple escrow, milestones, and AI dispute resolution."
     },
     "title": "EscrowHubs — Trustless Escrow on Base",
     "description": "Create secure, trustless escrow agreements on Base. Simple escrow, milestone payments, and AI-powered dispute resolution. 0.5% fees."

@@ -10,7 +10,7 @@ export function ShareEscrow({ address }: { address: string }) {
 
   const url = typeof window !== "undefined"
     ? window.location.href
-    : `https://app.escrowhubs.io/en/escrow/${address}`;
+    : `https://base.escrowhubs.io/en/escrow/${address}`;
 
   function copy() {
     navigator.clipboard.writeText(url).then(() => {

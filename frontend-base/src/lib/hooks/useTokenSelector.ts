@@ -5,6 +5,7 @@ import { useAccount, useReadContract, useWriteContract, useChainId } from "wagmi
 import { parseUnits, formatUnits } from "viem";
 import { ERC20ABI } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
+import { CUSD_ADDRESS, getDefaultToken } from "@/lib/hooks/useMiniPay";
 
 const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913") as `0x${string}`;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;

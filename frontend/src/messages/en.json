@@ -201,8 +201,8 @@
   },
   "meta": {
     "home": {
-      "title": "EscrowHubs — Trustless Escrow on BlockDAG",
-      "description": "Create secure, trustless escrow agreements powered by BlockDAG. Simple escrow, milestone payments, and AI-powered dispute resolution. 0.5% fees."
+      "title": "EscrowHubs — Trustless Multi-Chain Escrow",
+      "description": "Secure P2P escrow on Base, Polygon, and BlockDAG. Funds stay locked until both sides agree — or the AI arbiter rules. No accounts, no custody, no middlemen."
     },
     "dashboard": {
       "title": "Dashboard — EscrowHubs",
@@ -210,11 +210,11 @@
     },
     "create": {
       "title": "Create Escrow — EscrowHubs",
-      "description": "Set up a new escrow agreement in minutes. Choose simple, milestone, or AI arbiter escrow on BlockDAG."
+      "description": "Deploy a secure escrow on BlockDAG in minutes. Simple, milestone, or AI arbiter — enforced by smart contracts."
     },
     "howItWorks": {
       "title": "How It Works — EscrowHubs",
-      "description": "Learn how trustless escrow works on BlockDAG with step-by-step guides for all escrow types."
+      "description": "Learn how trustless escrow works on BlockDAG. Step-by-step guides for simple escrow, milestones, and AI dispute resolution."
     }
   },
   "footer": {

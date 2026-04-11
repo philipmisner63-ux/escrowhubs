@@ -33,6 +33,7 @@ export async function generateMetadata({
     ...base,
     other: {
       'base:app_id': '69d1ab2867a388b6eeaf809f',
+      'talentapp:project_verification': 'ec27f475221df086086d3071fe8ad6c0e63c3bcba59dbc1d1df1cad6f4f716939a0c6d125618214434302f71444b71746a3284adcf59eb6a51e4f095efb1e401',
     },
   };
 }
