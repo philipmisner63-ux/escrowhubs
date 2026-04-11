@@ -1,8 +1,8 @@
 # EscrowHubs
 
-Trustless multi-chain escrow with AI dispute resolution. Deployed on Base, Polygon, and BlockDAG.
+Trustless multi-chain escrow with AI dispute resolution. Deployed on BNB Smart Chain (BSC), Base, Polygon, and BlockDAG.
 
-**Live:** https://app.escrowhubs.io (BlockDAG) · https://base.escrowhubs.io (Base) · https://polygon.escrowhubs.io (Polygon)
+**Live:** https://bsc.escrowhubs.io (BNB Smart Chain) · https://base.escrowhubs.io (Base) · https://polygon.escrowhubs.io (Polygon) · https://app.escrowhubs.io (BlockDAG)
 
 ---
 
