@@ -1,4 +1,5 @@
 "use client";
+import BrandLogo from "@/components/BrandLogo";
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -39,7 +40,7 @@ export function Footer() {
           {/* Col 1 — Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_0_15px_rgba(0,245,255,0.4)]" />
+              <BrandLogo size={28} animated={false} showTagline={false} />
               <span className="text-base font-bold tracking-tight">
                 <span className="text-white">Escrow</span>
                 <span style={{ color: "#00f5ff" }}>Hubs</span>
