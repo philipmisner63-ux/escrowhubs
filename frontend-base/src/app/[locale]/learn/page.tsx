@@ -1,4 +1,20 @@
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/metadata";
 import { Link } from "@/i18n/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return buildPageMetadata(
+    "Learn — EscrowHubs",
+    "Interactive guides, escrow flow demos, and onboarding resources for EscrowHubs on Base.",
+    "/learn",
+    locale
+  );
+}
 
 const PAGES = [
   { href: "/learn/onboarding",   label: "Onboarding Flow",    icon: "🚀", desc: "Step-by-step wallet connect and network switching guide" },

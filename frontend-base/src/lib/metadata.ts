@@ -44,8 +44,8 @@ export async function buildMetadata(
   const alternates = buildAlternates(path);
 
   return {
-    title,
-    description,
+    title: title as string,
+    description: description as string,
     alternates: {
       ...alternates,
       canonical: url,
@@ -79,6 +79,61 @@ export async function buildMetadata(
         index: true,
         follow: true,
       },
+    },
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/apple-touch-icon.png",
+    },
+  };
+}
+
+/**
+ * Lightweight metadata builder for pages without a translation namespace.
+ * Use for learn/* pages and other static-title pages.
+ */
+export function buildPageMetadata(
+  title: string,
+  description: string,
+  path: string,
+  locale: string
+): Metadata {
+  const url = `${APP_URL}/${locale}${path}`;
+  const ogLocale = OG_LOCALE_MAP[locale] ?? "en_US";
+  const alternates = buildAlternates(path);
+
+  return {
+    title,
+    description,
+    alternates: {
+      ...alternates,
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: SITE_NAME,
+      type: "website",
+      locale: ogLocale,
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: `${SITE_NAME} — Trustless Multi-Chain Escrow`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og-image.png"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
     },
     icons: {
       icon: "/favicon.ico",
