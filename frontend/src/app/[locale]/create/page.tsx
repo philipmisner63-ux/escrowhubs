@@ -36,10 +36,6 @@ export default function CreateEscrowPage() {
   const chainId  = useChainId();
   const referrer = useReferrer();
   const { writeContractAsync } = useWriteContract();
-  const publicClient = createPublicClient({
-    chain: blockdagMainnet,
-    transport: http(getRpcUrl(DEFAULT_CHAIN_ID)),
-  });
 
   const [type, setType] = useState<EscrowType>("simple");
   const [form, setForm] = useState({ title: "", beneficiary: "", arbiter: "", amount: "" });
@@ -60,9 +56,10 @@ export default function CreateEscrowPage() {
     const pendingId = addToast({ type: "pending", message: t("waitingConfirmation") });
 
     try {
-      const factoryAddress = getFactoryAddress(chainId);
+      const currentChainId = chainId;
+      const factoryAddress = getFactoryAddress(currentChainId);
       const resolvedArbiter = useAIArbiter
-        ? getArbiterAddress(chainId)
+        ? getArbiterAddress(currentChainId)
         : form.arbiter as `0x${string}`;
 
       let txHash: `0x${string}`;
@@ -80,6 +77,7 @@ export default function CreateEscrowPage() {
           args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, referrer],
           value: totalValue,
           gas: GAS_LIMITS.deploySimpleEscrow,
+          chainId: currentChainId,
         });
       } else {
         const descriptions = milestones.map(m => m.description);
@@ -96,6 +94,7 @@ export default function CreateEscrowPage() {
           args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, referrer],
           value: totalValue,
           gas: GAS_LIMITS.deployMilestoneEscrow,
+          chainId: currentChainId,
         });
       }
 

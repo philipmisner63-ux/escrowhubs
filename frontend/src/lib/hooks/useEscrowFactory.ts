@@ -2,7 +2,7 @@
 
 import { useReadContracts, useWriteContract, useWatchContractEvent, useChainId } from "wagmi";
 import { useState, useCallback } from "react";
-import { parseEther } from "viem";
+import { parseEther, isAddress } from "viem";
 import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
 import { computeTrustScore } from "@/lib/trustScore";
@@ -25,7 +25,7 @@ export function useEscrowFactory(chainId?: number) {
   const resolvedChainId = chainId ?? activeChainId;
   const factoryAddress = getFactoryAddress(resolvedChainId);
   const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI, chainId: resolvedChainId } as const;
-  const enabled = factoryAddress.length > 2;
+  const enabled = isAddress(factoryAddress);
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
@@ -46,7 +46,7 @@ export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n, chai
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
   const factoryAddress = getFactoryAddress(resolvedChainId);
-  const enabled = factoryAddress.length > 2;
+  const enabled = isAddress(factoryAddress);
 
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
@@ -70,7 +70,7 @@ export function useWalletEscrows(walletAddress: Address | undefined, chainId?: n
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
   const factoryAddress = getFactoryAddress(resolvedChainId);
-  const enabled = factoryAddress.length > 2 && !!walletAddress;
+  const enabled = isAddress(factoryAddress) && !!walletAddress;
   const contract = { address: factoryAddress, abi: ESCROW_FACTORY_ABI, chainId: resolvedChainId } as const;
 
   const { data, isLoading, refetch } = useReadContracts({
@@ -155,7 +155,7 @@ export function useFactoryEvents(chainId?: number) {
   const resolvedChainId = chainId ?? activeChainId;
   const factoryAddress = getFactoryAddress(resolvedChainId);
   const [events, setEvents] = useState<Array<{ name: string; args: Record<string, unknown>; timestamp: number }>>([]);
-  const enabled = factoryAddress.length > 2;
+  const enabled = isAddress(factoryAddress);
 
   const add = useCallback((name: string, args: Record<string, unknown>) => {
     setEvents(prev => [{ name, args, timestamp: Date.now() }, ...prev].slice(0, 50));

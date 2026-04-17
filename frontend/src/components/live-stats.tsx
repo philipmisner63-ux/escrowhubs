@@ -131,7 +131,9 @@ export function LiveStats() {
     if (typeof window === "undefined") return null;
     return loadCache();
   });
-  const [loading, setLoading] = useState(!loadCache());
+  const [loading, setLoading] = useState(() => typeof window === "undefined" ? true : !loadCache());
+  const statsRef = useRef(stats);
+  useEffect(() => { statsRef.current = stats; }, [stats]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -172,7 +174,7 @@ export function LiveStats() {
     } catch {
       // Fallback to cached or defaults
       setLoading(false);
-      if (!stats) {
+      if (!statsRef.current) {
         setStats({ totalEscrows: 0, bdagLocked: 0, successRate: 100, fetchedAt: 0 });
       }
     }

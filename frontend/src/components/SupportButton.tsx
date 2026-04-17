@@ -16,7 +16,7 @@ export function SupportButton({ lastTxHash }: SupportButtonProps) {
       <button
         onClick={() => setOpen(true)}
         aria-label={t("button")}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-black/80 px-4 py-2.5 text-xs font-medium text-slate-300 shadow-lg backdrop-blur-sm hover:border-cyan-400/30 hover:text-cyan-400 transition-all duration-200"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-black/80 px-4 py-2.5 text-xs font-medium text-slate-300 shadow-lg hover:border-cyan-400/30 hover:text-cyan-400 transition-all duration-200"
       >
         <span className="text-base leading-none">🛟</span>
         {t("button")}

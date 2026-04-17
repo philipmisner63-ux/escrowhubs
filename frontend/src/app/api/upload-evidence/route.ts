@@ -19,6 +19,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file or text provided" }, { status: 400 });
     }
 
+    const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
+    if (!file || file.size > MAX_SIZE) {
+      return NextResponse.json({ error: "File too large or missing" }, { status: 413 });
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: "File type not allowed" }, { status: 415 });
+    }
+
     // Build evidence JSON to pin
     const evidenceJson: Record<string, unknown> = {
       version: "1",

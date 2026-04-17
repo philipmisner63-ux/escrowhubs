@@ -30,7 +30,6 @@ export function AnimatedBackground() {
           inset: 0,
           pointerEvents: "none",
           zIndex: -1,
-          overflow: "hidden",
         }}
       >
         <div

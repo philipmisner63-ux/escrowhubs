@@ -39,7 +39,7 @@ export default function LandingPage() {
             {t("badge")}
           </div>
           <motion.h1
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            initial={{ opacity: 1, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight"
           >
             <span className="text-white block">{t("heroTitle1")}</span>
@@ -120,7 +120,7 @@ export default function LandingPage() {
           {features.map((f, i) => (
             <motion.div
               key={f.title}
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 1, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.15, duration: 0.4 }}
               className={`${f.glow} rounded-xl border p-6 ${f.accent.split(" ").slice(0, 2).join(" ")}`}
             >
@@ -166,7 +166,7 @@ export default function LandingPage() {
             {aiSteps.map((s, i) => (
               <motion.div
                 key={s.step}
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 1, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15, duration: 0.4 }}
                 className="card-glow-emerald rounded-xl border border-emerald-400/20 bg-violet-400/5 p-4"
               >

@@ -32,6 +32,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const adminSecret = req.headers.get("x-admin-secret");
+  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
   try {
     const body = await req.json();
     const { escrowAddress, chainId, review, arbiterRuling } = body;
