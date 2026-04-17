@@ -152,8 +152,11 @@ contract EscrowFactory is ReentrancyGuard {
         emit AIArbiterUpdated(_aiArbiter);
     }
 
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "Invalid owner");
+        emit OwnershipTransferred(owner, newOwner);
         owner = newOwner;
     }
 
@@ -203,8 +206,8 @@ contract EscrowFactory is ReentrancyGuard {
         internal returns (uint256 kickback)
     {
         if (referrer == address(0) || referrer == msg.sender) return 0;
-        uint256 protocolFee = (grossValue * protocolFeeBps) / 10_000;
-        kickback = (protocolFee * referralShareBps) / 10_000;
+        // Combine multiplications before dividing to avoid precision loss
+        kickback = (grossValue * protocolFeeBps * referralShareBps) / (10_000 * 10_000);
         if (kickback == 0 || kickback > fee) return 0;
         accumulatedFees -= kickback;
         referralEarnings[referrer]    += kickback;
@@ -231,7 +234,7 @@ contract EscrowFactory is ReentrancyGuard {
         bool    useAIArbiter,
         address token,
         address referrer
-    ) external payable returns (address escrowOut) {
+    ) external payable nonReentrant returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
         if (token == address(0)) {
             require(msg.value > 0, "Must send ETH");
@@ -303,7 +306,7 @@ contract EscrowFactory is ReentrancyGuard {
         bool             useAIArbiter,
         address          token,
         address          referrer
-    ) external payable returns (address escrowOut) {
+    ) external payable nonReentrant returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
         if (token == address(0)) {
             require(msg.value > 0, "Must send ETH");
