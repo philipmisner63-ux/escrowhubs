@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/components/privy-provider";
 import { Link } from "@/i18n/navigation";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -24,9 +24,9 @@ function calcFees(amount: string, useArbiter: boolean) {
 
 export default function MarketplacePage() {
   const { addToast } = useToast();
-  const { ready, authenticated, login, user } = usePrivy();
+  const { ready, authenticated, login, user, walletAddress } = usePrivy();
 
-  const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerContact, setBuyerContact] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [useAIArbiter, setUseAIArbiter] = useState(true);
@@ -35,19 +35,20 @@ export default function MarketplacePage() {
   const [successState, setSuccessState] = useState<{
     escrow_id: string;
     escrow_url: string;
+    buyer_notified_by: string;
   } | null>(null);
   const [urlCopied, setUrlCopied] = useState(false);
 
-  const sellerEmail = user?.email?.address ?? "";
+  const sellerEmail = user?.email ?? user?.phone ?? "";
   const fees = calcFees(amount, useAIArbiter);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!sellerEmail) {
-      addToast({ type: "error", message: "Could not read your email. Please log in again." });
+      addToast({ type: "error", message: "Could not read your identity. Please log in again." });
       return;
     }
-    if (!buyerEmail || !amount) {
+    if (!buyerContact || !amount) {
       addToast({ type: "error", message: "Please fill in all required fields." });
       return;
     }
@@ -56,7 +57,7 @@ export default function MarketplacePage() {
       addToast({ type: "error", message: "Amount must be at least $1." });
       return;
     }
-    if (buyerEmail.toLowerCase() === sellerEmail.toLowerCase()) {
+    if (buyerContact.toLowerCase() === sellerEmail.toLowerCase()) {
       addToast({ type: "error", message: "Buyer and seller email must be different." });
       return;
     }
@@ -67,8 +68,9 @@ export default function MarketplacePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          seller_email: sellerEmail,
-          buyer_email: buyerEmail,
+          seller_contact: sellerEmail,
+          seller_wallet: walletAddress,
+          buyer_contact: buyerContact,
           amount_fiat: amt,
           description,
           arbitration_enabled: useAIArbiter,
@@ -76,7 +78,7 @@ export default function MarketplacePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create escrow");
-      setSuccessState({ escrow_id: data.escrow_id, escrow_url: data.escrow_url });
+      setSuccessState({ escrow_id: data.escrow_id, escrow_url: data.escrow_url, buyer_notified_by: data.buyer_notified_by ?? "email" });
       addToast({ type: "success", message: "Escrow created! Email sent to buyer." });
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Something went wrong" });
@@ -154,10 +156,10 @@ export default function MarketplacePage() {
             <div className="text-4xl">🔐</div>
             <h2 className="text-lg font-semibold text-white">Login to create an escrow</h2>
             <p className="text-slate-400 text-sm max-w-xs mx-auto">
-              Sign in with your email to create a protected payment request for your buyer.
+              Sign in with your email or phone number to create a protected payment request for your buyer.
             </p>
             <GlowButton onClick={login} className="w-full">
-              Continue with Email →
+              Continue with Email or Phone →
             </GlowButton>
             <p className="text-xs text-slate-600">
               A secure wallet is created automatically — no seed phrases needed.
@@ -171,8 +173,9 @@ export default function MarketplacePage() {
             <div className="text-6xl">✅</div>
             <h2 className="text-2xl font-bold text-white">Escrow Created!</h2>
             <p className="text-slate-400 text-sm max-w-sm mx-auto">
-              An email has been sent to your buyer with the payment link. Once they
-              fund the escrow, you will be notified.
+              {successState.buyer_notified_by === "link_only"
+                ? "Share the link below directly with your buyer."
+                : "An email has been sent to your buyer with the payment link. Once they fund the escrow, you will be notified."}
             </p>
 
             {/* Escrow URL */}
@@ -225,12 +228,12 @@ export default function MarketplacePage() {
               {/* Buyer email */}
               <div>
                 <label className="block text-xs text-slate-400 mb-1">
-                  Buyer Email <span className="text-red-400">*</span>
+                  Buyer Email or Phone <span className="text-red-400">*</span>
                 </label>
                 <input
-                  type="email"
-                  placeholder="buyer@example.com"
-                  value={buyerEmail}
+                  type="text"
+                  placeholder="buyer@example.com or +1 234 567 8900"
+                  value={buyerContact}
                   onChange={(e) => setBuyerEmail(e.target.value)}
                   required
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
@@ -336,7 +339,7 @@ export default function MarketplacePage() {
               <GlowButton
                 type="submit"
                 loading={loading}
-                disabled={loading || !buyerEmail || !amount}
+                disabled={loading || !buyerContact || !amount}
                 className="w-full"
               >
                 {loading ? "Creating Escrow..." : "Create Protected Escrow →"}

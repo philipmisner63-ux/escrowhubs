@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { usePrivy } from "@/components/privy-provider";
+import { createWalletClient, createPublicClient, custom, http } from "viem";
+import { base } from "viem/chains";
 import { Link } from "@/i18n/navigation";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -120,7 +121,7 @@ function EscrowCard({ escrow, role, userEmail, onRelease, releasing }: EscrowCar
 }
 
 export default function MarketplaceDashboard() {
-  const { ready, authenticated, login, user } = usePrivy();
+  const { ready, authenticated, login, user, walletAddress, walletProvider } = usePrivy();
   const { addToast } = useToast();
 
   const [sellingEscrows, setSellingEscrows] = useState<MarketplaceEscrow[]>([]);
@@ -130,9 +131,6 @@ export default function MarketplaceDashboard() {
 
   const userEmail = user?.email?.address ?? "";
 
-  // Wagmi for release
-  const { writeContractAsync: writeRelease, data: releaseTxHash } = useWriteContract();
-  const { data: releaseReceipt } = useWaitForTransactionReceipt({ hash: releaseTxHash });
   const [releasingEscrowId, setReleasingEscrowId] = useState<string | null>(null);
 
   // Fetch escrows from Supabase
@@ -161,28 +159,7 @@ export default function MarketplaceDashboard() {
     fetchEscrows();
   }, [authenticated, userEmail]);
 
-  // Watch for release receipt
-  useEffect(() => {
-    if (!releaseReceipt || !releasingEscrowId) return;
-    fetch("/api/marketplace/update-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        escrow_id: releasingEscrowId,
-        status: "RELEASED",
-      }),
-    }).then(() => {
-      setSellingEscrows((prev) =>
-        prev.map((e) =>
-          e.escrow_id === releasingEscrowId ? { ...e, status: "RELEASED" } : e
-        )
-      );
-      addToast({ type: "success", message: "Funds released successfully!" });
-      setReleasing(null);
-      setReleasingEscrowId(null);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [releaseReceipt]);
+
 
   async function handleRelease(escrow: MarketplaceEscrow) {
     if (!escrow.contract_address) {

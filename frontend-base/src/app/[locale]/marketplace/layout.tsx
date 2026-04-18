@@ -1,5 +1,10 @@
+// 🚫 DO NOT import RainbowKit, Wagmi, WalletConnect, or SES here.
+// This layout is Web3Auth-only — intentionally isolated from the main app wallet ecosystem.
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/metadata";
+import { PrivyWalletProvider } from "@/components/privy-provider";
+import { ToastProvider } from "@/components/toast";
+import { AnimatedBackground } from "@/components/animated-background";
 
 export async function generateMetadata({
   params,
@@ -16,5 +21,14 @@ export async function generateMetadata({
 }
 
 export default function MarketplaceLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <PrivyWalletProvider>
+      <ToastProvider>
+        <AnimatedBackground />
+        <div className="relative min-h-screen">
+          {children}
+        </div>
+      </ToastProvider>
+    </PrivyWalletProvider>
+  );
 }

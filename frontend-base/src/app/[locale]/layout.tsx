@@ -1,16 +1,16 @@
+// 🚫 DO NOT MODIFY — protected file (see AGENTS.md)
+// This layout is intentionally wallet-free.
+// RainbowKit/Wagmi/SES → lives in (app)/layout.tsx
+// Web3Auth             → lives in marketplace/layout.tsx
 import type { Metadata } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { ProvidersClient } from "@/components/providers-client";
-import { AnimatedBackground } from "@/components/animated-background";
 import { routing } from "@/i18n/routing";
 import { localeMetadata } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
-import { APP_URL, SITE_NAME, buildMetadata } from "@/lib/metadata";
-import { PWARegister } from "@/components/pwa-register";
-import { ChainGuard } from "@/components/chain-guard";
+import { APP_URL, buildMetadata } from "@/lib/metadata";
 import "../globals.css";
 
 const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
@@ -71,15 +71,7 @@ export default async function LocaleLayout({
       </head>
       <body className={`${geistSans.variable} ${jetbrainsMono.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
-          <ProvidersClient>
-            <PWARegister />
-            <AnimatedBackground />
-            <div className="relative min-h-screen">
-              <ChainGuard>
-                {children}
-              </ChainGuard>
-            </div>
-          </ProvidersClient>
+          {children}
         </NextIntlClientProvider>
       </body>
     </html>

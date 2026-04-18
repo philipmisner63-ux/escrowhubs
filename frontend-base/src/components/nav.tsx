@@ -3,28 +3,28 @@ import BrandLogo from "@/components/BrandLogo";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { useAccount, useChainId } from "wagmi";
-import { WalletConnectButton } from "@/components/connect-button";
+
 import { LanguagePicker } from "@/components/language-picker";
 import { LanguagePickerMobile } from "@/components/language-picker-mobile";
-import { NotificationModal } from "@/components/notification-modal";
+
 import { cn } from "@/lib/utils";
 import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chains";
-function WalletWarningBanner() {
-  const t = useTranslations("nav");
-  const { isConnected } = useAccount();
-  const chainId = useChainId();
-  if (!isConnected) return null;
-  if (chainId !== DEFAULT_CHAIN_ID) {
-    const target = getChain(DEFAULT_CHAIN_ID);
-    return (
-      <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 text-center text-xs text-yellow-300">
-        ⚠️ {t("wrongNetwork", { name: target.chain.name, chainId: DEFAULT_CHAIN_ID })}
-      </div>
-    );
-  }
-  return null;
-}
+// WalletWarningBanner is only rendered on main app routes — not marketplace
+// All wagmi-dependent components are dynamically imported.
+// This prevents SES/wagmi from loading in marketplace routes (no WagmiProvider).
+import dynamic from "next/dynamic";
+const WalletWarningBanner = dynamic(
+  () => import("@/components/wallet-warning-banner").then((m) => m.WalletWarningBanner),
+  { ssr: false, loading: () => null }
+);
+const WalletConnectButton = dynamic(
+  () => import("@/components/connect-button").then((m) => m.WalletConnectButton),
+  { ssr: false, loading: () => null }
+);
+const NotificationModal = dynamic(
+  () => import("@/components/notification-modal").then((m) => m.NotificationModal),
+  { ssr: false, loading: () => null }
+);
 export function Nav() {
   const t = useTranslations("nav");
   const tNotif = useTranslations("notifications");

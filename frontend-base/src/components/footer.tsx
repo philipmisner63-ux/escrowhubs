@@ -4,7 +4,11 @@ import BrandLogo from "@/components/BrandLogo";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { resetAndStartTour } from "@/components/onboarding-tour";
-import { FeedbackModal } from "@/components/feedback-modal";
+import dynamic from "next/dynamic";
+const FeedbackModal = dynamic(
+  () => import("@/components/feedback-modal").then((m) => m.FeedbackModal),
+  { ssr: false, loading: () => null }
+);
 import Link from "next/link";
 
 export function Footer() {

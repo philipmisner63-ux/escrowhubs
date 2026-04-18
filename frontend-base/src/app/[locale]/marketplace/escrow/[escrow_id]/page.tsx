@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, zeroAddress } from "viem";
+import { usePrivy } from "@/components/privy-provider";
+import { parseUnits, zeroAddress, createWalletClient, createPublicClient, custom, http } from "viem";
+import { base } from "viem/chains";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { AnimatedBackground } from "@/components/animated-background";
@@ -83,8 +83,8 @@ export default function EscrowBuyerPage() {
   const params = useParams();
   const escrow_id = params?.escrow_id as string;
   const { addToast } = useToast();
-  const { ready, authenticated, login, user } = usePrivy();
-  const { wallets } = useWallets();
+  const { ready, authenticated, login, user, walletAddress, walletProvider } = usePrivy();
+  
 
   const [escrow, setEscrow] = useState<MarketplaceEscrow | null>(null);
   const [loadingEscrow, setLoadingEscrow] = useState(true);
@@ -101,15 +101,11 @@ export default function EscrowBuyerPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [onrampLoading, setOnrampLoading] = useState(false);
 
-  // Wagmi write
-  const { writeContractAsync: writeApprove } = useWriteContract();
-  const { writeContractAsync: writeFactory, data: factoryTxHash } = useWriteContract();
-  const { data: factoryReceipt, isLoading: waitingReceipt } = useWaitForTransactionReceipt({
-    hash: factoryTxHash,
-  });
+  // No wagmi — use viem directly with Web3Auth EIP-1193 provider
+  const [txPending, setTxPending] = useState(false);
 
   const userEmail = user?.email?.address ?? "";
-  const privyWallet = wallets.find((w) => w.walletClientType === "privy") ?? wallets[0];
+  
 
   // Fetch escrow data
   useEffect(() => {
@@ -217,7 +213,7 @@ export default function EscrowBuyerPage() {
   }
 
   async function handleFundEscrow() {
-    if (!escrow || !privyWallet) {
+    if (!escrow || !walletAddress) {
       addToast({ type: "error", message: "Wallet not ready. Please wait a moment." });
       return;
     }
@@ -526,11 +522,11 @@ export default function EscrowBuyerPage() {
                       </p>
                       <GlowButton
                         onClick={handleFundEscrow}
-                        loading={funding || waitingReceipt}
-                        disabled={funding || waitingReceipt}
+                        loading={funding || txPending}
+                        disabled={funding || txPending}
                         className="w-full !bg-green-500 !text-black hover:!bg-green-400 !shadow-[0_0_20px_rgba(74,222,128,0.35)]"
                       >
-                        {funding || waitingReceipt ? "Processing..." : "🔒 Fund Escrow →"}
+                        {funding || txPending ? "Processing..." : "🔒 Fund Escrow →"}
                       </GlowButton>
                     </div>
                   )}
