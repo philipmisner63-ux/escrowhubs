@@ -322,8 +322,16 @@ export default function EscrowBuyerPage() {
           </GlassCard>
         )}
 
+        {/* Loading while Web3Auth initializes — prevents premature login gate flash */}
+        {!notFound && escrow && !isAlreadyFunded && !ready && (
+          <GlassCard className="p-8 text-center">
+            <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-slate-400 text-sm mt-4">Checking your session...</p>
+          </GlassCard>
+        )}
+
         {/* Login gate */}
-        {!notFound && escrow && !isAlreadyFunded && !authenticated && (
+        {!notFound && escrow && !isAlreadyFunded && ready && !authenticated && (
           <GlassCard className="p-8 text-center space-y-5">
             <div className="text-4xl">✉️</div>
             <h2 className="text-lg font-semibold text-white">Sign in to pay</h2>
@@ -337,7 +345,7 @@ export default function EscrowBuyerPage() {
         )}
 
         {/* Wrong buyer */}
-        {!notFound && escrow && !isAlreadyFunded && authenticated && !isBuyer && (
+        {!notFound && escrow && !isAlreadyFunded && ready && authenticated && !isBuyer && (
           <GlassCard className="p-8 text-center space-y-4">
             <div className="text-4xl">🚫</div>
             <h2 className="text-lg font-semibold">Not Your Escrow</h2>
@@ -352,7 +360,7 @@ export default function EscrowBuyerPage() {
         )}
 
         {/* Payment flow */}
-        {!notFound && escrow && !isAlreadyFunded && authenticated && isBuyer && (
+        {!notFound && escrow && !isAlreadyFunded && ready && authenticated && isBuyer && (
           <div className="space-y-5">
             {/* Escrow summary */}
             <GlassCard className="p-6 space-y-4">

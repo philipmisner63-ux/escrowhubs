@@ -187,10 +187,17 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
     }
     try {
       await w3a.connect();
-      // Small delay to let Web3Auth finalize connection state
-      await new Promise(r => setTimeout(r, 500));
-      console.log("Web3Auth status after connect:", w3a.status, "connected:", w3a.connected);
+
+      // Poll until Web3Auth status is confirmed connected (email OTP can take a moment)
+      let attempts = 0;
+      while (!w3a.connected && w3a.status !== "connected" && attempts < 20) {
+        await new Promise(r => setTimeout(r, 300));
+        attempts++;
+      }
+      console.log("Web3Auth status after connect:", w3a.status, "connected:", w3a.connected, "attempts:", attempts);
+
       await refreshState(w3a);
+
       // Remove any lingering Web3Auth modal overlays that block page interaction
       document.querySelectorAll("w3a-modal, #w3a-modal, [id^=w3a], [class^=w3a]").forEach(el => {
         (el as HTMLElement).style.display = "none";
