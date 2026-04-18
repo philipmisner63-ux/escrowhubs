@@ -187,19 +187,55 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
     }
     try {
       await w3a.connect();
+      console.log("Web3Auth connect() resolved, status:", w3a.status, "connected:", w3a.connected);
 
-      // Poll until Web3Auth status is confirmed connected (email OTP can take a moment)
-      // "ready" means initialized-but-not-connected — must wait for "connected" specifically
-      let attempts = 0;
-      while (!w3a.connected && w3a.status !== "connected" && w3a.status !== "errored" && attempts < 30) {
-        await new Promise(r => setTimeout(r, 300));
-        attempts++;
+      // Web3Auth status flags are unreliable on mobile after OTP.
+      // Instead: try getUserInfo directly with retries — if it succeeds we are connected.
+      let info: Record<string, unknown> | null = null;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 400));
+        try {
+          info = await w3a.getUserInfo() as Record<string, unknown>;
+          if (info) break;
+        } catch (_) {
+          // not ready yet — keep retrying
+        }
       }
-      console.log("Web3Auth status after connect:", w3a.status, "connected:", w3a.connected, "attempts:", attempts);
 
-      await refreshState(w3a);
+      if (info) {
+        const userInfo = {
+          email: info.email as string | undefined,
+          phone: (
+            info.typeOfLogin === "sms" ||
+            info.typeOfLogin === "sms_passwordless" ||
+            (typeof info.verifierId === "string" && /^[+\d]/.test(info.verifierId as string) && !String(info.verifierId).includes("@"))
+          ) ? info.verifierId as string : undefined,
+          name: info.name as string | undefined,
+          profileImage: info.profileImage as string | undefined,
+        };
+        setAuthenticated(true);
+        setUser(userInfo);
+        try { localStorage.setItem("w3a_user_cache", JSON.stringify(userInfo)); } catch (_) {}
+        if (w3a.provider) {
+          setWalletProvider(w3a.provider);
+          try {
+            const accounts = await w3a.provider.request({ method: "eth_accounts" }) as string[];
+            setWalletAddress(accounts?.[0] ?? null);
+          } catch (_) {}
+        }
+        setReady(true);
+      } else {
+        // getUserInfo failed after retries — try restoring from cache
+        const cached = localStorage.getItem("w3a_user_cache");
+        if (cached) {
+          setAuthenticated(true);
+          setUser(JSON.parse(cached));
+          if (w3a.provider) setWalletProvider(w3a.provider);
+        }
+        await refreshState(w3a);
+      }
 
-      // Remove any lingering Web3Auth modal overlays that block page interaction
+      // Clean up any lingering modal overlays
       document.querySelectorAll("w3a-modal, #w3a-modal, [id^=w3a], [class^=w3a]").forEach(el => {
         (el as HTMLElement).style.display = "none";
         (el as HTMLElement).style.pointerEvents = "none";
