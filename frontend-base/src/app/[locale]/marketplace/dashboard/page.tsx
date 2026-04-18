@@ -194,6 +194,7 @@ export default function MarketplaceDashboard() {
         body: JSON.stringify({ escrow_id: escrow.escrow_id, status: "RELEASED" }),
       });
       setSellingEscrows(prev => prev.map(e => e.escrow_id === escrow.escrow_id ? { ...e, status: "RELEASED" } : e));
+      setBuyingEscrows(prev => prev.map(e => e.escrow_id === escrow.escrow_id ? { ...e, status: "RELEASED" } : e));
       addToast({ type: "success", message: "Funds released successfully!" });
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Transaction failed" });
