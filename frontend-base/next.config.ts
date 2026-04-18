@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const CSP = [
   "default-src 'self' https://*.web3auth.io https://wallet.web3auth.io",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.hcaptcha.com https://*.hcaptcha.com https://*.web3auth.io https://cdn.segment.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.hcaptcha.com https://*.hcaptcha.com https://*.web3auth.io https://cdn.segment.com https://js.stripe.com https://crypto-js.stripe.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https: blob:",
@@ -45,8 +45,10 @@ const CSP = [
     "https://mslxqfgiglarthzikbfv.supabase.co",
     "wss://mslxqfgiglarthzikbfv.supabase.co",
     "https://api.resend.com",
+    "https://api.stripe.com",
+    "https://crypto-js.stripe.com",
   ].join(" "),
-  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com",
+  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com https://crypto-js.stripe.com https://js.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -277,6 +277,16 @@ export default function EscrowBuyerPage() {
     }
   }
 
+  function handleCopyWallet() {
+    const addrToCopy = escrow?.buyer_wallet || walletAddress;
+    if (!addrToCopy) return;
+    navigator.clipboard.writeText(addrToCopy).then(() => {
+      setWalletCopied(true);
+      addToast({ type: "success", message: "Wallet address copied!" });
+      setTimeout(() => setWalletCopied(false), 3000);
+    });
+  }
+
   const isBuyer =
     !!userEmail && !!escrow?.buyer_email &&
     userEmail.toLowerCase() === escrow.buyer_email.toLowerCase();
