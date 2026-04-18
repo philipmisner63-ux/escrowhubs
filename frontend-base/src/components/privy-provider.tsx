@@ -56,19 +56,35 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
           info = await w3a.getUserInfo() as Record<string, unknown>;
         } catch (e) { 
           console.warn("getUserInfo failed:", e);
-          // Session restored from cache but getUserInfo unavailable — still mark authenticated
+          // Session restored from cache but getUserInfo unavailable
+          // Try restoring user info from localStorage cache
           setAuthenticated(true);
           if (w3a.provider) setWalletProvider(w3a.provider);
+          try {
+            const cached = localStorage.getItem("w3a_user_cache");
+            if (cached) setUser(JSON.parse(cached));
+          } catch (_) {}
+          // Still try to get wallet address
+          try {
+            const provider = w3a.provider;
+            if (provider) {
+              const accounts = await provider.request({ method: "eth_accounts" }) as string[];
+              setWalletAddress(accounts?.[0] ?? null);
+            }
+          } catch (_) {}
           return;
         }
         console.log("Web3Auth user info:", info);
         setAuthenticated(true);
-        setUser({
+        const userInfo = {
           email: info.email as string | undefined,
           phone: info.typeOfLogin === "sms" ? info.verifierId as string : undefined,
           name: info.name as string | undefined,
           profileImage: info.profileImage as string | undefined,
-        });
+        };
+        setUser(userInfo);
+        // Cache for session restore (getUserInfo unavailable on reconnect)
+        try { localStorage.setItem("w3a_user_cache", JSON.stringify(userInfo)); } catch (_) {}
         try {
           const provider = w3a.provider;
           if (provider) {
@@ -191,6 +207,7 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
     setUser(null);
     setWalletAddress(null);
     setWalletProvider(null);
+    try { localStorage.removeItem("w3a_user_cache"); } catch (_) {}
   }, []);
 
   if (!mounted) return <>{children}</>;
