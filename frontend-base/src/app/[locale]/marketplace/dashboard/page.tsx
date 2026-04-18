@@ -92,14 +92,14 @@ function EscrowCard({ escrow, role, userEmail, onRelease, releasing }: EscrowCar
       </div>
 
       {/* Seller actions */}
-      {role === "seller" && escrow.status === "FUNDED" && escrow.contract_address && (
+      {role === "buyer" && escrow.status === "FUNDED" && escrow.contract_address && (
         <GlowButton
           onClick={() => onRelease(escrow)}
           loading={isReleasing}
           disabled={isReleasing}
           className="w-full !bg-green-500 !text-black hover:!bg-green-400 !shadow-[0_0_20px_rgba(74,222,128,0.35)]"
         >
-          {isReleasing ? "Releasing..." : "Release Funds to Me →"}
+          {isReleasing ? "Releasing..." : "Confirm Delivery & Release Funds →"}
         </GlowButton>
       )}
 
