@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { SupportModal } from "@/components/SupportModal";
+import dynamic from "next/dynamic";
+const SupportModal = dynamic(
+  () => import("@/components/SupportModal").then((m) => m.SupportModal),
+  { ssr: false, loading: () => null }
+);
 
 interface SupportButtonProps {
   lastTxHash?: string;

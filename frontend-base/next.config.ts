@@ -4,8 +4,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const CSP = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "default-src 'self' https://*.web3auth.io https://wallet.web3auth.io",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.hcaptcha.com https://*.hcaptcha.com https://*.web3auth.io https://cdn.segment.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https: blob:",
@@ -25,8 +25,25 @@ const CSP = [
     "https://pulse.walletconnect.org",
     "https://api.etherscan.io",
     "https://api.basescan.org",
+    "https://auth.web3auth.io",
+    "https://*.web3auth.io",
+    "https://api.web3modal.org",
+    "https://*.web3modal.org",
+    "https://api.web3modal.com",
+    "wss://relay.walletconnect.com",
+    "https://gateway.pinata.cloud",
+    "https://*.mypinata.cloud",
+    "https://ipfs.io",
+    "https://cdn.segment.com",
+    "https://api.segment.io",
+    "https://*.hcaptcha.com",
+    "https://sentry.hcaptcha.com",
+    "wss://session.web3auth.io",
+    "https://session.web3auth.io",
+    "wss://passwordless.web3auth.io",
+    "https://passwordless.web3auth.io",
   ].join(" "),
-  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org",
+  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -52,7 +69,7 @@ const nextConfig: NextConfig = {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
   experimental: {
-    optimizePackageImports: ["@rainbow-me/rainbowkit", "wagmi", "viem"],
+    optimizePackageImports: ["viem"],  // wagmi/rainbowkit removed — prevents SES leaking into shared chunks
   },
 };
 
