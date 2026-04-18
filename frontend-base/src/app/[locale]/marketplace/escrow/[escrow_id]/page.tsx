@@ -120,6 +120,30 @@ export default function EscrowBuyerPage() {
       .finally(() => setLoadingEscrow(false));
   }, [escrow_id]);
 
+  // Auto-skip Stripe if wallet already has enough USDC
+  useEffect(() => {
+    if (!walletAddress || !escrow || onrampDone) return;
+    const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as string;
+    if (!usdcAddress) return;
+    const needed = escrow.amount_usdc + (escrow.arbitration_enabled ? 1.0 : 0) + escrow.amount_usdc * 0.005;
+    const padded = walletAddress.slice(2).toLowerCase().padStart(64, "0");
+    const calldata = "0x70a08231" + padded;
+    fetch("https://mainnet.base.org", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", method: "eth_call", id: 1, params: [{ to: usdcAddress, data: calldata }, "latest"] }),
+    })
+      .then(r => r.json())
+      .then(res => {
+        const balance = parseInt(res.result, 16) / 1e6;
+        if (balance >= needed) {
+          setOnrampDone(true);
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress, escrow?.escrow_id]);
+
   // Save buyer wallet address to DB once authenticated + wallet ready
   useEffect(() => {
     if (!walletAddress || !escrow_id || !authenticated) return;
@@ -213,6 +237,32 @@ export default function EscrowBuyerPage() {
     const arbiterAddress = process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS as `0x${string}`;
     const sellerWallet = escrow.seller_wallet as `0x${string}`;
     const amountWei = parseUnits(escrow.amount_usdc.toFixed(6), 6);
+
+    // Ensure Web3Auth wallet is on Base mainnet (chain 0x2105 = 8453)
+    try {
+      await walletProvider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x2105" }],
+      });
+    } catch (switchErr: unknown) {
+      try {
+        await walletProvider.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: "0x2105",
+            chainName: "Base Mainnet",
+            nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["https://mainnet.base.org"],
+            blockExplorerUrls: ["https://basescan.org"],
+          }],
+        });
+      } catch (_addErr) {
+        addToast({ type: "error", message: "Could not switch to Base network. Please try again." });
+        setFunding(false);
+        setTxPending(false);
+        return;
+      }
+    }
 
     const walletClient = createWalletClient({
       account: walletAddress as `0x${string}`,
@@ -507,7 +557,7 @@ export default function EscrowBuyerPage() {
                   </div>
 
                   {!clientSecret && !onrampDone && (
-                    <div className="ml-8">
+                    <div className="ml-8 space-y-2">
                       <GlowButton
                         onClick={handleStartOnramp}
                         loading={onrampLoading}
@@ -517,6 +567,12 @@ export default function EscrowBuyerPage() {
                       >
                         {onrampLoading ? "Loading payment..." : `Pay $${fees?.total.toFixed(2) ?? "..."} with Card →`}
                       </GlowButton>
+                      <button
+                        onClick={() => setOnrampDone(true)}
+                        className="w-full text-xs text-slate-500 hover:text-cyan-400 transition-colors py-1"
+                      >
+                        I already have USDC → skip to Fund Escrow
+                      </button>
                     </div>
                   )}
 
