@@ -302,8 +302,17 @@ export default function EscrowBuyerPage() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash: factoryTxHash });
 
-      // Step 3: update status in Supabase
-      const contractAddress = receipt.contractAddress ?? receipt.to ?? undefined;
+      // Step 3: extract actual SimpleEscrow contract address from event logs
+      // SimpleEscrowCreated event: topics[1] = indexed contractAddress
+      // Last log from factory address contains this event
+      let contractAddress: string | undefined;
+      for (const log of [...receipt.logs].reverse()) {
+        if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics.length >= 2) {
+          contractAddress = "0x" + log.topics[1].slice(-40);
+          break;
+        }
+      }
+      if (!contractAddress) contractAddress = receipt.to ?? undefined;
       await fetch("/api/marketplace/update-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
