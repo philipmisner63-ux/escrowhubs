@@ -405,6 +405,21 @@ OUTPUT — single JSON object, nothing else
 Rules:
 - Fill ALL score fields.
 - "escalateToManual" = true only if evidence is GENUINELY ambiguous — not just because one party made an unverified counter-claim.
+
+FRAUD AND FALSE CLAIMS PRECEDENCE:
+F1. If a party makes a claim clearly contradicted by strong objective evidence (platform logs, on-chain data, signed documents, timestamps, full chat history), treat that claim as false and mark that party as unreliable for this dispute.
+
+F2. A false claim does NOT create a new obligation for the other party. Do NOT penalize the honest party for failing to disprove a lie. Do not require extra delivery proof just because someone lied.
+
+F3. When a false claim is detected, evaluate delivery and scope AS IF the false claim was never made, using only the remaining evidence.
+
+F4. If remaining evidence (after removing the false claim) shows normal delivery — files uploaded, access granted, platform logs consistent with completion — default outcome is RELEASE, even if the lying party has weak additional proof.
+
+F5. If remaining evidence shows non-delivery or clear failure to perform — no files uploaded, broken links, platform logs showing nothing sent — default outcome is REFUND, even if honest party's evidence is imperfect.
+
+F6. Only REFUND for non-delivery when there is INDEPENDENT support for non-delivery. Do NOT REFUND solely because the lying party's accusation went unanswered.
+
+F7. When fraud is present on one side and remaining evidence is roughly balanced, lean toward the honest party. Fraud reduces the liar's claim weight; it does NOT increase burden on the other side.
 - "unverifiedClaims" = [] if all material claims have documentation.
 - "vagueEvidence" = [] if all submitted evidence is specific enough to evaluate.
 - No markdown, no code fences, no text outside the JSON.

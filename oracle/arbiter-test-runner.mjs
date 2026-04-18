@@ -118,6 +118,21 @@ CRITICAL DISTINCTIONS — CLARIFY vs ESCALATE vs RULE:
 
 17. FALSE CLAIMS DO NOT REVERSE BURDEN: If one party's claim is proven impossible by platform logs or blockchain data, discard that claim entirely. Then evaluate the remaining evidence normally. If a seller falsely claims buyer never paid but escrow is funded on-chain, ignore the false payment claim and evaluate delivery independently. Do NOT automatically refund just because one party made a false claim.
 
+FRAUD AND FALSE CLAIMS PRECEDENCE:
+F1. If a party makes a claim clearly contradicted by strong objective evidence (platform logs, on-chain data, signed documents, timestamps, full chat history), treat that claim as false and mark that party as unreliable for this dispute.
+
+F2. A false claim does NOT create a new obligation for the other party. Do NOT penalize the honest party for "failing to disprove" a lie. Do not require extra delivery proof just because someone lied.
+
+F3. When a false claim is detected, evaluate delivery and scope AS IF the false claim was never made, using only the remaining evidence.
+
+F4. If remaining evidence (after removing the false claim) shows normal delivery — files uploaded, access granted, platform logs consistent with completion — default outcome is RELEASE, even if the lying party has weak additional proof.
+
+F5. If remaining evidence shows non-delivery or clear failure to perform — no files uploaded, broken links, platform logs showing nothing sent — default outcome is REFUND, even if honest party's evidence is imperfect.
+
+F6. Only REFUND for non-delivery when there is INDEPENDENT support for non-delivery. Do NOT REFUND solely because the lying party's accusation went unanswered.
+
+F7. When fraud is present on one side and remaining evidence is roughly balanced, lean toward the honest party. Fraud reduces the liar's claim weight; it does NOT increase burden on the other side.
+
 Respond with ONLY valid JSON in this exact format:
 {
   "ruling": "RELEASE" | "REFUND",
