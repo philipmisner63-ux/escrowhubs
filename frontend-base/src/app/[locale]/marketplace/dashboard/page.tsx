@@ -5,7 +5,7 @@ import { usePrivy } from "@/components/privy-provider";
 import { createWalletClient, createPublicClient, custom, http } from "viem";
 import { base } from "viem/chains";
 import { Link } from "@/i18n/navigation";
-import { Nav } from "@/components/nav";
+import { MarketplaceNav } from "@/components/marketplace-nav";
 import { Footer } from "@/components/footer";
 import { AnimatedBackground } from "@/components/animated-background";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -186,7 +186,7 @@ export default function MarketplaceDashboard() {
     return (
       <div className="min-h-screen bg-[#080b14] text-white flex flex-col">
         <AnimatedBackground />
-        <Nav />
+        <MarketplaceNav />
         <main className="flex-1 flex items-center justify-center">
           <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
         </main>
@@ -198,7 +198,7 @@ export default function MarketplaceDashboard() {
   return (
     <div className="min-h-screen bg-[#080b14] text-white flex flex-col">
       <AnimatedBackground />
-      <Nav />
+      <MarketplaceNav />
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-12">
         {/* Header */}

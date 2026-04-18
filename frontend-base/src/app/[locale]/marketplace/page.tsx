@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePrivy } from "@/components/privy-provider";
 import { Link } from "@/i18n/navigation";
-import { Nav } from "@/components/nav";
+import { MarketplaceNav } from "@/components/marketplace-nav";
 import { Footer } from "@/components/footer";
 import { AnimatedBackground } from "@/components/animated-background";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -108,7 +108,7 @@ export default function MarketplacePage() {
     return (
       <div className="min-h-screen bg-[#080b14] text-white flex flex-col">
         <AnimatedBackground />
-        <Nav />
+        <MarketplaceNav />
         <main className="flex-1 flex items-center justify-center">
           <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
         </main>
@@ -120,7 +120,7 @@ export default function MarketplacePage() {
   return (
     <div className="min-h-screen bg-[#080b14] text-white flex flex-col">
       <AnimatedBackground />
-      <Nav />
+      <MarketplaceNav />
 
       <div className="bg-yellow-500/20 border-b border-yellow-500/40 px-4 py-2 text-center text-yellow-300 text-sm font-medium">⚠️ Test Mode — Marketplace is under development and not yet open to the public</div><main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
         {/* Header */}
