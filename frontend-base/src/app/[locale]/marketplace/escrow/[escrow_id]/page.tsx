@@ -236,10 +236,11 @@ export default function EscrowBuyerPage() {
     const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
     const arbiterAddress = process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS as `0x${string}`;
     const sellerWallet = escrow.seller_wallet as `0x${string}`;
-    // Must approve total amount including protocol fee + arbiter fee
+    // Approve escrow amount + protocol fee only (0.5%)
+    // Note: aiArbiterFee on contract is ETH-denominated — incompatible with ERC-20 escrows
+    // useAIArbiter is set to false until contract is redeployed with USDC-denominated arbiter fee
     const protocolFee = escrow.amount_usdc * 0.005;
-    const arbiterFee = escrow.arbitration_enabled ? 1.0 : 0;
-    const totalAmount = escrow.amount_usdc + protocolFee + arbiterFee;
+    const totalAmount = escrow.amount_usdc + protocolFee;
     const amountWei = parseUnits(totalAmount.toFixed(6), 6);
 
     // Ensure Web3Auth wallet is on Base mainnet (chain 0x2105 = 8453)
@@ -297,7 +298,7 @@ export default function EscrowBuyerPage() {
         address: factoryAddress,
         abi: FACTORY_ABI,
         functionName: "createSimpleEscrow",
-        args: [sellerWallet, arbiterAddress, 0, escrow.arbitration_enabled, usdcAddress, zeroAddress],
+        args: [sellerWallet, arbiterAddress, 0, false, usdcAddress, zeroAddress], // useAIArbiter=false: contract aiArbiterFee is ETH-denominated, breaks ERC-20
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash: factoryTxHash });
 
