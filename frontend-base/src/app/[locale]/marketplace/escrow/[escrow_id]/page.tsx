@@ -120,6 +120,20 @@ export default function EscrowBuyerPage() {
       .finally(() => setLoadingEscrow(false));
   }, [escrow_id]);
 
+  // Save buyer wallet address to DB once authenticated + wallet ready
+  useEffect(() => {
+    if (!walletAddress || !escrow_id || !authenticated) return;
+    if (escrow?.buyer_wallet) return; // already saved
+    fetch("/api/marketplace/update-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ escrow_id, buyer_wallet: walletAddress }),
+    }).then(() => {
+      setEscrow(prev => prev ? { ...prev, buyer_wallet: walletAddress } : prev);
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress, escrow_id, authenticated]);
+
   // Load Stripe scripts (only once)
   useEffect(() => {
     if (stripeLoaded.current) return;
@@ -449,10 +463,10 @@ export default function EscrowBuyerPage() {
                   <p className="text-xs text-slate-400 ml-8">
                     Stripe will ask for your wallet address. Copy it below and paste it in the payment form.
                   </p>
-                  {escrow.buyer_wallet && (
+                  {(escrow.buyer_wallet || walletAddress) && (
                     <div className="ml-8 flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5">
                       <span className="text-xs text-slate-300 font-mono flex-1 truncate">
-                        {escrow.buyer_wallet}
+                        {escrow.buyer_wallet || walletAddress}
                       </span>
                       <button
                         onClick={handleCopyWallet}

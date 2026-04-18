@@ -3,20 +3,21 @@ import { createServerClient } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   try {
-    const { escrow_id, status, contract_address, on_chain_escrow_id } = await req.json();
+    const { escrow_id, status, contract_address, on_chain_escrow_id, buyer_wallet } = await req.json();
 
-    if (!escrow_id || !status) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!escrow_id) {
+      return NextResponse.json({ error: "Missing escrow_id" }, { status: 400 });
     }
 
     const supabase = createServerClient();
 
     const updates: Record<string, unknown> = {
-      status,
       updated_at: new Date().toISOString(),
     };
+    if (status) updates.status = status;
     if (contract_address) updates.contract_address = contract_address;
     if (on_chain_escrow_id) updates.on_chain_escrow_id = on_chain_escrow_id;
+    if (buyer_wallet) updates.buyer_wallet = buyer_wallet;
     if (status === "FUNDED") updates.funded_at = new Date().toISOString();
     if (status === "RELEASED") updates.released_at = new Date().toISOString();
 
