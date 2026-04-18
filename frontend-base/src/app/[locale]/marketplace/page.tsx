@@ -174,9 +174,28 @@ export default function MarketplacePage() {
             <h2 className="text-2xl font-bold text-white">Escrow Created!</h2>
             <p className="text-slate-400 text-sm max-w-sm mx-auto">
               {successState.buyer_notified_by === "link_only"
-                ? "Share the link below directly with your buyer."
-                : "An email has been sent to your buyer with the payment link. Once they fund the escrow, you will be notified."}
+                ? "Share the payment link below with your buyer."
+                : "Your buyer has been emailed the payment link."}
             </p>
+
+            {/* Next steps */}
+            <div className="bg-white/3 border border-white/8 rounded-xl p-4 text-left space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">What happens next</p>
+              <ol className="space-y-2 text-sm text-slate-300">
+                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">1.</span>
+                  <span>{successState.buyer_notified_by === "link_only" ? "Send the link below to your buyer so they can complete payment." : "Your buyer receives the email and clicks the payment link — no action needed from you yet."}</span>
+                </li>
+                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">2.</span>
+                  <span>Your buyer verifies their identity and funds the escrow with USDC.</span>
+                </li>
+                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">3.</span>
+                  <span>You deliver the goods or service as agreed.</span>
+                </li>
+                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">4.</span>
+                  <span>Go to your <strong className="text-white">Dashboard</strong> and release the funds once delivery is confirmed.</span>
+                </li>
+              </ol>
+            </div>
 
             {/* Escrow URL */}
             <div className="space-y-2 text-left">
