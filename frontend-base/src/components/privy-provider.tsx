@@ -98,9 +98,15 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
         const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID;
         if (!clientId) { setReady(true); return; }
 
+        const currentUrl = typeof window !== "undefined" ? window.location.href : "https://base.escrowhubs.io";
+
         const w3a = new Web3Auth({
           clientId,
           web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+          // Use popup on desktop, redirect on mobile — redirect needs redirectUrl to return to current page
+          uiConfig: {
+            redirectUrl: currentUrl,
+          },
           chainConfig: {
             chainNamespace: CHAIN_NAMESPACES.EIP155,
             chainId: "0x2105",
@@ -129,6 +135,26 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
 
         await w3a.init();
         w3aRef.current = w3a;
+
+        // 🔍 DIAGNOSTIC — remove after debugging mobile redirect issue
+        console.group("🔍 Web3Auth Diagnostic");
+        console.log("status:", w3a.status);
+        console.log("connected:", w3a.connected);
+        console.log("provider:", !!w3a.provider);
+        const lsKeys: Record<string, string | null> = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.includes("web3auth") || k.includes("openlogin") || k.includes("torus") || k.includes("w3a"))) {
+            lsKeys[k] = localStorage.getItem(k);
+          }
+        }
+        console.log("localStorage w3a keys:", lsKeys);
+        const params = new URLSearchParams(window.location.search);
+        const paramObj = Object.fromEntries(params.entries());
+        console.log("URL params:", paramObj);
+        console.log("URL hash:", window.location.hash.slice(0, 100));
+        console.groupEnd();
+        // 🔍 END DIAGNOSTIC
 
         // Try to restore existing session via getUserInfo
         const restored = await applySession(w3a);
