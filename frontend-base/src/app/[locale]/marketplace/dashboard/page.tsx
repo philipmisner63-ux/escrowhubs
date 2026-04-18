@@ -129,7 +129,7 @@ export default function MarketplaceDashboard() {
   const [loadingEscrows, setLoadingEscrows] = useState(true);
   const [releasing, setReleasing] = useState<string | null>(null);
 
-  const userEmail = user?.email?.address ?? "";
+  const userEmail = user?.email ?? "";
 
   const [releasingEscrowId, setReleasingEscrowId] = useState<string | null>(null);
 

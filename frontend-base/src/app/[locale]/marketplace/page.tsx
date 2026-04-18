@@ -98,7 +98,7 @@ export default function MarketplacePage() {
 
   function handleReset() {
     setSuccessState(null);
-    setBuyerEmail("");
+    setBuyerContact("");
     setAmount("");
     setDescription("");
     setUseAIArbiter(true);
@@ -234,7 +234,7 @@ export default function MarketplacePage() {
                   type="text"
                   placeholder="buyer@example.com or +1 234 567 8900"
                   value={buyerContact}
-                  onChange={(e) => setBuyerEmail(e.target.value)}
+                  onChange={(e) => setBuyerContact(e.target.value)}
                   required
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
                 />

@@ -104,7 +104,7 @@ export default function EscrowBuyerPage() {
   // No wagmi — use viem directly with Web3Auth EIP-1193 provider
   const [txPending, setTxPending] = useState(false);
 
-  const userEmail = user?.email?.address ?? "";
+  const userEmail = user?.email ?? "";
   
 
   // Fetch escrow data
