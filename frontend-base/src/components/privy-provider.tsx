@@ -19,7 +19,6 @@ interface Web3AuthContextType {
   authenticated: boolean;
   user: Web3AuthUser | null;
   walletAddress: string | null;
-  /** Raw EIP-1193 provider — use for direct viem calls instead of wagmi */
   walletProvider: IProvider | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
@@ -39,6 +38,21 @@ export function usePrivy() {
   return useContext(Web3AuthContext);
 }
 
+function buildUserInfo(info: Record<string, unknown>): Web3AuthUser {
+  const verifierId = info.verifierId as string | undefined;
+  const isPhone = !!(
+    info.typeOfLogin === "sms" ||
+    info.typeOfLogin === "sms_passwordless" ||
+    (verifierId && /^[+\d]/.test(verifierId) && !verifierId.includes("@"))
+  );
+  return {
+    email: info.email as string | undefined,
+    phone: isPhone ? verifierId : undefined,
+    name: info.name as string | undefined,
+    profileImage: info.profileImage as string | undefined,
+  };
+}
+
 export function PrivyWalletProvider({ children }: { children: React.ReactNode }) {
   const w3aRef = useRef<Web3Auth | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -48,77 +62,32 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [walletProvider, setWalletProvider] = useState<IProvider | null>(null);
 
-  const refreshState = useCallback(async (w3a: Web3Auth) => {
+  // Single source of truth: getUserInfo() success = authenticated.
+  // Never trust w3a.connected or w3a.status — they are unreliable on mobile.
+  const applySession = useCallback(async (w3a: Web3Auth): Promise<boolean> => {
     try {
-      if (w3a.connected || w3a.status === "connected") {
-        let info: Record<string, unknown> = {};
-        try { 
-          info = await w3a.getUserInfo() as Record<string, unknown>;
-        } catch (e) { 
-          console.warn("getUserInfo failed:", e);
-          // Session restored from cache but getUserInfo unavailable
-          // Try restoring user info from localStorage cache
-          setAuthenticated(true);
-          if (w3a.provider) setWalletProvider(w3a.provider);
-          try {
-            const cached = localStorage.getItem("w3a_user_cache");
-            if (cached) setUser(JSON.parse(cached));
-          } catch (_) {}
-          // Still try to get wallet address
-          try {
-            const provider = w3a.provider;
-            if (provider) {
-              const accounts = await provider.request({ method: "eth_accounts" }) as string[];
-              setWalletAddress(accounts?.[0] ?? null);
-            }
-          } catch (_) {}
-          return;
-        }
-        console.log("Web3Auth user info:", info);
-        setAuthenticated(true);
-        const userInfo = {
-          email: info.email as string | undefined,
-          // Web3Auth uses 'sms_passwordless' for SMS login (not 'sms')
-          // Also catch phone numbers stored directly in verifierId
-          phone: (
-            info.typeOfLogin === "sms" ||
-            info.typeOfLogin === "sms_passwordless" ||
-            (typeof info.verifierId === "string" && /^[+\d]/.test(info.verifierId as string) && !String(info.verifierId).includes("@"))
-          ) ? info.verifierId as string : undefined,
-          name: info.name as string | undefined,
-          profileImage: info.profileImage as string | undefined,
-        };
-        setUser(userInfo);
-        // Cache for session restore (getUserInfo unavailable on reconnect)
-        try { localStorage.setItem("w3a_user_cache", JSON.stringify(userInfo)); } catch (_) {}
+      const info = await w3a.getUserInfo() as Record<string, unknown>;
+      if (!info || (!info.email && !info.verifierId)) return false;
+
+      const userInfo = buildUserInfo(info);
+      setAuthenticated(true);
+      setUser(userInfo);
+      try { localStorage.setItem("w3a_user_cache", JSON.stringify(userInfo)); } catch (_) {}
+
+      if (w3a.provider) {
+        setWalletProvider(w3a.provider);
         try {
-          const provider = w3a.provider;
-          if (provider) {
-            setWalletProvider(provider);
-            const accounts = await provider.request({ method: "eth_accounts" }) as string[];
-            console.log("Web3Auth wallet:", accounts?.[0]);
-            setWalletAddress(accounts?.[0] ?? null);
-          }
-        } catch (e) { console.warn("eth_accounts failed:", e); }
-      } else {
-        setAuthenticated(false);
-        setUser(null);
-        setWalletAddress(null);
-        setWalletProvider(null);
+          const accounts = await w3a.provider.request({ method: "eth_accounts" }) as string[];
+          setWalletAddress(accounts?.[0] ?? null);
+        } catch (_) {}
       }
-    } catch (e) {
-      console.error("Web3Auth refreshState error:", e);
-      // Fail open — still mark as authenticated if connected
-      if (w3a.connected) {
-        setAuthenticated(true);
-        if (w3a.provider) setWalletProvider(w3a.provider);
-      }
+      return true;
+    } catch (_) {
+      return false;
     }
   }, []);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!mounted) return;
@@ -127,11 +96,7 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
       await new Promise(r => setTimeout(r, 100));
       try {
         const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID;
-        if (!clientId) {
-          console.error("Web3Auth: missing NEXT_PUBLIC_WEB3AUTH_CLIENT_ID");
-          setReady(true);
-          return;
-        }
+        if (!clientId) { setReady(true); return; }
 
         const w3a = new Web3Auth({
           clientId,
@@ -144,18 +109,14 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
             ticker: "ETH",
             tickerName: "Ethereum",
           },
-
-          // Explicitly restrict to Base mainnet only — prevents BlockDAG chain ID conflict
-          chains: [
-            {
-              chainNamespace: CHAIN_NAMESPACES.EIP155,
-              chainId: "0x2105",
-              rpcTarget: "https://mainnet.base.org",
-              displayName: "Base Mainnet",
-              ticker: "ETH",
-              tickerName: "Ethereum",
-            }
-          ],
+          chains: [{
+            chainNamespace: CHAIN_NAMESPACES.EIP155,
+            chainId: "0x2105",
+            rpcTarget: "https://mainnet.base.org",
+            displayName: "Base Mainnet",
+            ticker: "ETH",
+            tickerName: "Ethereum",
+          }],
           defaultChain: {
             chainNamespace: CHAIN_NAMESPACES.EIP155,
             chainId: "0x2105",
@@ -168,7 +129,25 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
 
         await w3a.init();
         w3aRef.current = w3a;
-        await refreshState(w3a);
+
+        // Try to restore existing session via getUserInfo
+        const restored = await applySession(w3a);
+
+        // If getUserInfo failed but we have a cache, use it
+        if (!restored) {
+          try {
+            const cached = localStorage.getItem("w3a_user_cache");
+            if (cached && w3a.provider) {
+              setUser(JSON.parse(cached));
+              setAuthenticated(true);
+              setWalletProvider(w3a.provider);
+              try {
+                const accounts = await w3a.provider.request({ method: "eth_accounts" }) as string[];
+                setWalletAddress(accounts?.[0] ?? null);
+              } catch (_) {}
+            }
+          } catch (_) {}
+        }
       } catch (e) {
         console.error("Web3Auth init error:", e);
       } finally {
@@ -177,63 +156,36 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
     };
 
     init();
-  }, [mounted, refreshState]);
+  }, [mounted, applySession]);
 
   const login = useCallback(async () => {
     const w3a = w3aRef.current;
-    if (!w3a) {
-      console.error("Web3Auth not initialized");
-      return;
-    }
+    if (!w3a) return;
+
     try {
       await w3a.connect();
-      console.log("Web3Auth connect() resolved, status:", w3a.status, "connected:", w3a.connected);
 
-      // Web3Auth status flags are unreliable on mobile after OTP.
-      // Instead: try getUserInfo directly with retries — if it succeeds we are connected.
-      let info: Record<string, unknown> | null = null;
-      for (let i = 0; i < 15; i++) {
+      // getUserInfo() is the only reliable signal on mobile.
+      // Retry for up to 10 seconds after connect() resolves.
+      let success = false;
+      for (let i = 0; i < 25 && !success; i++) {
         await new Promise(r => setTimeout(r, 400));
-        try {
-          info = await w3a.getUserInfo() as Record<string, unknown>;
-          if (info) break;
-        } catch (_) {
-          // not ready yet — keep retrying
-        }
+        success = await applySession(w3a);
       }
 
-      if (info) {
-        const userInfo = {
-          email: info.email as string | undefined,
-          phone: (
-            info.typeOfLogin === "sms" ||
-            info.typeOfLogin === "sms_passwordless" ||
-            (typeof info.verifierId === "string" && /^[+\d]/.test(info.verifierId as string) && !String(info.verifierId).includes("@"))
-          ) ? info.verifierId as string : undefined,
-          name: info.name as string | undefined,
-          profileImage: info.profileImage as string | undefined,
-        };
-        setAuthenticated(true);
-        setUser(userInfo);
-        try { localStorage.setItem("w3a_user_cache", JSON.stringify(userInfo)); } catch (_) {}
-        if (w3a.provider) {
-          setWalletProvider(w3a.provider);
-          try {
-            const accounts = await w3a.provider.request({ method: "eth_accounts" }) as string[];
-            setWalletAddress(accounts?.[0] ?? null);
-          } catch (_) {}
-        }
-        setReady(true);
-      } else {
-        // getUserInfo failed after retries — try restoring from cache
-        const cached = localStorage.getItem("w3a_user_cache");
-        if (cached) {
-          setAuthenticated(true);
-          setUser(JSON.parse(cached));
-          if (w3a.provider) setWalletProvider(w3a.provider);
-        }
-        await refreshState(w3a);
+      if (!success) {
+        // Last resort: use cache if available
+        try {
+          const cached = localStorage.getItem("w3a_user_cache");
+          if (cached) {
+            setAuthenticated(true);
+            setUser(JSON.parse(cached));
+            if (w3a.provider) setWalletProvider(w3a.provider);
+          }
+        } catch (_) {}
       }
+
+      setReady(true);
 
       // Clean up any lingering modal overlays
       document.querySelectorAll("w3a-modal, #w3a-modal, [id^=w3a], [class^=w3a]").forEach(el => {
@@ -243,15 +195,12 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
     } catch (e) {
       console.error("Web3Auth connect error:", e);
     }
-  }, [refreshState]);
+  }, [applySession]);
 
   const logout = useCallback(async () => {
     const w3a = w3aRef.current;
-    if (!w3a) return;
-    try {
-      await w3a.logout();
-    } catch (e) {
-      console.error("Web3Auth logout error:", e);
+    if (w3a) {
+      try { await w3a.logout(); } catch (_) {}
     }
     setAuthenticated(false);
     setUser(null);
