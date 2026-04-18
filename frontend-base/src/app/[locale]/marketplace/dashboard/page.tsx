@@ -11,7 +11,7 @@ import { AnimatedBackground } from "@/components/animated-background";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
-import { supabaseBrowser, type MarketplaceEscrow } from "@/lib/supabase";
+import type { MarketplaceEscrow } from "@/lib/supabase";
 import { SimpleEscrowABI } from "@/lib/contracts";
 
 type EscrowStatus = MarketplaceEscrow["status"];
@@ -139,20 +139,10 @@ export default function MarketplaceDashboard() {
     setLoadingEscrows(true);
 
     const fetchEscrows = async () => {
-      const { data: selling } = await supabaseBrowser
-        .from("marketplace_escrows")
-        .select("*")
-        .eq("seller_email", userEmail)
-        .order("created_at", { ascending: false });
-
-      const { data: buying } = await supabaseBrowser
-        .from("marketplace_escrows")
-        .select("*")
-        .eq("buyer_email", userEmail)
-        .order("created_at", { ascending: false });
-
-      setSellingEscrows((selling as MarketplaceEscrow[]) ?? []);
-      setBuyingEscrows((buying as MarketplaceEscrow[]) ?? []);
+      const res = await fetch();
+      const data = await res.json();
+      setSellingEscrows((data.selling as MarketplaceEscrow[]) ?? []);
+      setBuyingEscrows((data.buying as MarketplaceEscrow[]) ?? []);
       setLoadingEscrows(false);
     };
 
