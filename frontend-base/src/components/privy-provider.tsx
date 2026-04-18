@@ -50,7 +50,7 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
 
   const refreshState = useCallback(async (w3a: Web3Auth) => {
     try {
-      if (w3a.connected || w3a.status === "connected" || w3a.status === "ready") {
+      if (w3a.connected || w3a.status === "connected") {
         let info: Record<string, unknown> = {};
         try { 
           info = await w3a.getUserInfo() as Record<string, unknown>;
@@ -189,8 +189,9 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
       await w3a.connect();
 
       // Poll until Web3Auth status is confirmed connected (email OTP can take a moment)
+      // "ready" means initialized-but-not-connected — must wait for "connected" specifically
       let attempts = 0;
-      while (!w3a.connected && w3a.status !== "connected" && attempts < 20) {
+      while (!w3a.connected && w3a.status !== "connected" && w3a.status !== "errored" && attempts < 30) {
         await new Promise(r => setTimeout(r, 300));
         attempts++;
       }
