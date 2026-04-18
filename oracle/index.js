@@ -571,6 +571,89 @@ function clearChallenge(escrowKey) {
  * Notify a party that they made an unverified claim and prompt them to submit proof.
  * Sends via Telegram (if linked) and Discord admin webhook.
  */
+
+// ─── Stage 1: Missing-Information Detector (MID) ─────────────────────────────
+// Runs BEFORE the ruling engine. Only decides CLARIFY vs PROCEED.
+// Does NOT issue a ruling. Does NOT weigh evidence.
+const MID_SYSTEM_PROMPT = `You are the Missing-Information Detector (MID) for an escrow dispute resolution system.
+Your ONLY job is to decide whether the arbiter should PAUSE for clarification (CLARIFY) or PROCEED to a ruling.
+
+You DO NOT decide who is right. You DO NOT issue a ruling.
+You ONLY check for a single, specific, verifiable missing piece of information that could change the outcome.
+
+CLARIFY: There is at least one concrete, answerable question that, if resolved with verifiable evidence
+(contract, signed scope, platform log, screenshot), could REASONABLY CHANGE which party wins.
+
+PROCEED: Either (a) no such missing question exists, or (b) any question asked would only produce
+"buyer says X, seller says Y" with no way to verify — pass to ruling engine which may ESCALATE.
+
+IMPORTANT: You are NOT weighing evidence strength. You are ONLY checking for a useful, verifiable clarification opportunity.
+If a question would only produce more unverified opinions, return PROCEED.
+
+Typical CLARIFY triggers:
+- Dispute hinges on ambiguous contract term (basic, standard, simple, starter, prototype) AND a final
+  signed scope/SOW document MIGHT EXIST that defines it.
+- Dispute hinges on whether a feature/page/deliverable was in scope AND a written scope document might exist.
+- Dispute hinges on whether an email/file was sent AND platform/email logs could verify it.
+
+Typical PROCEED triggers:
+- One side clearly has stronger evidence (platform logs, on-chain data, signed documents).
+- Dispute is about delivery facts, not interpretation (non-delivery, broken link, missing files).
+- Contract term is inherently vague and no further document is likely to define it (ESCALATE territory).
+- Any clarifying question would only produce unverifiable "buyer says / seller says" responses.
+
+Output JSON ONLY:
+{
+  "mid_decision": "CLARIFY" or "PROCEED",
+  "clarification_question": "single concrete question asking for specific verifiable evidence, or null",
+  "reason": "1-2 sentence explanation"
+}
+
+If CLARIFY: clarification_question MUST ask for a specific, verifiable document or log.
+If PROCEED: clarification_question must be null.`;
+
+async function callMID(disputeContext, evidence) {
+  try {
+    const evidenceText = evidence.length > 0
+      ? evidence.map((e, i) => `Evidence #${i + 1} (${
+          e.submitter?.toLowerCase() === disputeContext.depositor?.address?.toLowerCase()
+            ? "buyer" : "seller"
+        }): ${e.uri}`).join("\n")
+      : "No evidence submitted.";
+
+    const userContent = `DISPUTE CONTEXT:
+Seller (beneficiary): ${disputeContext.beneficiary?.address ?? "unknown"}
+Buyer (depositor): ${disputeContext.depositor?.address ?? "unknown"}
+
+${disputeContext._sellerDescription ? `SELLER DESCRIPTION: ${disputeContext._sellerDescription}` : ""}
+${disputeContext._buyerDescription ? `BUYER DESCRIPTION: ${disputeContext._buyerDescription}` : ""}
+
+EVIDENCE:
+${evidenceText}`;
+
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 300,
+      messages: [
+        { role: "user", content: MID_SYSTEM_PROMPT + "\n\n" + userContent }
+      ],
+    });
+
+    const raw = message.content[0].text.trim()
+      .replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    const result = JSON.parse(raw);
+    console.log(`   [MID] Decision: ${result.mid_decision} — ${result.reason}`);
+    if (result.mid_decision === "CLARIFY") {
+      console.log(`   [MID] Question: ${result.clarification_question}`);
+    }
+    return result;
+  } catch (e) {
+    console.warn("   [MID] Error — defaulting to PROCEED:", e.message);
+    return { mid_decision: "PROCEED", clarification_question: null, reason: "MID error — proceeding" };
+  }
+}
+
 async function sendEvidenceChallenge(escrowAddress, disputeContext, unverifiedClaims, vagueEvidence, chainName) {
   const APP_URL = "https://app.escrowhubs.io";
   const shortAddr = (a) => a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "?";
@@ -940,6 +1023,20 @@ function startChainListener(chainConfig) {
       console.log(`📋 ${tag} [SIMPLE] Evidence: ${evidence.length} | Depositor: ${depositor} | Amount: ${formatEther(amount)} ${nativeCurrency?.symbol}`);
       console.log(`🤖 ${tag} [SIMPLE] Consulting AI (round 1)...`);
 
+      // -- Stage 1: MID gate --
+      const midResult = await callMID(disputeContext, evidence);
+      if (midResult.mid_decision === "CLARIFY" && midResult.clarification_question) {
+        console.log("   [MID] Requesting clarification before ruling");
+        await sendEvidenceChallenge(escrowAddress, disputeContext, [],
+          { detected: true, clarificationNeeded: true, clarificationPrompt: midResult.clarification_question },
+          name
+        );
+        const clarifiedEvidence = await waitForChallengeResponse(escrowAddress, evidence.length, fetchEvidence);
+        if (clarifiedEvidence && clarifiedEvidence.length > evidence.length) {
+          evidence = clarifiedEvidence;
+        }
+      }
+      // -- Stage 2: Ruling engine --
       let decision = await callAI(disputeContext, evidence);
       let currentEvidence = evidence;
 
@@ -1075,6 +1172,20 @@ function startChainListener(chainConfig) {
       console.log(`   Progress: ${released}/${total} released | Depositor: ${depositor}`);
       console.log(`🤖 ${tag} [MILESTONE] Consulting AI (round 1)...`);
 
+      // -- Stage 1: MID gate (milestone) --
+      const midResultM = await callMID(disputeContext, evidence);
+      if (midResultM.mid_decision === "CLARIFY" && midResultM.clarification_question) {
+        console.log("   [MID] Requesting clarification before ruling (milestone)");
+        await sendEvidenceChallenge(escrowAddress, disputeContext, [],
+          { detected: true, clarificationNeeded: true, clarificationPrompt: midResultM.clarification_question },
+          name
+        );
+        const clarifiedEvidenceM = await waitForChallengeResponse(escrowAddress, evidence.length, fetchEvidence);
+        if (clarifiedEvidenceM && clarifiedEvidenceM.length > evidence.length) {
+          evidence = clarifiedEvidenceM;
+        }
+      }
+      // -- Stage 2: Ruling engine (milestone) --
       let decision = await callAI(disputeContext, evidence);
       let currentEvidence = evidence;
 
