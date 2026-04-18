@@ -236,7 +236,11 @@ export default function EscrowBuyerPage() {
     const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
     const arbiterAddress = process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS as `0x${string}`;
     const sellerWallet = escrow.seller_wallet as `0x${string}`;
-    const amountWei = parseUnits(escrow.amount_usdc.toFixed(6), 6);
+    // Must approve total amount including protocol fee + arbiter fee
+    const protocolFee = escrow.amount_usdc * 0.005;
+    const arbiterFee = escrow.arbitration_enabled ? 1.0 : 0;
+    const totalAmount = escrow.amount_usdc + protocolFee + arbiterFee;
+    const amountWei = parseUnits(totalAmount.toFixed(6), 6);
 
     // Ensure Web3Auth wallet is on Base mainnet (chain 0x2105 = 8453)
     try {
