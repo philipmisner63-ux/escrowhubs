@@ -58,7 +58,7 @@ export default function MarketplacePage() {
       return;
     }
     if (buyerContact.toLowerCase() === sellerEmail.toLowerCase()) {
-      addToast({ type: "error", message: "Buyer and seller email must be different." });
+      addToast({ type: "error", message: "Buyer and seller contact must be different." });
       return;
     }
 

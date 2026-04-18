@@ -78,7 +78,13 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
         setAuthenticated(true);
         const userInfo = {
           email: info.email as string | undefined,
-          phone: info.typeOfLogin === "sms" ? info.verifierId as string : undefined,
+          // Web3Auth uses 'sms_passwordless' for SMS login (not 'sms')
+          // Also catch phone numbers stored directly in verifierId
+          phone: (
+            info.typeOfLogin === "sms" ||
+            info.typeOfLogin === "sms_passwordless" ||
+            (typeof info.verifierId === "string" && /^[+\d]/.test(info.verifierId as string) && !String(info.verifierId).includes("@"))
+          ) ? info.verifierId as string : undefined,
           name: info.name as string | undefined,
           profileImage: info.profileImage as string | undefined,
         };
