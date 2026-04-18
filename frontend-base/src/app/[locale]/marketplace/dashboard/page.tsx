@@ -139,7 +139,7 @@ export default function MarketplaceDashboard() {
     setLoadingEscrows(true);
 
     const fetchEscrows = async () => {
-      const res = await fetch();
+      const res = await fetch("/api/marketplace/my-escrows?email=" + encodeURIComponent(userEmail));
       const data = await res.json();
       setSellingEscrows((data.selling as MarketplaceEscrow[]) ?? []);
       setBuyingEscrows((data.buying as MarketplaceEscrow[]) ?? []);
