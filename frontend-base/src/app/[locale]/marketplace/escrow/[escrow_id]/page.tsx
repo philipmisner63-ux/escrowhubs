@@ -161,31 +161,7 @@ export default function EscrowBuyerPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientSecret]);
 
-  // Watch factory receipt and update status
-  useEffect(() => {
-    if (!factoryReceipt || !escrow) return;
-    const contractAddress = factoryReceipt.contractAddress ?? factoryReceipt.to ?? undefined;
-    fetch("/api/marketplace/update-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        escrow_id: escrow.escrow_id,
-        status: "FUNDED",
-        contract_address: contractAddress,
-        on_chain_escrow_id: factoryReceipt.transactionHash,
-      }),
-    }).then(() => {
-      // Notify seller
-      fetch("/api/marketplace/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ escrow_id: escrow.escrow_id }),
-      });
-      setFundStep("done");
-      addToast({ type: "success", message: "Funds locked in escrow! The seller will be notified." });
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryReceipt]);
+
 
   async function handleStartOnramp() {
     if (!escrow) return;
@@ -213,7 +189,7 @@ export default function EscrowBuyerPage() {
   }
 
   async function handleFundEscrow() {
-    if (!escrow || !walletAddress) {
+    if (!escrow || !walletAddress || !walletProvider) {
       addToast({ type: "error", message: "Wallet not ready. Please wait a moment." });
       return;
     }
@@ -222,49 +198,69 @@ export default function EscrowBuyerPage() {
     const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
     const arbiterAddress = process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS as `0x${string}`;
     const sellerWallet = escrow.seller_wallet as `0x${string}`;
-    const amountWei = parseUnits(escrow.amount_usdc.toFixed(6), 6); // USDC has 6 decimals
+    const amountWei = parseUnits(escrow.amount_usdc.toFixed(6), 6);
+
+    const walletClient = createWalletClient({
+      account: walletAddress as `0x${string}`,
+      chain: base,
+      transport: custom(walletProvider),
+    });
+    const publicClient = createPublicClient({
+      chain: base,
+      transport: http("https://mainnet.base.org"),
+    });
 
     setFunding(true);
+    setTxPending(true);
     try {
       // Step 1: approve USDC
       addToast({ type: "pending", message: "Approving USDC spend..." });
-      await writeApprove({
+      const approveTxHash = await walletClient.writeContract({
         address: usdcAddress,
         abi: ERC20_APPROVE_ABI,
         functionName: "approve",
         args: [factoryAddress, amountWei],
-        chainId: 8453,
       });
+      await publicClient.waitForTransactionReceipt({ hash: approveTxHash });
 
-      // Step 2: create escrow
+      // Step 2: create escrow on-chain
       addToast({ type: "pending", message: "Creating escrow on-chain..." });
-      await writeFactory({
+      const factoryTxHash = await walletClient.writeContract({
         address: factoryAddress,
         abi: FACTORY_ABI,
         functionName: "createSimpleEscrow",
-        args: [
-          sellerWallet,
-          arbiterAddress,
-          0, // trustTier
-          escrow.arbitration_enabled,
-          usdcAddress,
-          zeroAddress,
-        ],
-        chainId: 8453,
+        args: [sellerWallet, arbiterAddress, 0, escrow.arbitration_enabled, usdcAddress, zeroAddress],
       });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: factoryTxHash });
+
+      // Step 3: update status in Supabase
+      const contractAddress = receipt.contractAddress ?? receipt.to ?? undefined;
+      await fetch("/api/marketplace/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          escrow_id: escrow.escrow_id,
+          status: "FUNDED",
+          contract_address: contractAddress,
+          on_chain_escrow_id: receipt.transactionHash,
+        }),
+      });
+
+      // Step 4: notify seller
+      fetch("/api/marketplace/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ escrow_id: escrow.escrow_id }),
+      });
+
+      setFundStep("done");
+      addToast({ type: "success", message: "Funds locked in escrow! The seller will be notified." });
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Transaction failed" });
       setFunding(false);
+    } finally {
+      setTxPending(false);
     }
-  }
-
-  function handleCopyWallet() {
-    if (!escrow?.buyer_wallet) return;
-    navigator.clipboard.writeText(escrow.buyer_wallet).then(() => {
-      setWalletCopied(true);
-      addToast({ type: "success", message: "Wallet address copied!" });
-      setTimeout(() => setWalletCopied(false), 3000);
-    });
   }
 
   const isBuyer =
