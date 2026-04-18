@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useId } from "react";
-import { useAccount } from "wagmi";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/toast";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -28,7 +27,8 @@ interface FeedbackModalProps {
 export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const t   = useTranslations("feedback");
   const uid = useId();
-  const { address: wallet } = useAccount();
+  // wallet address not needed in marketplace context
+  const wallet: string | null = null;
   const { addToast }        = useToast();
   const backdropRef         = useRef<HTMLDivElement>(null);
   const firstFocusRef       = useRef<HTMLSelectElement>(null);
