@@ -156,17 +156,48 @@ export default function MarketplaceDashboard() {
       addToast({ type: "error", message: "No contract address found for this escrow." });
       return;
     }
+    if (!walletAddress || !walletProvider) {
+      addToast({ type: "error", message: "Wallet not ready. Please wait a moment." });
+      return;
+    }
     setReleasing(escrow.escrow_id);
     setReleasingEscrowId(escrow.escrow_id);
     try {
-      await writeRelease({
+      // Switch to Base before transacting
+      try {
+        await walletProvider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x2105" }] });
+      } catch (_) {
+        await walletProvider.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x2105", chainName: "Base Mainnet", nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 }, rpcUrls: ["https://mainnet.base.org"], blockExplorerUrls: ["https://basescan.org"] }] });
+      }
+
+      const walletClient = createWalletClient({
+        account: walletAddress as `0x${string}`,
+        chain: base,
+        transport: custom(walletProvider),
+      });
+      const publicClient = createPublicClient({
+        chain: base,
+        transport: http("https://mainnet.base.org"),
+      });
+
+      const txHash = await walletClient.writeContract({
         address: escrow.contract_address as `0x${string}`,
         abi: SimpleEscrowABI,
         functionName: "release",
-        chainId: 8453,
       });
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+      // Update status in DB
+      await fetch("/api/marketplace/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ escrow_id: escrow.escrow_id, status: "RELEASED" }),
+      });
+      setSellingEscrows(prev => prev.map(e => e.escrow_id === escrow.escrow_id ? { ...e, status: "RELEASED" } : e));
+      addToast({ type: "success", message: "Funds released successfully!" });
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Transaction failed" });
+    } finally {
       setReleasing(null);
       setReleasingEscrowId(null);
     }
