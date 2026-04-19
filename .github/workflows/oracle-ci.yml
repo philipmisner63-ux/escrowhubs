@@ -1,0 +1,68 @@
+name: Oracle Arbiter CI
+
+on:
+  push:
+    paths:
+      - 'oracle/index.js'
+      - 'oracle/arbiter-test-runner.mjs'
+      - 'oracle/golden20.json'
+      - 'oracle/scenarios-batch4.json'
+  pull_request:
+    paths:
+      - 'oracle/index.js'
+      - 'oracle/arbiter-test-runner.mjs'
+
+jobs:
+  arbiter-regression:
+    name: Arbiter Regression Suite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: oracle
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install oracle dependencies
+        run: npm install
+
+      - name: Run Golden 20 CI gate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ORACLE_PRIVATE_KEY: ${{ secrets.ORACLE_PRIVATE_KEY }}
+        run: |
+          node arbiter-test-runner.mjs golden20.json 2>&1 | tee golden20-results.txt
+          if grep -q 'passed (100%)' golden20-results.txt; then
+            echo '✅ Golden 20: 20/20 PASS'
+          else
+            echo '❌ Golden 20: REGRESSION DETECTED'
+            cat golden20-results.txt
+            exit 1
+          fi
+
+      - name: Run Batch 4 fraud CI gate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ORACLE_PRIVATE_KEY: ${{ secrets.ORACLE_PRIVATE_KEY }}
+        run: |
+          node arbiter-test-runner.mjs scenarios-batch4.json 2>&1 | tee batch4-results.txt
+          if grep -q 'passed (100%)' batch4-results.txt; then
+            echo '✅ Batch 4 Fraud: 10/10 PASS'
+          else
+            echo '❌ Batch 4 Fraud: REGRESSION DETECTED'
+            cat batch4-results.txt
+            exit 1
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arbiter-ci-results
+          path: |
+            oracle/golden20-results.txt
+            oracle/batch4-results.txt
