@@ -51,8 +51,15 @@ Output JSON ONLY:
 }`;
 
 async function callMID(scenario) {
-  const { seller_description, buyer_description, seller_evidence, buyer_evidence } = scenario;
-  const userContent = `SELLER CLAIM: ${seller_description}\nSELLER EVIDENCE: ${seller_evidence}\nBUYER CLAIM: ${buyer_description}\nBUYER EVIDENCE: ${buyer_evidence}`;
+  // Support both old schema (seller/buyer description+evidence) and new Batch 4 schema
+  let userContent;
+  if (scenario.false_claim !== undefined) {
+    // Batch 4 explicit schema
+    userContent = `FALSE CLAIM (proven false): ${scenario.false_claim}\nDELIVERY EVIDENCE: ${scenario.delivery_evidence ?? "None provided"}\nNON-DELIVERY EVIDENCE: ${scenario.non_delivery_evidence ?? "None provided"}`;
+  } else {
+    const { seller_description, buyer_description, seller_evidence, buyer_evidence } = scenario;
+    userContent = `SELLER CLAIM: ${seller_description}\nSELLER EVIDENCE: ${seller_evidence}\nBUYER CLAIM: ${buyer_description}\nBUYER EVIDENCE: ${buyer_evidence}`;
+  }
 
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5",
@@ -66,9 +73,26 @@ async function callMID(scenario) {
 }
 
 async function callAI(scenario) {
-  const { seller_description, buyer_description, seller_evidence, buyer_evidence } = scenario;
+  // Support both old schema and Batch 4 explicit schema
+  let evidenceBlock;
+  if (scenario.false_claim !== undefined) {
+    // Batch 4: false_claim + delivery_evidence + non_delivery_evidence
+    evidenceBlock = `
+PROVEN FALSE CLAIM (discard this claim per fraud doctrine F1):
+${scenario.false_claim}
 
-  const evidenceBlock = `
+INDEPENDENT DELIVERY EVIDENCE (evaluate this after discarding the false claim):
+${scenario.delivery_evidence ?? "None — no delivery evidence provided."}
+
+INDEPENDENT NON-DELIVERY EVIDENCE (evaluate this after discarding the false claim):
+${scenario.non_delivery_evidence ?? "None — no non-delivery evidence provided."}
+
+ARBITER INSTRUCTION: The claim above has been proven false. Ignore it entirely.
+Rule on the INDEPENDENT evidence only. Apply fraud doctrine F3-F6.
+`.trim();
+  } else {
+    const { seller_description, buyer_description, seller_evidence, buyer_evidence } = scenario;
+    evidenceBlock = `
 SELLER (Beneficiary) CLAIM:
 ${seller_description}
 
@@ -81,6 +105,7 @@ ${buyer_description}
 BUYER EVIDENCE:
 ${buyer_evidence}
 `.trim();
+  }
 
   const prompt = `${SYSTEM_PROMPT}
 
