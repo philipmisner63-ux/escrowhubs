@@ -48,7 +48,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             accentColorForeground: "#030303",
             borderRadius: "medium",
             fontStack: "system",
-            overlayBlur: "small",
+            // overlayBlur removed — causes black screen on mobile WebViews (see AGENTS.md)
           })}
         >
           <ToastProvider>

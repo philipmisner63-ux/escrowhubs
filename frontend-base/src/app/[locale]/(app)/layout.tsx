@@ -9,9 +9,15 @@
  */
 
 import { ProvidersClient } from "@/components/providers-client";
-import { ChainGuard } from "@/components/chain-guard";
 import { PWARegister } from "@/components/pwa-register";
 import { AnimatedBackground } from "@/components/animated-background";
+import dynamic from "next/dynamic";
+
+// Dynamically imported — uses wagmi hooks, must not run before WagmiProvider mounts
+const ChainGuard = dynamic(
+  () => import("@/components/chain-guard").then(m => m.ChainGuard),
+  { ssr: false }
+);
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
