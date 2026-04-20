@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import { APP_URL } from "@/lib/metadata";
 
 export async function generateMetadata({

@@ -1,6 +1,8 @@
 // 🚫 DO NOT import RainbowKit, Wagmi, WalletConnect, or SES here.
 // This layout is Web3Auth-only — intentionally isolated from the main app wallet ecosystem.
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import { buildPageMetadata } from "@/lib/metadata";
 import { PrivyWalletProvider } from "@/components/privy-provider";
 import { ToastProvider } from "@/components/toast";
