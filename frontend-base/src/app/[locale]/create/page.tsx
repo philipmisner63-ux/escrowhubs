@@ -44,7 +44,7 @@ export default function CreateEscrowPage() {
   const { selectedToken, setSelectedToken, tokenAddress, isUSDC, approveUSDC, isApproving, isApproved } = useTokenSelector();
 
   const [type, setType] = useState<EscrowType>("simple");
-  const [form, setForm] = useState({ title: "", beneficiary: "", arbiter: "", amount: "" });
+  const [form, setForm] = useState({ title: "", beneficiary: "", amount: "" });
   const [milestones, setMilestones] = useState<MilestoneInput[]>([{ description: "", amount: "" }]);
   const [useAIArbiter, setUseAIArbiter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +65,7 @@ export default function CreateEscrowPage() {
       const factoryAddress = getFactoryAddress(chainId);
       const resolvedArbiter = useAIArbiter
         ? getArbiterAddress(chainId)
-        : form.arbiter as `0x${string}`;
+        : (process.env.NEXT_PUBLIC_HUMAN_ARBITER_ADDRESS ?? "0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA") as `0x${string}`;
 
       let txHash: `0x${string}`;
 
@@ -300,7 +300,10 @@ export default function CreateEscrowPage() {
                       )}
                     </div>
                   ) : (
-                    <Field label="" value={form.arbiter} onChange={v => setForm(f => ({ ...f, arbiter: v }))} placeholder={t("arbiterPlaceholder")} mono />
+                    <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3 text-xs text-cyan-300 space-y-1">
+                      <p className="font-semibold">👤 EscrowHubs Review Team</p>
+                      <p className="text-cyan-400/70">A human reviewer will evaluate your dispute and issue a binding resolution. Typically within 48–72 hours.</p>
+                    </div>
                   )}
                 </div>
 
