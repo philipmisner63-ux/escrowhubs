@@ -74,6 +74,7 @@ const CHAINS = chainsRaw.map(resolveChainConfig);
 const PRIVATE_KEY              = process.env.ORACLE_PRIVATE_KEY;
 const ANTHROPIC_KEY            = process.env.ANTHROPIC_API_KEY;
 const DISCORD_WEBHOOK          = process.env.DISCORD_WEBHOOK_URL ?? null;
+const HUMAN_ARBITER_ADDRESS    = (process.env.HUMAN_ARBITER_ADDRESS ?? "0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA").toLowerCase();
 const POLL_INTERVAL_MS         = parseInt(process.env.POLL_INTERVAL_MS ?? "30000");
 const AUTO_RESOLVE_MIN_CONFIDENCE = 70;
 const CHALLENGE_WINDOW_MS          = 4 * 60 * 60 * 1000; // 4 hours for challenged party to respond
@@ -123,6 +124,53 @@ function appendDecision(entry) {
 }
 
 // ─── Utility: Discord notification ───────────────────────────────────────────
+
+// ─── Human Review Alert ──────────────────────────────────────────────────────
+async function notifyHumanArbiter(contractAddress, escrowType, milestoneIndex, chainName, chainId) {
+  if (!DISCORD_WEBHOOK) {
+    console.warn(`⚠️  [HUMAN-REVIEW] No DISCORD_WEBHOOK_URL set — cannot notify for ${contractAddress}`);
+    return;
+  }
+  const explorerBase = chainId === 8453
+    ? "https://basescan.org/address"
+    : chainId === 137
+    ? "https://polygonscan.com/address"
+    : chainId === 1404
+    ? "https://bdagscan.com/address"
+    : "https://etherscan.io/address";
+  const frontendBase = chainId === 8453
+    ? "https://base.escrowhubs.io"
+    : chainId === 137
+    ? "https://polygon.escrowhubs.io"
+    : "https://app.escrowhubs.io";
+  const escrowUrl = `${frontendBase}/en/escrow/${contractAddress}`;
+  const explorerUrl = `${explorerBase}/${contractAddress}`;
+  const milestoneStr = milestoneIndex !== null ? ` (Milestone #${milestoneIndex})` : "";
+
+  try {
+    await fetch(DISCORD_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ embeds: [{
+        title: `🚨 Human Review Required — ${chainName}${milestoneStr}`,
+        color: 0xff4444,
+        description: "A dispute has been raised on an escrow assigned to you for manual review. Action required.",
+        fields: [
+          { name: "Contract",   value: `\`${contractAddress}\``, inline: false },
+          { name: "Type",       value: escrowType === "milestone" ? `Milestone Escrow${milestoneStr}` : "Simple Escrow", inline: true },
+          { name: "Chain",      value: `${chainName} (${chainId})`, inline: true },
+          { name: "Review",     value: `[Open Escrow](${escrowUrl})`, inline: false },
+          { name: "Explorer",   value: `[View on-chain](${explorerUrl})`, inline: false },
+        ],
+        footer: { text: "EscrowHubs — Human Review Queue" },
+        timestamp: new Date().toISOString(),
+      }]}
+    ));
+    console.log(`✅ [HUMAN-REVIEW] Discord alert sent for ${contractAddress}`);
+  } catch (err) {
+    console.error(`❌ [HUMAN-REVIEW] Discord alert failed: ${err.message}`);
+  }
+}
 
 async function notifyDiscord(disputeContext, decision, urgency) {
   if (!DISCORD_WEBHOOK) return;
@@ -1295,6 +1343,9 @@ function startChainListener(chainConfig) {
           if (arbiter.toLowerCase() === arbiterAddress.toLowerCase()) {
             console.log(`${tag} [SIMPLE] Dispute event from ${log.address} by ${log.args.by}`);
             handleDispute(log.address, log.args.by);
+          } else if (arbiter.toLowerCase() === HUMAN_ARBITER_ADDRESS) {
+            console.log(`${tag} [HUMAN-REVIEW] Simple dispute on ${log.address} by ${log.args.by}`);
+            notifyHumanArbiter(log.address, "simple", null, name, chainId);
           }
         } catch { /* not a compatible escrow */ }
       }
@@ -1315,6 +1366,10 @@ function startChainListener(chainConfig) {
             const idx = Number(log.args.index);
             console.log(`${tag} [MILESTONE] Dispute event from ${log.address}, milestone #${idx}`);
             handleMilestoneDispute(log.address, idx);
+          } else if (arbiter.toLowerCase() === HUMAN_ARBITER_ADDRESS) {
+            const idx = Number(log.args.index);
+            console.log(`${tag} [HUMAN-REVIEW] Milestone dispute on ${log.address}, milestone #${idx}`);
+            notifyHumanArbiter(log.address, "milestone", idx, name, chainId);
           }
         } catch { /* not a compatible escrow */ }
       }
