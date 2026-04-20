@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useAccount, useReadContracts, useWriteContract, useWaitForTransactionReceipt, useChainId } from "wagmi";
 import { formatEther, parseEther, isAddress } from "viem";
