@@ -35,6 +35,7 @@ export function Nav() {
   const navLinks = [
     { href: "/dashboard", label: t("dashboard") },
     { href: "/create",    label: t("create")    },
+    { href: "/marketplace", label: "Marketplace" },
     { href: "/learn",     label: t("learn")     },
     { href: "/security",  label: t("security")  },
   ];
