@@ -26,8 +26,8 @@ for (const site of SITES) {
       // Wait for hydration
       await page.waitForTimeout(3000);
 
-      // Check logo exists
-      const logo = page.locator('[data-testid="brand-logo"]');
+      // Check logo exists (may appear in both nav and footer)
+      const logo = page.locator('[data-testid="brand-logo"]').first();
       await expect(logo).toBeVisible({ timeout: 10000 });
 
       // Screenshot
@@ -42,9 +42,7 @@ for (const site of SITES) {
         !e.includes('woff2') &&
         !e.includes('preload') &&
         !e.includes('Removing') &&
-        !e.includes('intrinsics') &&
-        !e.includes('Content Security Policy') &&
-        !e.includes('violates')
+        !e.includes('intrinsics')
       );
       expect(critical, 'Console errors: ' + critical.join(', ')).toHaveLength(0);
     });
