@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Footer } from "@/components/footer";
 import { OnboardingTour } from "@/components/onboarding-tour";
 import { LiveStats } from "@/components/live-stats";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function LandingPage() {
   const t = useTranslations("landing");
@@ -34,6 +35,9 @@ export default function LandingPage() {
 
         {/* ── Hero ─────────────────────────────────────────────────── */}
         <section className="hero-glow rounded-2xl border border-white/8 px-6 py-10 text-center space-y-4">
+          <div className="flex justify-center mb-2">
+            <BrandLogo size={160} animated={true} showTagline={false} />
+          </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/5 px-4 py-1.5 text-xs text-violet-300">
             <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
             {t("badge")}
