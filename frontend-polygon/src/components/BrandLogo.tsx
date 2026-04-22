@@ -28,60 +28,19 @@ export default function BrandLogo({
     zIndex: 1,
     width: size,
     height: size,
+    display: "block",
   };
 
   return (
     <div className="flex flex-col items-center justify-center select-none">
       <div className="relative flex items-center justify-center">
         {animated && <div style={haloStyle} />}
-        {/* Inline SVG logo — cyan shield with EH monogram */}
-        <svg
+        <img
           data-testid="brand-logo"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 100 100"
+          src="/assets/branding/escrowhubs-logo.svg"
+          alt="EscrowHubs"
           style={logoStyle}
-          aria-label="EscrowHubs"
-        >
-          <defs>
-            <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00f5ff" stopOpacity="1" />
-              <stop offset="100%" stopColor="#0066ff" stopOpacity="1" />
-            </linearGradient>
-            <linearGradient id="shieldGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#003366" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#000820" stopOpacity="0.9" />
-            </linearGradient>
-          </defs>
-          {/* Shield background */}
-          <path
-            d="M50 5 L90 20 L90 55 Q90 80 50 97 Q10 80 10 55 L10 20 Z"
-            fill="url(#shieldGrad2)"
-            stroke="url(#shieldGrad)"
-            strokeWidth="2.5"
-          />
-          {/* E */}
-          <text
-            x="28"
-            y="62"
-            fontSize="38"
-            fontFamily="monospace"
-            fontWeight="bold"
-            fill="url(#shieldGrad)"
-            opacity="0.95"
-          >E</text>
-          {/* H */}
-          <text
-            x="52"
-            y="62"
-            fontSize="38"
-            fontFamily="monospace"
-            fontWeight="bold"
-            fill="#ffffff"
-            opacity="0.9"
-          >H</text>
-          {/* Bottom accent line */}
-          <line x1="25" y1="70" x2="75" y2="70" stroke="url(#shieldGrad)" strokeWidth="1.5" opacity="0.5" />
-        </svg>
+        />
       </div>
 
       {showTagline && animated && (
@@ -105,7 +64,18 @@ export default function BrandLogo({
         </div>
       )}
 
-      <style>{}</style>
+      <style>{`
+        @keyframes haloPulse {
+          0%   { transform: scale(0.92); opacity: 0.5; }
+          50%  { transform: scale(1.08); opacity: 0.9; }
+          100% { transform: scale(0.92); opacity: 0.5; }
+        }
+        @keyframes gradientFlow {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
     </div>
   );
 }
