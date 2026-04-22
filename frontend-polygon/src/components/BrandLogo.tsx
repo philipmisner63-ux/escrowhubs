@@ -36,6 +36,7 @@ export default function BrandLogo({
         {animated && <div style={haloStyle} />}
         {/* Inline SVG logo — cyan shield with EH monogram */}
         <svg
+          data-testid="brand-logo"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 100 100"
           style={logoStyle}

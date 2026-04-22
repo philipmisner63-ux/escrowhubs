@@ -18,7 +18,7 @@ const CSP = [
     "wss://*.walletconnect.org",
     "https://*.cloudflare-eth.com",
     "https://explorer.walletconnect.com",
-    "https://pulse.walletconnect.org",
+    "https://pulse.walletconnect.org https://api.web3modal.org https://*.web3modal.org",
     "https://gateway.pinata.cloud",
     "https://*.mypinata.cloud",
     "https://ipfs.io",
