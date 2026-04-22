@@ -8,6 +8,7 @@ import { LanguagePicker } from "@/components/language-picker";
 import { LanguagePickerMobile } from "@/components/language-picker-mobile";
 import { NotificationModal } from "@/components/notification-modal";
 import { cn } from "@/lib/utils";
+import BrandLogo from "@/components/BrandLogo";
 import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chains";
 function WalletWarningBanner() {
   const t = useTranslations("nav");
@@ -47,7 +48,7 @@ export function Nav() {
             {/* Logo */}
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2.5 group">
-                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_0_15px_rgba(0,245,255,0.5)] group-hover:shadow-[0_0_25px_rgba(0,245,255,0.7)] transition-shadow" />
+                <BrandLogo size={32} animated={false} showTagline={false} />
                 <span className="text-lg font-bold tracking-tight">
                   <span className="text-white">Escrow</span>
                   <span className="ms-1" style={{ color: "#00f5ff", textShadow: "0 0 10px rgba(0,245,255,0.6)" }}>

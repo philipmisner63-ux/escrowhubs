@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WagmiContext } from "wagmi";
 
 export function WalletConnectButton() {
+  const wagmiCtx = useContext(WagmiContext);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  if (!wagmiCtx) return null;
 
   if (!mounted) {
     return (

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useId } from "react";
 import { createPortal } from "react-dom";
-import { useAccount } from "wagmi";
+import { useContext } from "react";
+import { useAccount, WagmiContext } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/toast";
@@ -43,7 +44,7 @@ interface NotificationModalProps {
   onClose: () => void;
 }
 
-export function NotificationModal({ open, onClose }: NotificationModalProps) {
+function NotificationModalInner({ open, onClose }: NotificationModalProps) {
   const t          = useTranslations("notifications");
   const uid        = useId();
   const { address: wallet } = useAccount();
@@ -251,4 +252,11 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () =>
       )} />
     </button>
   );
+}
+
+// Safe wrapper — returns null if no WagmiProvider in tree (e.g. landing page, marketplace)
+export function NotificationModal({ open, onClose }: NotificationModalProps) {
+  const wagmiCtx = useContext(WagmiContext);
+  if (!wagmiCtx) return null;
+  return <NotificationModalInner open={open} onClose={onClose} />;
 }
