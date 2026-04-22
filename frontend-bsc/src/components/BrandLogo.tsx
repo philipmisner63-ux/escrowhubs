@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+
 
 interface BrandLogoProps {
   size?: number;
@@ -56,12 +56,11 @@ export default function BrandLogo({
     <div className="flex flex-col items-center justify-center select-none">
       <div className="relative flex items-center justify-center">
         {animated && <div style={haloStyle} />}
-        <Image
+        <img
           src="/assets/branding/escrowhubs-logo.svg"
           alt="EscrowHubs"
           width={size}
           height={size}
-          priority
           style={logoStyle}
         />
       </div>
