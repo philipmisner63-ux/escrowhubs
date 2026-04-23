@@ -11,7 +11,7 @@
 import { ProvidersClient } from "@/components/providers-client";
 import { PWARegister } from "@/components/pwa-register";
 import { AnimatedBackground } from "@/components/animated-background";
-import { ChainGuardClient } from "@/components/chain-guard-client";
+import { ChainGuard } from "@/components/chain-guard";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,9 +19,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <PWARegister />
       <AnimatedBackground />
       <div className="relative min-h-screen">
-        <ChainGuardClient>
+        <ChainGuard>
           {children}
-        </ChainGuardClient>
+        </ChainGuard>
       </div>
     </ProvidersClient>
   );
