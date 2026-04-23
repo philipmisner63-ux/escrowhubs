@@ -11,9 +11,9 @@
 
 export const STRINGS = {
   hero: {
-    title: "EscrowHubs locks funds safely until both sides agree the deal is done.",
+    title: "Escrow for Everything. On-chain protection for buyers and sellers.",
     subtitle:
-      "Trustless P2P escrow for traders, freelancers, and DAO contractors — enforced by smart contracts and AI arbitration.",
+      "Buy and sell safely — even with people you don't know. Perfect for physical goods, digital items, and real-world trades.",
     ctaCreate: "Create an Escrow",
     ctaHow: "How It Works",
   },
@@ -58,7 +58,7 @@ export const STRINGS = {
 
   roles: {
     depositor: "Creates the escrow and locks the funds.",
-    beneficiary: "Delivers the work, goods, or service.",
+    beneficiary: "Delivers the product, service, or item.",
     arbiter:
       "Reviews evidence from both parties and issues a binding on-chain ruling. Only activates when a dispute is opened — cannot move funds otherwise.",
     contract: "Holds funds securely until release or arbitration.",
@@ -98,7 +98,7 @@ export const STRINGS = {
 
   faq: {
     whatIs:
-      "A trustless escrow system that locks funds in a smart contract until both sides agree the deal is done.",
+      "On-chain escrow for buying and selling anything — physical products, digital goods, freelance work, and P2P trades. Funds locked until both sides agree.",
     needAccount: "No. Just connect your wallet.",
     whoHolds: "A smart contract — not EscrowHubs, not the other party.",
     aiArbiter:
