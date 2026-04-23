@@ -19,9 +19,9 @@ export function AIArbiterFlow() {
         {steps.map((step, i) => (
           <motion.div
             key={i}
-            initial={{ y: 10 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.2, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
             className="flex items-center gap-4 rounded-xl border border-violet-400/20 bg-violet-400/5 p-5 shadow-lg"
           >
             <span className="text-4xl shrink-0">{step.icon}</span>

@@ -17,12 +17,12 @@ interface ChainGuardProps {
  * or when no wallet is connected.
  */
 export function ChainGuard({ children }: ChainGuardProps) {
-  const { isConnected, isReconnecting } = useAccount();
+  const { isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChain, isPending } = useSwitchChain();
 
-  // Pass-through: wagmi still hydrating, not connected, or already on a supported chain
-  if (isReconnecting || !isConnected || isChainSupported(chainId)) {
+  // Pass-through: not connected, or already on a supported chain
+  if (!isConnected || isChainSupported(chainId)) {
     return <>{children}</>;
   }
 

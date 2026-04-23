@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 // which must not execute before WagmiProvider mounts (fixes SES_UNCAUGHT_EXCEPTION)
 const ChainGuard = dynamic(
   () => import("@/components/chain-guard").then(m => m.ChainGuard),
-  { ssr: false, loading: ({ children }: any) => <>{children}</> }
+  { ssr: false }
 );
 
 export function ChainGuardClient({ children }: { children: React.ReactNode }) {
