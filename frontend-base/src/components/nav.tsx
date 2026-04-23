@@ -9,22 +9,9 @@ import { LanguagePickerMobile } from "@/components/language-picker-mobile";
 
 import { cn } from "@/lib/utils";
 import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chains";
-// WalletWarningBanner is only rendered on main app routes — not marketplace
-// All wagmi-dependent components are dynamically imported.
-// This prevents SES/wagmi from loading in marketplace routes (no WagmiProvider).
-import dynamic from "next/dynamic";
-const WalletWarningBanner = dynamic(
-  () => import("@/components/wallet-warning-banner").then((m) => m.WalletWarningBanner),
-  { ssr: false, loading: () => null }
-);
-const WalletConnectButton = dynamic(
-  () => import("@/components/connect-button").then((m) => m.WalletConnectButton),
-  { ssr: false, loading: () => null }
-);
-const NotificationModal = dynamic(
-  () => import("@/components/notification-modal").then((m) => m.NotificationModal),
-  { ssr: false, loading: () => null }
-);
+import { WalletWarningBanner } from "@/components/wallet-warning-banner";
+import { WalletConnectButton } from "@/components/connect-button";
+import { NotificationModal } from "@/components/notification-modal";
 export function Nav() {
   const t = useTranslations("nav");
   const tNotif = useTranslations("notifications");
