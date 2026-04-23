@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { useTranslations } from "next-intl";
@@ -10,7 +10,9 @@ import { AIArbiterFlow } from "@/components/how-it-works/AIArbiterFlow";
 
 export default function HowItWorksPage() {
   const t = useTranslations("howItWorks");
-  useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   return (
     <div className="flex flex-col min-h-screen">
       <Nav />
