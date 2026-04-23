@@ -13,7 +13,7 @@ export const STRINGS = {
   hero: {
     title: "EscrowHubs locks funds safely until both sides agree the deal is done.",
     subtitle:
-      "Trustless P2P escrow for traders, freelancers, and DAO contractors — enforced by smart contracts and AI arbitration.",
+      "Trustless P2P escrow for products, services, and DAO contracts — enforced by smart contracts and AI arbitration.",
     ctaCreate: "Create an Escrow",
     ctaHow: "How It Works",
   },
@@ -58,7 +58,7 @@ export const STRINGS = {
 
   roles: {
     depositor: "Creates the escrow and locks the funds.",
-    beneficiary: "Delivers the work, goods, or service.",
+    beneficiary: "Delivers the product, service, or work.",
     arbiter:
       "Reviews evidence from both parties and issues a binding on-chain ruling. Only activates when a dispute is opened — cannot move funds otherwise.",
     contract: "Holds funds securely until release or arbitration.",
@@ -98,7 +98,7 @@ export const STRINGS = {
 
   faq: {
     whatIs:
-      "A trustless escrow system that locks funds in a smart contract until both sides agree the deal is done.",
+      "A trustless escrow system that locks funds in a smart contract until both sides agree — works for products, services, freelance work, and DAO contracts.",
     needAccount: "No. Just connect your wallet.",
     whoHolds: "A smart contract — not EscrowHubs, not the other party.",
     aiArbiter:
