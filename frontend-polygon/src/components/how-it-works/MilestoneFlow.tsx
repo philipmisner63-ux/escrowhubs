@@ -19,7 +19,7 @@ export function MilestoneFlow() {
         {steps.map((step, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
             className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/3 p-5 shadow-lg"
