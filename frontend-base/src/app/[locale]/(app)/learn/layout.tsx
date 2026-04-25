@@ -49,30 +49,33 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
           </nav>
         </aside>
 
-        {/* Mobile nav */}
-        <div className="md:hidden w-full border-b border-white/8 bg-black/30 overflow-x-auto">
-          <div className="flex gap-1 px-3 py-2">
-            {LEARN_LINKS.map(({ href, label, icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all shrink-0",
-                  pathname === href
-                    ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                )}
-              >
-                <span>{icon}</span> {label}
-              </Link>
-            ))}
+        {/* Mobile nav + content column */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Mobile nav */}
+          <div className="md:hidden w-full border-b border-white/8 bg-black/30 overflow-x-auto">
+            <div className="flex gap-1 px-3 py-2">
+              {LEARN_LINKS.map(({ href, label, icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all shrink-0",
+                    pathname === href
+                      ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <span>{icon}</span> {label}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <main className="flex-1 overflow-auto p-6 md:p-8">
-          {children}
-        </main>
+          {/* Content */}
+          <main className="flex-1 overflow-auto p-6 md:p-8">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
