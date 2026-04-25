@@ -7,6 +7,12 @@ import { GAS_LIMITS } from "@/lib/gasConfig";
 
 type Address = `0x${string}`;
 
+/**
+ * Reads core state fields from a simple escrow contract.
+ *
+ * @param address - Simple escrow contract address to read from.
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useSimpleEscrowRead(address: Address | undefined, chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
@@ -34,6 +40,11 @@ export function useSimpleEscrowRead(address: Address | undefined, chainId?: numb
   };
 }
 
+/**
+ * Provides write helpers for simple escrow contract actions.
+ *
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useSimpleEscrowWrite(chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;

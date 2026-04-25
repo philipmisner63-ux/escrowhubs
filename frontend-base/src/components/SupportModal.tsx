@@ -8,7 +8,6 @@ import { SIMPLE_ESCROW_ABI, SIMPLE_STATE_LABEL } from "@/lib/contracts";
 import { getChain, DEFAULT_CHAIN_ID } from "@/lib/chains";
 import { useToast } from "@/components/toast";
 import { GlowButton } from "@/components/ui/glow-button";
-import { cn } from "@/lib/utils";
 
 const ISSUE_TYPES = [
   "Transaction Failed",

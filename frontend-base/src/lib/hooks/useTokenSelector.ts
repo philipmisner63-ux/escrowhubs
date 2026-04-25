@@ -23,6 +23,9 @@ function getTokenConfig(chainId: number) {
   return { nativeLabel: "ETH", stableLabel: "USDC", stableAddress: USDC_BASE };
 }
 
+/**
+ * Manages the selected payment token and USDC allowance helpers for factory deposits.
+ */
 export function useTokenSelector() {
   const [selectedToken, setSelectedToken] = useState<TokenType>("NATIVE");
   const { address: wallet } = useAccount();

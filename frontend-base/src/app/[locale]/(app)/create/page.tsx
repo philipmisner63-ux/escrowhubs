@@ -12,10 +12,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 import { triggerDeployConfetti } from "@/lib/confetti";
-import {
-  ESCROW_FACTORY_ABI,
-  EXPLORER_TX_URL,
-} from "@/lib/contracts";
+import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
 import { getFactoryAddress, getArbiterAddress } from "@/lib/contracts/addresses";
 import { cn } from "@/lib/utils";
 import { useReferrer } from "@/lib/hooks/useReferrer";

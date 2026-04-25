@@ -9,6 +9,11 @@ const EXPIRY_KEY   = "escrowhubs_referrer_expiry";
 const EXPIRY_DAYS  = 30;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 
+/**
+ * Resolves the current referral address from the URL or stored referral state.
+ *
+ * Stores valid `ref` query parameters for the referral expiry window and falls back to the zero address.
+ */
 export function useReferrer(): `0x${string}` {
   const searchParams = useSearchParams();
   const [referrer, setReferrer] = useState<`0x${string}`>(ZERO_ADDRESS);

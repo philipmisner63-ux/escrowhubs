@@ -5,10 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
 import { LanguagePicker } from "@/components/language-picker";
-import { LanguagePickerMobile } from "@/components/language-picker-mobile";
 
 import { cn } from "@/lib/utils";
-import { DEFAULT_CHAIN_ID, getChain } from "@/lib/chains";
 // WalletWarningBanner is only rendered on main app routes — not marketplace
 // All wagmi-dependent components are dynamically imported.
 // This prevents SES/wagmi from loading in marketplace routes (no WagmiProvider).

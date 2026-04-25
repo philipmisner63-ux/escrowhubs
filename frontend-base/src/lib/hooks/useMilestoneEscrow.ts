@@ -12,6 +12,12 @@ export interface MilestoneData {
   state: number;
 }
 
+/**
+ * Reads participant, funding, and milestone state from a milestone escrow contract.
+ *
+ * @param address - Milestone escrow contract address to read from.
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useMilestoneEscrowRead(address: Address | undefined, chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
@@ -63,6 +69,11 @@ export function useMilestoneEscrowRead(address: Address | undefined, chainId?: n
   };
 }
 
+/**
+ * Provides write helpers for milestone escrow funding and milestone resolution actions.
+ *
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useMilestoneEscrowWrite(chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;

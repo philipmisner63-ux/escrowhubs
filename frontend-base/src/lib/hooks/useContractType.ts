@@ -6,6 +6,12 @@ import { MILESTONE_ESCROW_ABI } from "@/lib/contracts";
 
 type Address = `0x${string}`;
 
+/**
+ * Detects whether an escrow contract address behaves like a simple or milestone escrow.
+ *
+ * @param address - Escrow contract address to inspect.
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useContractType(address: Address | undefined, chainId?: number): "simple" | "milestone" | "unknown" {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;

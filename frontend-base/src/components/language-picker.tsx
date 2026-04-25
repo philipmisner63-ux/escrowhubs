@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { locales, localeMetadata, type Locale } from "@/i18n/config";
 

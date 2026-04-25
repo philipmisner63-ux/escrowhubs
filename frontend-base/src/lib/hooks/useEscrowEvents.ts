@@ -14,6 +14,13 @@ export interface EscrowEvent {
   timestamp: number;
 }
 
+/**
+ * Watches escrow contract events for the selected escrow type and stores the latest events.
+ *
+ * @param address - Escrow contract address to watch.
+ * @param contractType - Escrow contract ABI/event set to subscribe to.
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useEscrowEvents(
   address: Address | undefined,
   contractType: "simple" | "milestone" | "unknown",

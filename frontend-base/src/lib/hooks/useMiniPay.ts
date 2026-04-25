@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useConnect, useChainId } from "wagmi";
+import { useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 
 /**

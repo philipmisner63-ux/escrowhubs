@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { locales, type Locale } from "@/i18n/config";
+import { locales } from "@/i18n/config";
 
 export const APP_URL = "https://base.escrowhubs.io";
 export const SITE_NAME = "EscrowHubs";

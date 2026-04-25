@@ -20,6 +20,11 @@ export interface FactoryEscrowRecord {
   createdAt: bigint;
 }
 
+/**
+ * Reads factory deployment status and aggregate escrow count for a chain.
+ *
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useEscrowFactory(chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
@@ -42,6 +47,13 @@ export function useEscrowFactory(chainId?: number) {
   };
 }
 
+/**
+ * Reads a paginated list of escrow records from the factory contract.
+ *
+ * @param offset - Starting index for the escrow records page.
+ * @param limit - Maximum number of escrow records to read.
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n, chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
@@ -66,6 +78,12 @@ export function useFactoryEscrows(offset: bigint = 0n, limit: bigint = 20n, chai
   return { records, isLoading, refetch };
 }
 
+/**
+ * Reads escrow IDs associated with a wallet as depositor and beneficiary.
+ *
+ * @param walletAddress - Wallet address whose escrow IDs should be queried.
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useWalletEscrows(walletAddress: Address | undefined, chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
@@ -89,6 +107,11 @@ export function useWalletEscrows(walletAddress: Address | undefined, chainId?: n
   };
 }
 
+/**
+ * Provides factory write helpers for deploying simple and milestone escrow contracts.
+ *
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useFactoryDeploy(chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
@@ -150,6 +173,11 @@ export function useFactoryDeploy(chainId?: number) {
   return { deploySimple, deployMilestone, isPending, hash, error };
 }
 
+/**
+ * Watches factory creation events and keeps the most recent events in memory.
+ *
+ * @param chainId - Optional chain ID to use instead of the connected wallet chain.
+ */
 export function useFactoryEvents(chainId?: number) {
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
