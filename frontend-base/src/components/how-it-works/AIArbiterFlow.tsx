@@ -19,7 +19,7 @@ export function AIArbiterFlow() {
         {steps.map((step, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 1, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: i * 0.35, ease: "easeOut" }}
             className="flex items-center gap-4 rounded-xl border border-violet-400/20 bg-violet-400/5 p-5 shadow-lg"
