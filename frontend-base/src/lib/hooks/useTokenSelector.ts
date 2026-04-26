@@ -5,25 +5,37 @@ import { useAccount, useReadContract, useWriteContract, useChainId } from "wagmi
 import { parseUnits, formatUnits } from "viem";
 import { ERC20ABI } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
-import { CUSD_ADDRESS, getDefaultToken } from "@/lib/hooks/useMiniPay";
 
-const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913") as `0x${string}`;
+// Base USDC
+const USDC_BASE = (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913") as `0x${string}`;
+// Celo cUSD
+const CUSD_CELO = "0x765DE816845861e75A25fCA122bb6898B8B1282a" as `0x${string}`;
+
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;
 
-export type TokenType = "ETH" | "USDC";
+export type TokenType = "NATIVE" | "STABLE";
+
+function getTokenConfig(chainId: number) {
+  if (chainId === 42220) {
+    return { nativeLabel: "CELO", stableLabel: "cUSD", stableAddress: CUSD_CELO };
+  }
+  // Default: Base (and others)
+  return { nativeLabel: "ETH", stableLabel: "USDC", stableAddress: USDC_BASE };
+}
 
 export function useTokenSelector() {
-  const [selectedToken, setSelectedToken] = useState<TokenType>("ETH");
+  const [selectedToken, setSelectedToken] = useState<TokenType>("NATIVE");
   const { address: wallet } = useAccount();
   const chainId = useChainId();
   const factoryAddress = getFactoryAddress(chainId);
   const { writeContractAsync, isPending: isApproving } = useWriteContract();
+  const { nativeLabel, stableLabel, stableAddress } = getTokenConfig(chainId);
 
-  const isUSDC = selectedToken === "USDC";
-  const tokenAddress: `0x${string}` = isUSDC ? USDC_ADDRESS : ZERO_ADDRESS;
+  const isUSDC = selectedToken === "STABLE";
+  const tokenAddress: `0x${string}` = isUSDC ? stableAddress : ZERO_ADDRESS;
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: USDC_ADDRESS,
+    address: stableAddress,
     abi: ERC20ABI,
     functionName: "allowance",
     args: [wallet ?? ZERO_ADDRESS, factoryAddress],
@@ -32,7 +44,7 @@ export function useTokenSelector() {
   });
 
   const { data: usdcBalance } = useReadContract({
-    address: USDC_ADDRESS,
+    address: stableAddress,
     abi: ERC20ABI,
     functionName: "balanceOf",
     args: [wallet ?? ZERO_ADDRESS],
@@ -42,10 +54,9 @@ export function useTokenSelector() {
 
   async function approveUSDC(amountDisplay: string) {
     const amount = parseUnits(amountDisplay, 6);
-    // Approve 1.01x to cover 0.5% protocol fee with slight buffer
     const gross = (amount * 101n) / 100n;
     await writeContractAsync({
-      address: USDC_ADDRESS,
+      address: stableAddress,
       abi: ERC20ABI,
       functionName: "approve",
       args: [factoryAddress, gross],
@@ -76,6 +87,8 @@ export function useTokenSelector() {
     setSelectedToken,
     tokenAddress,
     isUSDC,
+    nativeLabel,
+    stableLabel,
     allowance: allowance as bigint | undefined,
     usdcBalance: usdcBalance as bigint | undefined,
     approveUSDC,

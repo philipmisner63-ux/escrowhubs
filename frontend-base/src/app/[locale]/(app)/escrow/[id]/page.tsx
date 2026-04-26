@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { useAccount, useWriteContract, useChainId } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatEther, createPublicClient, http } from "viem";
-import { baseMainnet, getRpcUrl, DEFAULT_CHAIN_ID } from "@/lib/chains";
+import { SUPPORTED_CHAINS, getRpcUrl } from "@/lib/chains";
 import { Nav } from "@/components/nav";
 import { PageWrapper } from "@/components/page-wrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { ShareEscrow } from "@/components/share-escrow";
 import { DownloadReceipt } from "@/components/download-receipt";
 import type { ReceiptData } from "@/lib/generateReceipt";
+import { triggerDeployConfetti } from "@/lib/confetti";
 
 type Address = `0x${string}`;
 
@@ -56,7 +57,7 @@ const ROLE_BADGE: Record<Role, string> = {
 
 // ─── Simple contract view ─────────────────────────────────────────────────────
 
-const rpcClient = createPublicClient({ chain: baseMainnet, transport: http(getRpcUrl(DEFAULT_CHAIN_ID)) });
+
 
 function SimpleEscrowView({ address }: { address: Address }) {
   const { address: wallet } = useAccount();
@@ -64,6 +65,8 @@ function SimpleEscrowView({ address }: { address: Address }) {
   const arbiterAddress = getArbiterAddress(chainId);
   const { addToast, removeToast } = useToast();
   const queryClient = useQueryClient();
+  const activeChain = SUPPORTED_CHAINS.find(c => c.id === chainId) ?? SUPPORTED_CHAINS[0];
+  const rpcClient = createPublicClient({ chain: activeChain, transport: http(getRpcUrl(activeChain.id)) });
   const data = useSimpleEscrowRead(address, chainId);
   const writes = useSimpleEscrowWrite(chainId);
 
@@ -76,7 +79,10 @@ function SimpleEscrowView({ address }: { address: Address }) {
   }, [wallet, data.depositor, data.beneficiary, data.arbiter]);
 
   useEffect(() => {
-    if (data.state !== null && data.state !== undefined) setStateNum(data.state);
+    if (data.state !== null && data.state !== undefined) {
+      setStateNum(data.state);
+      if (data.state === SimpleEscrowState.COMPLETE) triggerDeployConfetti();
+    }
   }, [data.state]);
 
   const stateLabel = stateNum !== null ? (SIMPLE_STATE_LABEL[stateNum] ?? "Unknown") : "Loading…";
@@ -142,7 +148,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
           {data.amount !== null && (
             <div className="text-right shrink-0">
               <p className="text-xs text-slate-500 mb-1">Amount</p>
-              <AmountDisplay amount={data.amount} size="lg" />
+              <AmountDisplay amount={data.amount} size="lg" symbol={activeChain.nativeCurrency.symbol} />
             </div>
           )}
         </div>
@@ -225,6 +231,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
                   arbiter: data.arbiter ?? "",
                   amount: data.amount ?? 0n,
                   isAIArbiter: data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase(),
+                  chainId,
                 }} />
               )}
             </div>
@@ -248,6 +255,8 @@ function MilestoneEscrowView({ address }: { address: Address }) {
   const chainId = useChainId();
   const { addToast, removeToast } = useToast();
   const queryClient = useQueryClient();
+  const activeChain = SUPPORTED_CHAINS.find(c => c.id === chainId) ?? SUPPORTED_CHAINS[0];
+  const rpcClient = createPublicClient({ chain: activeChain, transport: http(getRpcUrl(activeChain.id)) });
   const data = useMilestoneEscrowRead(address, chainId);
   const writes = useMilestoneEscrowWrite(chainId);
 
@@ -303,7 +312,7 @@ function MilestoneEscrowView({ address }: { address: Address }) {
           {data.totalDeposited !== null && (
             <div className="text-right shrink-0">
               <p className="text-xs text-slate-500 mb-1">Total</p>
-              <AmountDisplay amount={data.totalDeposited} size="lg" />
+              <AmountDisplay amount={data.totalDeposited} size="lg" symbol={activeChain.nativeCurrency.symbol} />
             </div>
           )}
         </div>

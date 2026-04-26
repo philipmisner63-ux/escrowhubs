@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { parseEther, createPublicClient, http } from "viem";
-import { baseMainnet, getRpcUrl, DEFAULT_CHAIN_ID } from "@/lib/chains";
+import { SUPPORTED_CHAINS, getRpcUrl, getChainName, isChainSupported } from "@/lib/chains";
 import { useWriteContract, useChainId } from "wagmi";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -30,6 +30,18 @@ interface MilestoneInput {
   amount: string;
 }
 
+
+// AI Arbiter fee per chain — approximate USD equivalent in native token
+function getAIArbiterFee(chainId: number): bigint {
+  if (chainId === 42220) return parseEther("2");
+  if (chainId === 137)   return parseEther("1");
+  return parseEther("0.001");
+}
+function getAIArbiterFeeDisplay(chainId: number): number {
+  if (chainId === 42220) return 2;
+  if (chainId === 137)   return 1;
+  return 0.001;
+}
 export default function CreateEscrowPage() {
   const t = useTranslations("create");
   const router = useRouter();
@@ -37,11 +49,17 @@ export default function CreateEscrowPage() {
   const chainId  = useChainId();
   const referrer = useReferrer();
   const { writeContractAsync } = useWriteContract();
+
+  // Resolve the active chain object dynamically — supports Base + Celo
+  const activeChain = SUPPORTED_CHAINS.find(c => c.id === chainId) ?? SUPPORTED_CHAINS[0];
+  const activeRpc   = getRpcUrl(activeChain.id);
+
   const publicClient = createPublicClient({
-    chain: baseMainnet,
-    transport: http(getRpcUrl(DEFAULT_CHAIN_ID)),
+    chain: activeChain,
+    transport: http(activeRpc),
   });
-  const { selectedToken, setSelectedToken, tokenAddress, isUSDC, approveUSDC, isApproving, isApproved } = useTokenSelector();
+
+  const { selectedToken, setSelectedToken, tokenAddress, isUSDC, nativeLabel, stableLabel, approveUSDC, isApproving, isApproved } = useTokenSelector();
 
   const [type, setType] = useState<EscrowType>("simple");
   const [form, setForm] = useState({ title: "", beneficiary: "", amount: "" });
@@ -81,7 +99,7 @@ export default function CreateEscrowPage() {
           });
         } else {
           const escrowAmount = parseEther(form.amount);
-          const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
+          const aiArbiterFee = useAIArbiter ? getAIArbiterFee(chainId) : 0n;
           // msg.value = ceil((escrowAmount + aiArbiterFee) / (1 - 0.005))
           const requiredNet = escrowAmount + aiArbiterFee;
           const protocolFeeNeeded = (requiredNet * 50n + 9949n) / 9950n;
@@ -116,9 +134,7 @@ export default function CreateEscrowPage() {
           });
           const netTotal = amounts.reduce((a, b) => a + b, 0n);
           if (netTotal === 0n) throw new Error('Total milestone amount must be greater than 0');
-          const aiArbiterFee = useAIArbiter ? parseEther("0.001") : 0n;
-          // msg.value = ceil((netTotal + aiArbiterFee) / (1 - 0.005))
-          // so that net = msg.value - floor(msg.value*50/10000) - aiArbiterFee >= netTotal
+          const aiArbiterFee = useAIArbiter ? getAIArbiterFee(chainId) : 0n;
           const requiredNet = netTotal + aiArbiterFee;
           const protocolFeeNeeded = (requiredNet * 50n + 9949n) / 9950n;
           const totalValue = requiredNet + protocolFeeNeeded;
@@ -139,13 +155,11 @@ export default function CreateEscrowPage() {
 
       try {
         const rpcClient = createPublicClient({
-          chain: baseMainnet,
-          transport: http(getRpcUrl(DEFAULT_CHAIN_ID)),
+          chain: activeChain,
+          transport: http(activeRpc),
         });
         const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
         let contractAddress: `0x${string}` | null = null;
-        // Topic 0 of the factory's SimpleEscrowCreated/MilestoneEscrowCreated event
-        // has the escrow address as topic 1. Also check logs from the factory address.
         for (const log of receipt.logs) {
           if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics[1]) {
             const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
@@ -160,7 +174,6 @@ export default function CreateEscrowPage() {
             if (log.topics[1]) {
               const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
               if (/^0x[0-9a-fA-F]{40}$/.test(addr) && addr.toLowerCase() === factoryAddress.toLowerCase()) {
-                // This log's address is the escrow contract pointing to factory
                 contractAddress = log.address as `0x${string}`; break;
               }
             }
@@ -168,13 +181,12 @@ export default function CreateEscrowPage() {
         }
         removeToast(pendingId);
         if (contractAddress) {
-          setTimeout(() => router.push(`/escrow/${contractAddress}`), 500);
+          setTimeout(() => router.push(`/escrow/${contractAddress}`), 4000);
         } else {
           addToast({ type: "error", message: `Receipt received but couldn't parse escrow address. Check the dashboard.` });
           setTimeout(() => router.push(`/dashboard`), 1500);
         }
       } catch {
-        // Timed out — tx is probably still pending on-chain. Don't show success.
         removeToast(pendingId);
         addToast({ type: "error", message: `Confirmation timed out. Tx: ${txHash.slice(0, 18)}… — check your dashboard in a moment.` });
         setTimeout(() => router.push(`/dashboard`), 3_000);
@@ -192,7 +204,8 @@ export default function CreateEscrowPage() {
 
   // Fee preview (client-side approximation matching contract logic)
   const PROTOCOL_FEE_BPS = 50; // 0.5%
-  const AI_ARBITER_FLAT  = 0.001;  // ~0.001 ETH flat fee on Base
+  const AI_ARBITER_FLAT  = getAIArbiterFeeDisplay(chainId);
+  const nativeSymbol = activeChain.nativeCurrency.symbol;
   const escrowNet = type === "simple"
     ? parseFloat(form.amount) || 0
     : milestoneTotal;
@@ -200,6 +213,9 @@ export default function CreateEscrowPage() {
   const aiArbiterFee = useAIArbiter ? AI_ARBITER_FLAT : 0;
   const totalFee = protocolFee + aiArbiterFee;
   const totalSend = escrowNet + totalFee;
+
+  const chainName = getChainName(chainId);
+  const supported = isChainSupported(chainId);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -213,9 +229,17 @@ export default function CreateEscrowPage() {
               <p className="mt-1 text-sm text-slate-400">{t("subtitle")}</p>
             </div>
 
-            {/* Network banner */}
-            <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-xs text-cyan-300">
-              {t("networkBanner")}
+            {/* Network banner — dynamic, shows current chain */}
+            <div className={cn(
+              "rounded-xl border p-4 text-xs",
+              supported
+                ? "border-cyan-400/20 bg-cyan-400/5 text-cyan-300"
+                : "border-yellow-400/30 bg-yellow-400/5 text-yellow-300"
+            )}>
+              {supported
+                ? `✓ Connected to ${chainName} — contracts ready.`
+                : `⚠️ Unsupported network. Switch to Base or Celo to deploy.`
+              }
             </div>
 
             {/* Type selector */}
@@ -310,12 +334,12 @@ export default function CreateEscrowPage() {
                 {/* Token selector */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium uppercase tracking-widest text-slate-500">Token</label>
-                  <TokenSelector value={selectedToken} onChange={setSelectedToken} />
-                  <p className="text-xs text-slate-600">{isUSDC ? "USDC requires two transactions: approve then create." : "Native ETH — single transaction."}</p>
+                  <TokenSelector value={selectedToken} onChange={setSelectedToken} nativeLabel={nativeLabel} stableLabel={stableLabel} />
+                  <p className="text-xs text-slate-600">{isUSDC ? "Stablecoin requires two transactions: approve then create." : `Native ${nativeSymbol} — single transaction.`}</p>
                 </div>
 
                 {type === "simple" ? (
-                  <Field label={isUSDC ? "Amount (USDC)" : "Amount (ETH)"} value={form.amount} onChange={v => setForm(f => ({ ...f, amount: v }))} placeholder={isUSDC ? "0.00" : "0.0"} type="number" />
+                  <Field label={isUSDC ? "Amount (stablecoin)" : `Amount (${nativeSymbol})`} value={form.amount} onChange={v => setForm(f => ({ ...f, amount: v }))} placeholder={isUSDC ? "0.00" : "0.0"} type="number" />
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -339,7 +363,7 @@ export default function CreateEscrowPage() {
                           />
                           <input
                             className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50 transition-colors"
-                            placeholder="ETH"
+                            placeholder={nativeSymbol}
                             type="number"
                             step="0.001"
                             min="0"
@@ -356,7 +380,7 @@ export default function CreateEscrowPage() {
                     <div className="flex justify-between text-xs text-slate-500 pt-1">
                       <span>{t("total")}</span>
                       <span className="text-cyan-400 font-semibold" style={{ fontFamily: "var(--font-mono)" }}>
-                        {milestoneTotal.toFixed(3)} ETH
+                        {milestoneTotal.toFixed(3)} {nativeSymbol}
                       </span>
                     </div>
                   </div>
@@ -379,16 +403,16 @@ export default function CreateEscrowPage() {
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-slate-400">
                         <span>{t("escrowAmount")}</span>
-                        <span className="font-mono">{escrowNet.toFixed(4)} ETH</span>
+                        <span className="font-mono">{escrowNet.toFixed(4)} {nativeSymbol}</span>
                       </div>
                       <div className="flex justify-between text-slate-500">
                         <span>{t("protocolFee")}</span>
-                        <span className="font-mono">+{protocolFee.toFixed(4)} ETH</span>
+                        <span className="font-mono">+{protocolFee.toFixed(4)} {nativeSymbol}</span>
                       </div>
                       {useAIArbiter && (
                         <div className="flex justify-between text-violet-400">
                           <span>🤖 {t("aiArbiterFee")}</span>
-                          <span className="font-mono">+{aiArbiterFee.toFixed(4)} ETH</span>
+                          <span className="font-mono">+{aiArbiterFee.toFixed(4)} {nativeSymbol}</span>
                         </div>
                       )}
                       <div className={cn(
@@ -396,13 +420,13 @@ export default function CreateEscrowPage() {
                         useAIArbiter ? "border-violet-400/20 text-violet-300" : "border-white/8 text-white"
                       )}>
                         <span>{t("totalToSend")}</span>
-                        <span className="font-mono">{totalSend.toFixed(4)} ETH</span>
+                        <span className="font-mono">{totalSend.toFixed(4)} {nativeSymbol}</span>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* USDC approval step */}
+                {/* Stablecoin approval step */}
                 {isUSDC && form.amount && !isApproved(form.amount) && (
                   <GlowButton
                     type="button"
@@ -411,7 +435,7 @@ export default function CreateEscrowPage() {
                     onClick={() => approveUSDC(form.amount)}
                     className="w-full py-3 text-base"
                   >
-                    {isApproving ? "Approving..." : "Approve USDC"}
+                    {isApproving ? "Approving..." : "Approve Token"}
                   </GlowButton>
                 )}
 

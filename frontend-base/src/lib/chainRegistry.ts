@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Chain Registry — Base L2 shim.
+ * Chain Registry — Base L2 + Celo shim.
  * Canonical chain definitions: @/lib/chains/registry
  * Contract addresses: @/lib/contracts/addresses
  */
@@ -20,6 +20,7 @@ export {
 import {
   DEFAULT_CHAIN_ID,
   baseMainnet,
+  celoMainnet,
   getRpcUrl,
 } from "@/lib/chains/registry";
 import { getContractAddresses } from "@/lib/contracts/addresses";
@@ -39,18 +40,31 @@ export interface ChainConfig {
 }
 
 function buildChainConfig(): Record<number, ChainConfig> {
-  const addr = getContractAddresses(DEFAULT_CHAIN_ID);
+  const baseAddr = getContractAddresses(8453);
+  const celoAddr = getContractAddresses(42220);
   return {
-    [DEFAULT_CHAIN_ID]: {
+    8453: {
       chain:        baseMainnet,
-      rpcUrl:       getRpcUrl(DEFAULT_CHAIN_ID),
+      rpcUrl:       getRpcUrl(8453),
       explorerUrl:  "https://basescan.org",
       explorerTxUrl: (hash: string) => `https://basescan.org/tx/${hash}`,
       nativeSymbol: "ETH",
       contractAddresses: {
-        factory:   addr.factory,
-        aiArbiter: addr.arbiter,
-        oracle:    addr.trustOracle,
+        factory:   baseAddr.factory,
+        aiArbiter: baseAddr.arbiter,
+        oracle:    baseAddr.trustOracle,
+      },
+    },
+    42220: {
+      chain:        celoMainnet,
+      rpcUrl:       getRpcUrl(42220),
+      explorerUrl:  "https://celoscan.io",
+      explorerTxUrl: (hash: string) => `https://celoscan.io/tx/${hash}`,
+      nativeSymbol: "CELO",
+      contractAddresses: {
+        factory:   celoAddr.factory,
+        aiArbiter: celoAddr.arbiter,
+        oracle:    celoAddr.trustOracle,
       },
     },
   };

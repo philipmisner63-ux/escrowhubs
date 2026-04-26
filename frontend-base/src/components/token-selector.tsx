@@ -1,20 +1,20 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { TokenType } from "@/lib/hooks/useTokenSelector";
 
 interface TokenSelectorProps {
   value: TokenType;
   onChange: (token: TokenType) => void;
+  nativeLabel: string;
+  stableLabel: string;
   className?: string;
 }
 
-export function TokenSelector({ value, onChange, className }: TokenSelectorProps) {
-  const t = useTranslations("token");
+export function TokenSelector({ value, onChange, nativeLabel, stableLabel, className }: TokenSelectorProps) {
   return (
     <div className={cn("flex rounded-xl overflow-hidden border border-white/10 w-48", className)}>
-      {(["USDC", "ETH"] as TokenType[]).map((token) => (
+      {([["NATIVE", nativeLabel], ["STABLE", stableLabel]] as [TokenType, string][]).map(([token, label]) => (
         <button
           key={token}
           type="button"
@@ -26,7 +26,7 @@ export function TokenSelector({ value, onChange, className }: TokenSelectorProps
               : "bg-white/5 text-slate-400 hover:text-white"
           )}
         >
-          {token === "USDC" ? t("usdc") : t("eth")}
+          {label}
         </button>
       ))}
     </div>
