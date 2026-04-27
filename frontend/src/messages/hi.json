@@ -80,7 +80,7 @@
   "create": {
     "title": "एस्क्रो बनाएं",
     "subtitle": "BlockDAG पर नया एस्क्रो कॉन्ट्रैक्ट तैनात करें",
-    "networkBanner": "BlockDAG Mainnet। तैनात करने से पहले अपने वॉलेट को BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) से जोड़ें।",
+    "networkBanner": "BlockDAG Mainnet। तैनात करने से पहले अपने वॉलेट को BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering) से जोड़ें।",
     "simpleEscrow": "सरल एस्क्रो",
     "simpleEscrowDesc": "एकल रिलीज। डिलीवरी या मध्यस्थ के निर्णय पर धन जारी।",
     "milestoneEscrow": "मील-पत्थर एस्क्रो",

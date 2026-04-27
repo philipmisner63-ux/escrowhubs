@@ -80,7 +80,7 @@
   "create": {
     "title": "Criar Custódia",
     "subtitle": "Implante um novo contrato de custódia na BlockDAG",
-    "networkBanner": "Mainnet BlockDAG. Conecte sua carteira à BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) antes de implantar.",
+    "networkBanner": "Mainnet BlockDAG. Conecte sua carteira à BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering) antes de implantar.",
     "simpleEscrow": "Custódia Simples",
     "simpleEscrowDesc": "Liberação única. Fundos liberados na entrega ou decisão do árbitro.",
     "milestoneEscrow": "Custódia por Etapas",

@@ -80,7 +80,7 @@
   "create": {
     "title": "创建托管",
     "subtitle": "在 BlockDAG 上部署新的托管合约",
-    "networkBanner": "BlockDAG Mainnet。在部署之前，请将钱包连接到 BlockDAG（Chain ID: 1404，RPC: https://rpc.bdagscan.com）。",
+    "networkBanner": "BlockDAG Mainnet。在部署之前，请将钱包连接到 BlockDAG（Chain ID: 1404，RPC: https://rpc.blockdag.engineering）。",
     "simpleEscrow": "简单托管",
     "simpleEscrowDesc": "单次释放。资金在交付或仲裁决定后释放。",
     "milestoneEscrow": "里程碑托管",

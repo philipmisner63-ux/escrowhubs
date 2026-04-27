@@ -80,7 +80,7 @@
   "create": {
     "title": "Создать эскроу",
     "subtitle": "Развернуть новый эскроу-контракт на BlockDAG",
-    "networkBanner": "BlockDAG Mainnet. Подключите кошелёк к BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) перед развёртыванием.",
+    "networkBanner": "BlockDAG Mainnet. Подключите кошелёк к BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering) перед развёртыванием.",
     "simpleEscrow": "Простой эскроу",
     "simpleEscrowDesc": "Однократный выпуск. Средства выпускаются при доставке или по решению арбитра.",
     "milestoneEscrow": "Поэтапный эскроу",

@@ -80,7 +80,7 @@
   "create": {
     "title": "Emanet Oluştur",
     "subtitle": "BlockDAG üzerinde yeni bir emanet sözleşmesi dağıtın",
-    "networkBanner": "BlockDAG Mainnet. Dağıtmadan önce cüzdanınızı BlockDAG'a bağlayın (Chain ID: 1404, RPC: https://rpc.bdagscan.com).",
+    "networkBanner": "BlockDAG Mainnet. Dağıtmadan önce cüzdanınızı BlockDAG'a bağlayın (Chain ID: 1404, RPC: https://rpc.blockdag.engineering).",
     "simpleEscrow": "Basit Emanet",
     "simpleEscrowDesc": "Tek serbest bırakma. Fonlar teslimde veya hakem kararıyla serbest bırakılır.",
     "milestoneEscrow": "Aşamalı Emanet",

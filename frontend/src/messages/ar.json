@@ -80,7 +80,7 @@
   "create": {
     "title": "إنشاء ضمان",
     "subtitle": "نشر عقد ضمان جديد على BlockDAG",
-    "networkBanner": "Mainnet BlockDAG. ربط محفظتك بـ BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) قبل النشر.",
+    "networkBanner": "Mainnet BlockDAG. ربط محفظتك بـ BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering) قبل النشر.",
     "simpleEscrow": "ضمان بسيط",
     "simpleEscrowDesc": "إصدار واحد. الأموال تُحرر عند التسليم أو بقرار الحكم.",
     "milestoneEscrow": "ضمان بالمراحل",

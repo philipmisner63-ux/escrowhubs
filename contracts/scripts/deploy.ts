@@ -6,7 +6,7 @@ config();
 async function main() {
   const conn = await hre.network.connect();
 
-  const rpcUrl = process.env.BLOCKDAG_RPC_URL ?? "https://rpc.bdagscan.com";
+  const rpcUrl = process.env.BLOCKDAG_RPC_URL ?? "https://rpc.blockdag.engineering";
   const privateKey = process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`;
 
   if (!privateKey) throw new Error("DEPLOYER_PRIVATE_KEY not set in .env");

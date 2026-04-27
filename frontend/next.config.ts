@@ -12,7 +12,7 @@ const CSP = [
   "img-src 'self' data: https: blob:",
   [
     "connect-src 'self'",
-    "https://rpc.bdagscan.com",
+    "https://rpc.blockdag.engineering",
     "https://*.walletconnect.com",
     "https://*.walletconnect.org",
     "wss://*.walletconnect.com",

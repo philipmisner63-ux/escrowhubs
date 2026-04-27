@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
     },
     blockdag: {
       type: "http" as const,
-      url: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.bdagscan.com",
+      url: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.blockdag.engineering",
       chainId: 1404,
       accounts: process.env.DEPLOYER_PRIVATE_KEY
         ? [process.env.DEPLOYER_PRIVATE_KEY]

@@ -80,7 +80,7 @@
   "create": {
     "title": "에스크로 만들기",
     "subtitle": "BlockDAG에 새 에스크로 컨트랙트 배포",
-    "networkBanner": "BlockDAG Mainnet. 배포 전에 지갑을 BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com)에 연결하세요.",
+    "networkBanner": "BlockDAG Mainnet. 배포 전에 지갑을 BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering)에 연결하세요.",
     "simpleEscrow": "단순 에스크로",
     "simpleEscrowDesc": "단일 릴리즈. 배송 시 또는 중재자 결정에 따라 자금 릴리즈.",
     "milestoneEscrow": "마일스톤 에스크로",

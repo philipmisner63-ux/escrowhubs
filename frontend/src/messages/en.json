@@ -80,7 +80,7 @@
   "create": {
     "title": "Create Escrow",
     "subtitle": "Deploy a new escrow contract on BlockDAG",
-    "networkBanner": "BlockDAG Mainnet. Connect your wallet to BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) before deploying.",
+    "networkBanner": "BlockDAG Mainnet. Connect your wallet to BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering) before deploying.",
     "simpleEscrow": "Simple Escrow",
     "simpleEscrowDesc": "Single-release. Funds released on delivery or arbiter decision.",
     "milestoneEscrow": "Milestone Escrow",

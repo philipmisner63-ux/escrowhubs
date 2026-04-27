@@ -4,7 +4,7 @@
     "name": "BlockDAG",
     "nativeCurrency": { "name": "BDAG", "symbol": "BDAG", "decimals": 18 },
     "rpcUrlEnvVar": "BLOCKDAG_RPC_URL",
-    "rpcUrlFallback": "https://rpc.bdagscan.com",
+    "rpcUrlFallback": "https://rpc.blockdag.engineering",
     "factoryAddressEnvVar": "NEXT_PUBLIC_FACTORY_ADDRESS",
     "factoryAddressFallback": "0x8a9001c28c4cc1e0952ae5ca2a8366f1c1ac6724",
     "arbiterAddressEnvVar": "AI_ARBITER_ADDRESS",

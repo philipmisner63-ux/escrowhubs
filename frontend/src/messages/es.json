@@ -80,7 +80,7 @@
   "create": {
     "title": "Crear Custodia",
     "subtitle": "Despliega un nuevo contrato de custodia en BlockDAG",
-    "networkBanner": "Mainnet de BlockDAG. Conecta tu billetera a BlockDAG (Chain ID: 1404, RPC: https://rpc.bdagscan.com) antes de desplegar.",
+    "networkBanner": "Mainnet de BlockDAG. Conecta tu billetera a BlockDAG (Chain ID: 1404, RPC: https://rpc.blockdag.engineering) antes de desplegar.",
     "simpleEscrow": "Custodia Simple",
     "simpleEscrowDesc": "Liberación única. Fondos liberados al entregar o por decisión del árbitro.",
     "milestoneEscrow": "Custodia por Hitos",

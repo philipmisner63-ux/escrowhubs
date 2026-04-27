@@ -80,7 +80,7 @@
   "create": {
     "title": "Créer un séquestre",
     "subtitle": "Déployez un nouveau contrat de séquestre sur BlockDAG",
-    "networkBanner": "Mainnet BlockDAG. Connectez votre portefeuille à BlockDAG (Chain ID : 1404, RPC : https://rpc.bdagscan.com) avant de déployer.",
+    "networkBanner": "Mainnet BlockDAG. Connectez votre portefeuille à BlockDAG (Chain ID : 1404, RPC : https://rpc.blockdag.engineering) avant de déployer.",
     "simpleEscrow": "Séquestre simple",
     "simpleEscrowDesc": "Libération unique. Fonds libérés à la livraison ou sur décision de l'arbitre.",
     "milestoneEscrow": "Séquestre par jalons",

@@ -80,7 +80,7 @@
   "create": {
     "title": "エスクローを作成",
     "subtitle": "BlockDAGに新しいエスクローコントラクトをデプロイ",
-    "networkBanner": "BlockDAG Mainnet。デプロイ前にウォレットをBlockDAG（Chain ID: 1404、RPC: https://rpc.bdagscan.com）に接続してください。",
+    "networkBanner": "BlockDAG Mainnet。デプロイ前にウォレットをBlockDAG（Chain ID: 1404、RPC: https://rpc.blockdag.engineering）に接続してください。",
     "simpleEscrow": "シンプルエスクロー",
     "simpleEscrowDesc": "一度限りのリリース。配送時または仲裁人の決定で資金リリース。",
     "milestoneEscrow": "マイルストーンエスクロー",
