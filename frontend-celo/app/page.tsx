@@ -1,11 +1,24 @@
 "use client";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
+import { erc20Abi, formatUnits } from "viem";
 import { useMiniPay } from "@/hooks/useMiniPay";
+import { CUSD } from "@/lib/config";
 import Link from "next/link";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { isMiniPay, detected } = useMiniPay();
+
+  const { data: cUSDBalance } = useReadContract({
+    address: CUSD,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [address!],
+    query: { enabled: !!address && isConnected },
+  });
+  const balanceFormatted = cUSDBalance != null
+    ? parseFloat(formatUnits(cUSDBalance as bigint, 18)).toFixed(2)
+    : null;
 
   return (
     <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
@@ -22,9 +35,14 @@ export default function Home() {
           {isConnected ? (
             <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-sm text-green-800 font-medium">
-                {address?.slice(0, 6)}...{address?.slice(-4)} · Celo
-              </span>
+              <div>
+                <span className="text-sm text-green-800 font-medium">
+                  {address?.slice(0, 6)}...{address?.slice(-4)} · Celo
+                </span>
+                {balanceFormatted !== null && (
+                  <p className="text-xs text-green-600 mt-0.5">Balance: {balanceFormatted} cUSD</p>
+                )}
+              </div>
             </div>
           ) : (
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">

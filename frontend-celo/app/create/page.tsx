@@ -1,6 +1,6 @@
 "use client";
-import { useState, useRef } from "react";
-import { useAccount, useWriteContract } from "wagmi";
+import { useState, useRef, useEffect } from "react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, erc20Abi } from "viem";
 import { CONTRACTS, CUSD } from "@/lib/config";
 import Link from "next/link";
@@ -18,13 +18,29 @@ export default function CreatePage() {
   const [description, setDescription] = useState("");
   const [step, setStep] = useState<Step>("form");
   const [error, setError] = useState("");
+  const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { state: phoneState, resolve: resolvePhone, reset: resetPhone } = usePhoneResolution();
 
   const { writeContractAsync: approve } = useWriteContract();
   const { writeContractAsync: createEscrow } = useWriteContract();
 
+  const { data: receipt } = useWaitForTransactionReceipt({ hash: createTxHash });
+
   const resolveTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!receipt) return;
+    const log = receipt.logs.find(
+      (l) => l.address.toLowerCase() === CONTRACTS.factory.toLowerCase()
+    );
+    const topic1 = log?.topics?.[1];
+    if (topic1) {
+      setEscrowAddress("0x" + topic1.slice(-40));
+    }
+  }, [receipt]);
 
   function handleRecipientChange(val: string) {
     setRecipientInput(val);
@@ -80,7 +96,7 @@ export default function CreatePage() {
       });
 
       setStep("create");
-      await createEscrow({
+      const hash = await createEscrow({
         address: CONTRACTS.factory,
         abi: FactoryABI as any,
         functionName: "createSimpleEscrow",
@@ -93,12 +109,20 @@ export default function CreatePage() {
         ],
         gas: 500000n,
       });
+      setCreateTxHash(hash);
 
       setStep("done");
     } catch (err: any) {
       setError(err?.shortMessage ?? err?.message ?? "Something went wrong.");
       setStep("form");
     }
+  }
+
+  async function copyShareLink() {
+    if (!escrowAddress) return;
+    await navigator.clipboard.writeText(`https://celo.escrowhubs.io/escrow/${escrowAddress}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   if (step === "done") {
@@ -109,6 +133,14 @@ export default function CreatePage() {
         <p className="text-gray-500 text-center mb-8">
           Your cUSD is held safely. Release it when the job is done.
         </p>
+        {escrowAddress && (
+          <button
+            onClick={copyShareLink}
+            className="w-full bg-white border-2 border-green-500 text-green-700 rounded-2xl px-6 py-4 font-semibold text-lg mb-4 flex items-center justify-center gap-2 active:bg-green-50 transition-colors"
+          >
+            {copied ? "✓ Copied!" : "🔗 Share payment link"}
+          </button>
+        )}
         <Link
           href="/escrows"
           className="bg-green-600 text-white rounded-2xl px-6 py-4 font-semibold text-lg w-full text-center block"
