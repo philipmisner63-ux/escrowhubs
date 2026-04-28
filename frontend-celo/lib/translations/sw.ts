@@ -26,6 +26,12 @@ export const sw = {
       dispute: { title: "Tatizo?", desc: "AI itathmini ushahidi na kuamua kwa haki" },
     },
     footer: "Inayoendeshwa na Celo · Fedha zilindwa na mkataba mwerevu",
+    explainer: {
+      tagline: "Lipa salama. Toa ukimaliza.",
+      openInMiniPay: "Fungua katika MiniPay",
+      trustLine: "Mkataba mwerevu kwenye Celo · Imekaguliwa · EscrowHubs LLC",
+      tryDemo: "Jaribu Demo →",
+    },
   },
 
   // ── Create escrow page ────────────────────────────────────────────────────
@@ -101,6 +107,14 @@ export const sw = {
     viewOnCeloscan: "Angalia kwenye Celoscan",
     amountLabel: "Kiasi", // e.g. "5.00 cUSD"
     errorGeneric: "Hitilafu ya muamala. Tafadhali jaribu tena.",
+    backToPayments: "← Malipo Yangu",
+    stateLabels: {
+      awaitingDeposit: "Inasubiri amana",
+      funded: "Fedha zimefungwa",
+      released: "Malipo yametolewa",
+      disputed: "Ina mgogoro",
+      refunded: "Imerudishwa",
+    },
   },
 } as const;
 
