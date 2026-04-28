@@ -37,7 +37,7 @@ export default function EscrowsPage() {
 
   if (!isConnected) {
     return (
-      <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto items-center justify-center">
+      <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto items-center justify-center">
         <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-6 text-center">
           <div className="text-4xl mb-3 text-white">👛</div>
           <p className="text-white/70 text-center mb-5">{t("escrows.notConnected")}</p>
@@ -53,7 +53,7 @@ export default function EscrowsPage() {
   }
 
   return (
-    <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
+    <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
       <Link href="/" className="tap-compress text-white/60 text-sm mb-6 flex items-center gap-1">
         {t("back")}
       </Link>

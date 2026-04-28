@@ -2,7 +2,7 @@
 
 export function TrustFooter() {
   return (
-    <footer className="text-center text-xs text-white/40 mt-auto pt-6 pb-4 space-y-1">
+    <footer className="text-center text-xs text-white/40 mt-auto pt-6 pb-16 space-y-1">
       <p>Powered by Celo · Secured by smart contract</p>
       <p>
         EscrowHubs LLC ·{" "}

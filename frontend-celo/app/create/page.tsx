@@ -128,7 +128,7 @@ export default function CreatePage() {
 
   if (step === "done") {
     return (
-      <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto items-center justify-center">
+      <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto items-center justify-center">
         <div className="text-6xl mb-4">{t("create.doneEmoji")}</div>
         <h1 className="text-2xl font-bold text-white mb-2">{t("create.doneTitle")}</h1>
         <p className="text-white/70 text-center mb-3">{t("create.doneSubtitle")}</p>
@@ -168,7 +168,7 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
+    <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
       <Link href="/" className="text-white/60 text-sm mb-6 flex items-center gap-1">
         {t("back")}
       </Link>

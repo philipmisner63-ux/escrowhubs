@@ -73,7 +73,7 @@ export default function Home() {
   // Non-MiniPay: show explainer layout
   if (detected && !isMiniPay) {
     return (
-      <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
+      <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">EscrowHubs 🟢</h1>
@@ -108,7 +108,7 @@ export default function Home() {
 
   // MiniPay (or pre-detection) layout
   return (
-    <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
+    <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">EscrowHubs 🟢</h1>

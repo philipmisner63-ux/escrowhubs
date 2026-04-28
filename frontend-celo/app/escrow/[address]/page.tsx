@@ -118,7 +118,7 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
   }
 
   return (
-    <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
+    <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
       <Link href="/escrows" className="text-white/60 text-sm mb-6 flex items-center gap-1">
         {t("escrowDetail.backToPayments")}
       </Link>

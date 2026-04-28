@@ -70,16 +70,43 @@ export function FeedbackButton() {
     { key: "rating", label: "⭐ Rate" },
   ];
 
+  function openTab(t: TabType) {
+    setTab(t);
+    setMessage("");
+    setRating(0);
+    setState("idle");
+    setOpen(true);
+  }
+
   return (
     <>
-      {/* Trigger button */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Open feedback"
-        className="fixed bottom-6 right-5 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-[#35D07F] to-[#0EA56F] shadow-lg tap-compress flex items-center justify-center text-xl"
-      >
-        💬
-      </button>
+      {/* Fixed bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0F1F2E]/95 backdrop-blur-sm border-t border-white/10 flex items-center justify-around px-4 py-3 pb-4">
+        <button
+          onClick={() => openTab("support")}
+          className="flex flex-col items-center gap-0.5 tap-compress flex-1 py-1"
+          aria-label="Support"
+        >
+          <span className="text-xl">🛟</span>
+          <span className="text-white/50 text-xs">Support</span>
+        </button>
+        <button
+          onClick={() => openTab("feature")}
+          className="flex flex-col items-center gap-0.5 tap-compress flex-1 py-1"
+          aria-label="Feedback"
+        >
+          <span className="text-xl">💬</span>
+          <span className="text-white/50 text-xs">Feedback</span>
+        </button>
+        <button
+          onClick={() => openTab("rating")}
+          className="flex flex-col items-center gap-0.5 tap-compress flex-1 py-1"
+          aria-label="Rate"
+        >
+          <span className="text-xl">⭐</span>
+          <span className="text-white/50 text-xs">Rate</span>
+        </button>
+      </div>
 
       {/* Modal overlay */}
       {open && (
