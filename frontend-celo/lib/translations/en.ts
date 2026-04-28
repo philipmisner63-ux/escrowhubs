@@ -10,7 +10,7 @@ export const en = {
 
   // ── Home page ─────────────────────────────────────────────────────────────
   home: {
-    tagline: "Pay when the job is done",
+    tagline: "Pay safely. Release when done.",
     walletConnecting: "Connecting your wallet...",
     walletOpenInMiniPay: "Open this app inside MiniPay to connect your wallet",
     balanceLabel: "Balance:",

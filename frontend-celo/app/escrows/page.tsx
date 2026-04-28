@@ -10,14 +10,15 @@ import { TrustFooter } from "@/components/TrustFooter";
 
 // State index → translation key
 const STATE_KEYS = ["awaitingDeposit", "funded", "released", "disputed", "refunded"] as const;
-const STATE_COLORS = [
-  "bg-gray-100 text-gray-600",
-  "bg-blue-100 text-blue-700",
-  "bg-green-100 text-green-700",
-  "bg-amber-100 text-amber-700",
-  "bg-red-100 text-red-700",
-] as const;
 const STATE_EMOJIS = ["⏳", "🔒", "✅", "⚖️", "↩️"] as const;
+const STATE_BORDER = ["#F7C948", "#35D07F", "#4A9EFF", "#FF5B5B", "#FF5B5B"] as const;
+const STATE_BADGE = [
+  "bg-[#F7C948]/20 text-[#F7C948]",
+  "bg-[#35D07F]/20 text-[#35D07F]",
+  "bg-[#4A9EFF]/20 text-[#4A9EFF]",
+  "bg-[#FF5B5B]/20 text-[#FF5B5B]",
+  "bg-[#FF5B5B]/20 text-[#FF5B5B]",
+] as const;
 
 export default function EscrowsPage() {
   const { address, isConnected } = useAccount();
@@ -47,33 +48,30 @@ export default function EscrowsPage() {
     return (
       <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto items-center justify-center">
         <div className="text-4xl mb-3">👛</div>
-        <p className="text-gray-600 text-center">{t("escrows.notConnected")}</p>
+        <p className="text-white/60 text-center">{t("escrows.notConnected")}</p>
       </main>
     );
   }
 
   return (
     <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
-      <Link href="/" className="text-gray-500 text-sm mb-6 flex items-center gap-1">
+      <Link href="/" className="text-white/60 text-sm mb-6 flex items-center gap-1">
         {t("back")}
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("escrows.pageTitle")}</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">{t("escrows.pageTitle")}</h1>
 
       {isLoading && (
         <div className="flex flex-col gap-3">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between animate-pulse"
-            >
+            <div key={i} className="bg-white/[0.07] border border-white/10 rounded-2xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gray-200" />
+                <div className="skeleton w-9 h-9 rounded-full" />
                 <div>
-                  <div className="h-4 w-36 bg-gray-200 rounded mb-2" />
-                  <div className="h-3 w-24 bg-gray-100 rounded" />
+                  <div className="skeleton h-4 w-36 rounded mb-2" />
+                  <div className="skeleton h-3 w-24 rounded" />
                 </div>
               </div>
-              <div className="h-6 w-20 bg-gray-200 rounded-lg" />
+              <div className="skeleton h-6 w-20 rounded-lg" />
             </div>
           ))}
         </div>
@@ -82,10 +80,10 @@ export default function EscrowsPage() {
       {!isLoading && allAddrs.length === 0 && (
         <div className="text-center py-12">
           <div className="text-4xl mb-3">📭</div>
-          <p className="text-gray-500 mb-6">{t("escrows.noPayments")}</p>
+          <p className="text-white/60 mb-6">{t("escrows.noPayments")}</p>
           <Link
             href="/create"
-            className="bg-green-600 text-white rounded-2xl px-6 py-4 font-semibold inline-block"
+            className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 font-bold inline-block shadow-lg shadow-green-900/30"
           >
             {t("escrows.ctaSendFirst")}
           </Link>
@@ -134,27 +132,31 @@ function EscrowCard({
   const stateNum = typeof state === "number" ? state : Number(state ?? 0);
   const stateKey = STATE_KEYS[stateNum] ?? STATE_KEYS[0];
   const label = t(`escrows.stateLabels.${stateKey}`);
-  const color = STATE_COLORS[stateNum] ?? STATE_COLORS[0];
   const emoji = STATE_EMOJIS[stateNum] ?? STATE_EMOJIS[0];
+  const borderColor = STATE_BORDER[stateNum] ?? STATE_BORDER[0];
+  const badgeClass = STATE_BADGE[stateNum] ?? STATE_BADGE[0];
   const amountFormatted = amount
     ? parseFloat(formatUnits(amount as bigint, 18)).toFixed(2)
     : "...";
 
   return (
     <Link href={`/escrow/${escrowAddr}`}>
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between active:bg-gray-50 transition-colors">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{emoji}</span>
-          <div>
-            <p className="text-sm font-medium text-gray-900">
-              {sent ? t("escrows.sent") : t("escrows.received")} · {amountFormatted} cUSD
-            </p>
-            <p className="text-xs text-gray-400">
-              {escrowAddr.slice(0, 8)}...{escrowAddr.slice(-6)}
-            </p>
+      <div className="relative bg-white/[0.07] border border-white/10 rounded-2xl overflow-hidden active:bg-white/10 transition-colors">
+        <div className="absolute left-0 top-0 bottom-0 w-1" style={{ background: borderColor }} />
+        <div className="p-4 pl-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{emoji}</span>
+            <div>
+              <p className="text-sm font-bold text-white">
+                {amountFormatted} cUSD
+              </p>
+              <p className="text-xs text-white/50">
+                {sent ? t("escrows.sent") : t("escrows.received")} · {escrowAddr.slice(0, 8)}...{escrowAddr.slice(-6)}
+              </p>
+            </div>
           </div>
+          <span className={`text-xs font-medium px-2 py-1 rounded-lg ${badgeClass}`}>{label}</span>
         </div>
-        <span className={`text-xs font-medium px-2 py-1 rounded-lg ${color}`}>{label}</span>
       </div>
     </Link>
   );

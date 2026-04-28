@@ -13,7 +13,20 @@ const STATE = { PENDING: 0, FUNDED: 1, RELEASED: 2, DISPUTED: 3, REFUNDED: 4 };
 // State index → translation key
 const STATE_KEYS = ["awaitingDeposit", "funded", "released", "disputed", "refunded"] as const;
 const STATE_EMOJIS = ["⏳", "🔒", "✅", "⚖️", "↩️"] as const;
-const STATE_BG = ["bg-gray-50", "bg-blue-50", "bg-green-50", "bg-amber-50", "bg-red-50"] as const;
+const STATE_GRADIENT = [
+  "from-[#F7C948]/20 to-[#F7C948]/5",
+  "from-[#35D07F]/20 to-[#0EA56F]/5",
+  "from-[#4A9EFF]/20 to-[#4A9EFF]/5",
+  "from-[#FF5B5B]/20 to-[#FF5B5B]/5",
+  "from-[#FF5B5B]/20 to-[#FF5B5B]/5",
+] as const;
+const STATE_AMOUNT_COLOR = [
+  "text-[#F7C948]",
+  "text-[#35D07F]",
+  "text-[#4A9EFF]",
+  "text-[#FF5B5B]",
+  "text-[#FF5B5B]",
+] as const;
 
 const ESCROW_ABI = SimpleEscrowABI as any;
 
@@ -56,7 +69,8 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
   const stateNum = typeof state === "number" ? state : Number(state ?? 0);
   const stateKey = STATE_KEYS[stateNum] ?? STATE_KEYS[0];
   const stateEmoji = STATE_EMOJIS[stateNum] ?? STATE_EMOJIS[0];
-  const stateBg = STATE_BG[stateNum] ?? STATE_BG[0];
+  const stateGradient = STATE_GRADIENT[stateNum] ?? STATE_GRADIENT[0];
+  const amountColor = STATE_AMOUNT_COLOR[stateNum] ?? STATE_AMOUNT_COLOR[0];
   const stateLabel = t(`escrowDetail.stateLabels.${stateKey}`);
   const stateDesc = t(`escrowDetail.stateDescriptions.${stateKey}`);
   const amountFormatted = amount
@@ -105,43 +119,43 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
 
   return (
     <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto">
-      <Link href="/escrows" className="text-gray-500 text-sm mb-6 flex items-center gap-1">
+      <Link href="/escrows" className="text-white/60 text-sm mb-6 flex items-center gap-1">
         {t("escrowDetail.backToPayments")}
       </Link>
 
-      {/* Status card */}
-      <div className={`${stateBg} rounded-2xl p-6 mb-6 text-center`}>
+      {/* Status hero card */}
+      <div className={`bg-gradient-to-br ${stateGradient} border border-white/10 rounded-2xl p-6 mb-6 text-center`}>
         <div className="text-5xl mb-3">{stateEmoji}</div>
-        <h1 className="text-xl font-bold text-gray-900 mb-1">{stateLabel}</h1>
-        <p className="text-gray-500 text-sm">{stateDesc}</p>
+        <h1 className="text-xl font-bold text-white mb-1">{stateLabel}</h1>
+        <p className="text-white/60 text-sm">{stateDesc}</p>
       </div>
 
-      {/* Amount */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-4 text-center">
-        <p className="text-gray-500 text-sm mb-1">{t("escrowDetail.amountLabel")}</p>
-        <p className="text-4xl font-bold text-gray-900">{amountFormatted}</p>
-        <p className="text-gray-400 text-sm">cUSD</p>
+      {/* Amount card */}
+      <div className="bg-white/[0.07] border border-white/10 rounded-2xl p-5 mb-4 text-center">
+        <p className="text-white/60 text-sm mb-1">{t("escrowDetail.amountLabel")}</p>
+        <p className={`text-4xl font-bold ${amountColor}`}>{amountFormatted}</p>
+        <p className="text-white/40 text-sm">cUSD</p>
       </div>
 
-      {/* Parties */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-6">
+      {/* Parties card */}
+      <div className="bg-white/[0.07] border border-white/10 rounded-2xl p-5 mb-6">
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">{t("escrowDetail.senderLabel")}</span>
-            <span className="text-sm font-mono text-gray-800">
+            <span className="text-sm text-white/60">{t("escrowDetail.senderLabel")}</span>
+            <span className="text-sm font-mono text-white">
               {(depositor as string)?.slice(0, 8)}...{(depositor as string)?.slice(-6)}
               {isDepositor && (
-                <span className="ml-1 text-green-600 text-xs">{t("escrowDetail.you")}</span>
+                <span className="ml-1 text-[#35D07F] text-xs">{t("escrowDetail.you")}</span>
               )}
             </span>
           </div>
-          <div className="border-t border-gray-100" />
+          <div className="border-t border-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">{t("escrowDetail.recipientLabel")}</span>
-            <span className="text-sm font-mono text-gray-800">
+            <span className="text-sm text-white/60">{t("escrowDetail.recipientLabel")}</span>
+            <span className="text-sm font-mono text-white">
               {(beneficiary as string)?.slice(0, 8)}...{(beneficiary as string)?.slice(-6)}
               {isBeneficiary && (
-                <span className="ml-1 text-green-600 text-xs">{t("escrowDetail.you")}</span>
+                <span className="ml-1 text-[#35D07F] text-xs">{t("escrowDetail.you")}</span>
               )}
             </span>
           </div>
@@ -150,7 +164,7 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
 
       {/* Error */}
       {txError && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-4">
+        <div className="bg-[#FF5B5B]/10 border border-[#FF5B5B]/30 rounded-xl px-4 py-3 text-sm text-[#FF5B5B] mb-4">
           {txError}
         </div>
       )}
@@ -161,7 +175,7 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
           <button
             onClick={handleRelease}
             disabled={releasing || disputing}
-            className="bg-green-600 text-white rounded-2xl px-6 py-5 font-semibold text-lg disabled:opacity-50 active:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-5 font-bold text-lg disabled:opacity-50 shadow-lg shadow-green-900/30 flex items-center justify-center gap-2"
           >
             {releasing ? (
               <>
@@ -176,11 +190,11 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
           <button
             onClick={handleDispute}
             disabled={releasing || disputing}
-            className="bg-white border-2 border-amber-300 text-amber-700 rounded-2xl px-6 py-4 font-semibold disabled:opacity-50 active:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+            className="bg-white/10 border border-[#FF5B5B]/40 text-[#FF5B5B] rounded-2xl px-6 py-4 font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {disputing ? (
               <>
-                <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-[#FF5B5B] border-t-transparent rounded-full animate-spin" />
                 Raising dispute...
               </>
             ) : (
@@ -188,15 +202,15 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
             )}
           </button>
 
-          <p className="text-xs text-gray-400 text-center px-4">{t("escrowDetail.disputeNote")}</p>
+          <p className="text-xs text-white/40 text-center px-4">{t("escrowDetail.disputeNote")}</p>
         </div>
       )}
 
       {/* Recipient view — funded */}
       {isFunded && isBeneficiary && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center">
-          <p className="text-blue-800 font-medium mb-1">Funds are locked</p>
-          <p className="text-blue-600 text-sm">{t("escrowDetail.beneficiaryInfo")}</p>
+        <div className="bg-[#4A9EFF]/10 border border-[#4A9EFF]/30 rounded-2xl p-5 text-center">
+          <p className="text-[#4A9EFF] font-medium mb-1">Funds are locked</p>
+          <p className="text-white/60 text-sm">{t("escrowDetail.beneficiaryInfo")}</p>
         </div>
       )}
 
@@ -206,7 +220,7 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
           href={`https://celoscan.io/address/${escrowAddr}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-gray-400 text-center block"
+          className="text-xs text-white/40 text-center block"
         >
           {t("escrowDetail.viewOnCeloscan")} ↗
         </a>

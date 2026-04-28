@@ -30,13 +30,13 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
-    const stored = localStorage.getItem("lang") as Lang | null;
+    const stored = localStorage.getItem("eh-lang") as Lang | null;
     if (stored === "en" || stored === "sw") setLangState(stored);
   }, []);
 
   function setLang(l: Lang) {
     setLangState(l);
-    localStorage.setItem("lang", l);
+    localStorage.setItem("eh-lang", l);
   }
 
   function t(key: string, vars?: Record<string, string>): string {
