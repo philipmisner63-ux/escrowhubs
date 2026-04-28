@@ -12,7 +12,7 @@ export const sw = {
 
   // ── Home page ─────────────────────────────────────────────────────────────
   home: {
-    tagline: "Lipa ukimaliza kazi",
+    tagline: "Malipo salama, popote.",
     walletConnecting: "Inaunganisha mkoba wako...",
     walletOpenInMiniPay: "Fungua programu hii ndani ya MiniPay ili kuunganisha mkoba wako",
     balanceLabel: "Salio:", // e.g. "Salio: 5.00 cUSD"
@@ -27,7 +27,7 @@ export const sw = {
     },
     footer: "Inayoendeshwa na Celo · Fedha zilindwa na mkataba mwerevu",
     explainer: {
-      tagline: "Lipa salama. Toa ukimaliza.",
+      tagline: "Malipo salama, popote.",
       openInMiniPay: "Fungua katika MiniPay",
       trustLine: "Mkataba mwerevu kwenye Celo · Imekaguliwa · EscrowHubs LLC",
       tryDemo: "Jaribu Demo →",

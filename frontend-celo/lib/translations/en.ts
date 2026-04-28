@@ -10,7 +10,7 @@ export const en = {
 
   // ── Home page ─────────────────────────────────────────────────────────────
   home: {
-    tagline: "Pay safely. Release when done.",
+    tagline: "Safe payments, anywhere.",
     walletConnecting: "Connecting your wallet...",
     walletOpenInMiniPay: "Open this app inside MiniPay to connect your wallet",
     balanceLabel: "Balance:",
@@ -25,7 +25,7 @@ export const en = {
     },
     footer: "Powered by Celo · Funds secured by smart contract",
     explainer: {
-      tagline: "Pay safely. Release when done.",
+      tagline: "Safe payments, anywhere.",
       openInMiniPay: "Open in MiniPay",
       trustLine: "Smart contract on Celo · Audited · EscrowHubs LLC",
       tryDemo: "Try Demo →",

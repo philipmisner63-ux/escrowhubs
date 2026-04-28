@@ -4,7 +4,7 @@ import { erc20Abi, formatUnits } from "viem";
 import { useMiniPay } from "@/hooks/useMiniPay";
 import { CUSD } from "@/lib/config";
 import Link from "next/link";
-import { useTranslation } from "@/lib/useTranslation";
+import { useTranslation, type Lang } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
 import { Tile } from "@/components/Tile";
 import { IconCircle } from "@/components/IconCircle";
@@ -33,23 +33,33 @@ export default function Home() {
     { icon: "⚖️", title: t("home.steps.dispute.title"), desc: t("home.steps.dispute.desc") },
   ];
 
+  const LANGS: { code: Lang; label: string; aria: string }[] = [
+    { code: "en", label: "EN", aria: "English" },
+    { code: "sw", label: "SW", aria: "Swahili" },
+    { code: "es", label: "ES", aria: "Español" },
+    { code: "pt", label: "PT", aria: "Português" },
+    { code: "fr", label: "FR", aria: "Français" },
+    { code: "ar", label: "AR", aria: "العربية" },
+    { code: "hi", label: "हि", aria: "हिंदी" },
+    { code: "zh", label: "中", aria: "中文" },
+  ];
+
   const langPicker = (
-    <div className="flex items-center gap-1 bg-white/10 border border-white/20 text-white text-xs px-3 py-1 rounded-full">
-      <button
-        onClick={() => setLang("en")}
-        className={`tap-compress text-xs font-semibold px-1 transition-colors ${lang === "en" ? "text-[#35D07F]" : "text-white/50"}`}
-        aria-label="English"
-      >
-        EN
-      </button>
-      <span className="text-white/30 text-xs">|</span>
-      <button
-        onClick={() => setLang("sw")}
-        className={`tap-compress text-xs font-semibold px-1 transition-colors ${lang === "sw" ? "text-[#35D07F]" : "text-white/50"}`}
-        aria-label="Swahili"
-      >
-        SW
-      </button>
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      {LANGS.map(({ code, label, aria }) => (
+        <button
+          key={code}
+          onClick={() => setLang(code)}
+          aria-label={aria}
+          className={`flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-full tap-compress transition-colors border ${
+            lang === code
+              ? "bg-[#35D07F] text-black border-[#35D07F]"
+              : "bg-white/10 text-white/50 border-white/20"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   );
 

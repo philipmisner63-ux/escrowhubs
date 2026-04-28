@@ -2,11 +2,17 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { en } from "./translations/en";
 import { sw } from "./translations/sw";
+import { es } from "./translations/es";
+import { pt } from "./translations/pt";
+import { fr } from "./translations/fr";
+import { ar } from "./translations/ar";
+import { hi } from "./translations/hi";
+import { zh } from "./translations/zh";
 
-type Lang = "en" | "sw";
+export type Lang = "en" | "sw" | "es" | "pt" | "fr" | "ar" | "hi" | "zh";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const translations: Record<Lang, any> = { en, sw };
+const translations: Record<Lang, any> = { en, sw, es, pt, fr, ar, hi, zh };
 
 function getNestedValue(obj: Record<string, unknown>, path: string): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,7 +37,7 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("eh-lang") as Lang | null;
-    if (stored === "en" || stored === "sw") setLangState(stored);
+    if (stored && stored in translations) setLangState(stored as Lang);
   }, []);
 
   function setLang(l: Lang) {
