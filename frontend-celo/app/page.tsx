@@ -93,9 +93,9 @@ export default function Home() {
         </div>
 
         <div className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] gradient-motion rounded-2xl p-6 text-white mb-6">
-          <p className="text-white font-bold text-lg mb-1">Safe payments for Africa</p>
+          <p className="text-white font-bold text-lg mb-1">{t("home.tagline")}</p>
           <p className="text-white/80 text-sm">
-            Funds held by smart contract until both sides agree
+            {t("home.explainer.trustLine")}
           </p>
         </div>
 
