@@ -131,7 +131,7 @@ export default function CreatePage() {
       <main className="flex flex-col min-h-screen px-5 py-8 max-w-md mx-auto items-center justify-center">
         <div className="text-6xl mb-4">{t("create.doneEmoji")}</div>
         <h1 className="text-2xl font-bold text-white mb-2">{t("create.doneTitle")}</h1>
-        <p className="text-white/60 text-center mb-3">{t("create.doneSubtitle")}</p>
+        <p className="text-white/70 text-center mb-3">{t("create.doneSubtitle")}</p>
         {description && (
           <p className="text-white/80 text-sm text-center italic mb-8">"{description}"</p>
         )}
@@ -150,7 +150,7 @@ export default function CreatePage() {
             </div>
             <button
               onClick={copyShareLink}
-              className="w-full bg-white/10 border border-[#35D07F]/40 text-[#35D07F] rounded-2xl px-6 py-4 font-semibold text-lg flex items-center justify-center gap-2"
+              className="w-full bg-white/10 border border-white/20 text-white rounded-2xl px-6 py-4 font-semibold text-lg flex items-center justify-center gap-2"
             >
               {copied ? t("create.shareCopied") : t("create.shareButton")}
             </button>
@@ -176,7 +176,7 @@ export default function CreatePage() {
       <h1 className="text-2xl font-bold text-white mb-1">{t("create.pageTitle")}</h1>
       <p className="text-white/60 text-sm mb-8">{t("create.pageSubtitle")}</p>
 
-      <div className="bg-white/[0.07] border border-white/10 rounded-2xl p-5">
+      <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
           {/* Recipient — phone or wallet */}
@@ -189,7 +189,7 @@ export default function CreatePage() {
               placeholder={t("create.recipientPlaceholder")}
               value={recipientInput}
               onChange={(e) => handleRecipientChange(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#35D07F]"
+              className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 focus:outline-none focus:border-[#35D07F] transition-colors"
               disabled={inProgress}
               inputMode="tel"
             />
@@ -197,7 +197,7 @@ export default function CreatePage() {
             {/* Resolution feedback */}
             {phoneState.status === "resolving" && (
               <div className="mt-2 flex items-center gap-2 text-xs text-white/50">
-                <div className="skeleton w-20 h-3 rounded" />
+                <div className="w-3 h-3 border-2 border-white/50 border-t-transparent rounded-full animate-spin" />
                 <span>{t("create.resolvingWallet")}</span>
               </div>
             )}
@@ -207,7 +207,7 @@ export default function CreatePage() {
               </div>
             )}
             {phoneState.status === "not-found" && (
-              <div className="mt-2 text-xs text-[#F7C948]">
+              <div className="mt-2 text-xs text-amber-400">
                 ⚠ {t("create.resolvedNotFound")}
               </div>
             )}
@@ -229,7 +229,7 @@ export default function CreatePage() {
                 step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 text-lg font-semibold focus:outline-none focus:border-[#35D07F] pr-16"
+                className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 text-lg font-semibold focus:outline-none focus:border-[#35D07F] transition-colors pr-16"
                 disabled={inProgress}
                 inputMode="decimal"
               />
@@ -249,7 +249,7 @@ export default function CreatePage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#35D07F] resize-none"
+              className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 focus:outline-none focus:border-[#35D07F] transition-colors resize-none"
               disabled={inProgress}
             />
             <p className="text-xs text-white/40 mt-1">{t("create.descriptionHint")}</p>
@@ -264,7 +264,7 @@ export default function CreatePage() {
 
           {/* Progress */}
           {inProgress && (
-            <div className="bg-white/[0.07] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/80 flex items-center gap-2">
+            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin" />
               {step === "approve" ? t("create.progressApproving") : t("create.progressCreating")}
             </div>
@@ -279,7 +279,7 @@ export default function CreatePage() {
               !effectiveAddress ||
               phoneState.status === "resolving"
             }
-            className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-5 font-bold text-lg disabled:opacity-40 shadow-lg shadow-green-900/30 mt-2"
+            className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 font-bold w-full disabled:opacity-40 shadow-lg shadow-green-900/30 mt-2"
           >
             {inProgress
               ? t("create.submitProcessing")

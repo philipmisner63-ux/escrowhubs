@@ -3,7 +3,7 @@ import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useMiniPay } from "@/hooks/useMiniPay";
 import { formatUnits } from "viem";
 import Link from "next/link";
-import { useState } from "react";
+import { use, useState } from "react";
 import SimpleEscrowABI from "@/abis/SimpleEscrow.json";
 import { useTranslation } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
@@ -14,24 +14,24 @@ const STATE = { PENDING: 0, FUNDED: 1, RELEASED: 2, DISPUTED: 3, REFUNDED: 4 };
 const STATE_KEYS = ["awaitingDeposit", "funded", "released", "disputed", "refunded"] as const;
 const STATE_EMOJIS = ["⏳", "🔒", "✅", "⚖️", "↩️"] as const;
 const STATE_GRADIENT = [
-  "from-[#F7C948]/20 to-[#F7C948]/5",
-  "from-[#35D07F]/20 to-[#0EA56F]/5",
-  "from-[#4A9EFF]/20 to-[#4A9EFF]/5",
-  "from-[#FF5B5B]/20 to-[#FF5B5B]/5",
-  "from-[#FF5B5B]/20 to-[#FF5B5B]/5",
+  "from-[#35D07F]/20 to-[#0EA56F]/10 border-[#35D07F]/30",
+  "from-[#35D07F]/20 to-[#0EA56F]/10 border-[#35D07F]/30",
+  "from-blue-500/20 to-blue-600/10 border-blue-500/30",
+  "from-red-500/20 to-red-600/10 border-red-500/30",
+  "from-red-500/20 to-red-600/10 border-red-500/30",
 ] as const;
 const STATE_AMOUNT_COLOR = [
-  "text-[#F7C948]",
   "text-[#35D07F]",
-  "text-[#4A9EFF]",
-  "text-[#FF5B5B]",
-  "text-[#FF5B5B]",
+  "text-[#35D07F]",
+  "text-blue-400",
+  "text-red-400",
+  "text-red-400",
 ] as const;
 
 const ESCROW_ABI = SimpleEscrowABI as any;
 
-export default function EscrowDetailPage({ params }: { params: { address: `0x${string}` } }) {
-  const { address: escrowAddr } = params;
+export default function EscrowDetailPage({ params }: { params: Promise<{ address: `0x${string}` }> }) {
+  const { address: escrowAddr } = use(params);
   const { address: myAddress } = useAccount();
   const { t } = useTranslation();
   useMiniPay();
@@ -124,24 +124,24 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
       </Link>
 
       {/* Status hero card */}
-      <div className={`bg-gradient-to-br ${stateGradient} border border-white/10 rounded-2xl p-6 mb-6 text-center`}>
+      <div className={`bg-gradient-to-br ${stateGradient} border rounded-2xl p-6 mb-6 text-center`}>
         <div className="text-5xl mb-3">{stateEmoji}</div>
         <h1 className="text-xl font-bold text-white mb-1">{stateLabel}</h1>
         <p className="text-white/60 text-sm">{stateDesc}</p>
       </div>
 
       {/* Amount card */}
-      <div className="bg-white/[0.07] border border-white/10 rounded-2xl p-5 mb-4 text-center">
+      <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5 mb-4 text-center">
         <p className="text-white/60 text-sm mb-1">{t("escrowDetail.amountLabel")}</p>
         <p className={`text-4xl font-bold ${amountColor}`}>{amountFormatted}</p>
         <p className="text-white/40 text-sm">cUSD</p>
       </div>
 
       {/* Parties card */}
-      <div className="bg-white/[0.07] border border-white/10 rounded-2xl p-5 mb-6">
+      <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5 mb-6">
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-white/60">{t("escrowDetail.senderLabel")}</span>
+            <span className="text-white/50 text-sm">{t("escrowDetail.senderLabel")}</span>
             <span className="text-sm font-mono text-white">
               {(depositor as string)?.slice(0, 8)}...{(depositor as string)?.slice(-6)}
               {isDepositor && (
@@ -151,7 +151,7 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
           </div>
           <div className="border-t border-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-sm text-white/60">{t("escrowDetail.recipientLabel")}</span>
+            <span className="text-white/50 text-sm">{t("escrowDetail.recipientLabel")}</span>
             <span className="text-sm font-mono text-white">
               {(beneficiary as string)?.slice(0, 8)}...{(beneficiary as string)?.slice(-6)}
               {isBeneficiary && (
@@ -175,7 +175,7 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
           <button
             onClick={handleRelease}
             disabled={releasing || disputing}
-            className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-5 font-bold text-lg disabled:opacity-50 shadow-lg shadow-green-900/30 flex items-center justify-center gap-2"
+            className="bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 w-full font-bold disabled:opacity-50 shadow-lg shadow-green-900/30 flex items-center justify-center gap-2"
           >
             {releasing ? (
               <>
@@ -190,11 +190,11 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
           <button
             onClick={handleDispute}
             disabled={releasing || disputing}
-            className="bg-white/10 border border-[#FF5B5B]/40 text-[#FF5B5B] rounded-2xl px-6 py-4 font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            className="bg-red-500/20 border border-red-500/30 text-red-400 rounded-2xl px-6 py-4 w-full font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {disputing ? (
               <>
-                <div className="w-5 h-5 border-2 border-[#FF5B5B] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
                 Raising dispute...
               </>
             ) : (
@@ -208,7 +208,7 @@ export default function EscrowDetailPage({ params }: { params: { address: `0x${s
 
       {/* Recipient view — funded */}
       {isFunded && isBeneficiary && (
-        <div className="bg-[#4A9EFF]/10 border border-[#4A9EFF]/30 rounded-2xl p-5 text-center">
+        <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5 text-center">
           <p className="text-[#4A9EFF] font-medium mb-1">Funds are locked</p>
           <p className="text-white/60 text-sm">{t("escrowDetail.beneficiaryInfo")}</p>
         </div>

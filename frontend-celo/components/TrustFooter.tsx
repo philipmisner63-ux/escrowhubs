@@ -10,7 +10,7 @@ export function TrustFooter() {
           href="https://celoscan.io/address/0x43572a85597e82a7153dbcae8f2fe93d1602a836"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white/60"
+          className="text-white/60 hover:text-white/80 transition-colors"
         >
           View contract ↗
         </a>
@@ -19,7 +19,7 @@ export function TrustFooter() {
           href="https://x.com/escrowhubs94501"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white/60"
+          className="text-white/60 hover:text-white/80 transition-colors"
         >
           @escrowhubs94501 ↗
         </a>
