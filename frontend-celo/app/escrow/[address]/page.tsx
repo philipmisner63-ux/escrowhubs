@@ -7,6 +7,7 @@ import { use, useState } from "react";
 import SimpleEscrowABI from "@/abis/SimpleEscrow.json";
 import { useTranslation } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
+import { USDT } from "@/lib/config";
 
 const STATE = { PENDING: 0, FUNDED: 1, RELEASED: 2, DISPUTED: 3, REFUNDED: 4 };
 
@@ -54,6 +55,12 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
     functionName: "amount",
   });
 
+  const { data: tokenAddress } = useReadContract({
+    address: escrowAddr,
+    abi: ESCROW_ABI,
+    functionName: "token",
+  });
+
   const { data: depositor } = useReadContract({
     address: escrowAddr,
     abi: ESCROW_ABI,
@@ -66,6 +73,10 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
     functionName: "beneficiary",
   });
 
+  const isUSDT = (tokenAddress as string | undefined)?.toLowerCase() === USDT.toLowerCase();
+  const tokenSymbol = isUSDT ? "USDT" : "cUSD";
+  const tokenDecimals = isUSDT ? 6 : 18;
+
   const stateNum = typeof state === "number" ? state : Number(state ?? 0);
   const stateKey = STATE_KEYS[stateNum] ?? STATE_KEYS[0];
   const stateEmoji = STATE_EMOJIS[stateNum] ?? STATE_EMOJIS[0];
@@ -74,7 +85,7 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
   const stateLabel = t(`escrowDetail.stateLabels.${stateKey}`);
   const stateDesc = t(`escrowDetail.stateDescriptions.${stateKey}`);
   const amountFormatted = amount
-    ? parseFloat(formatUnits(amount as bigint, 18)).toFixed(2)
+    ? parseFloat(formatUnits(amount as bigint, tokenDecimals)).toFixed(2)
     : "...";
 
   const isDepositor = myAddress?.toLowerCase() === (depositor as string)?.toLowerCase();
@@ -134,7 +145,7 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
       <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5 mb-4 text-center">
         <p className="text-white/60 text-sm mb-1">{t("escrowDetail.amountLabel")}</p>
         <p className={`text-4xl font-bold ${amountColor}`}>{amountFormatted}</p>
-        <p className="text-white/40 text-sm">cUSD</p>
+        <p className="text-white/40 text-sm">{tokenSymbol}</p>
       </div>
 
       {/* Parties card */}

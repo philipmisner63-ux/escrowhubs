@@ -49,7 +49,7 @@ export const pt = {
     progressApproving: "Aprovando gasto de cUSD...",
     progressCreating: "Criando escrow na Celo...",
     submitProcessing: "Processando...",
-    submitButton: "Bloquear {amount} cUSD com segurança",
+    submitButton: "Bloquear {amount} {token} com segurança",
     feeNotice: "Uma taxa de 0,5% é cobrada quando os fundos são liberados · Desenvolvido pela Celo",
 
     // Error messages

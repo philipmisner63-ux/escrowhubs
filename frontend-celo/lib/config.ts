@@ -19,5 +19,25 @@ export const CONTRACTS = {
 // cUSD — primary stablecoin for this app
 export const CUSD = "0x765DE816845861e75A25fCA122bb6898B8B1282a" as `0x${string}`;
 
+// Celo USDT
+export const USDT = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e" as `0x${string}`;
+
+export const TOKENS = {
+  cUSD: {
+    address: "0x765DE816845861e75A25fCA122bb6898B8B1282a" as `0x${string}`,
+    symbol: "cUSD",
+    name: "Celo Dollar",
+    decimals: 18,
+  },
+  USDT: {
+    address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e" as `0x${string}`,
+    symbol: "USDT",
+    name: "Tether USD",
+    decimals: 6,
+  },
+} as const;
+
+export type TokenSymbol = keyof typeof TOKENS;
+
 // App fee (0.5%)
 export const FEE_BPS = 50n;

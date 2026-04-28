@@ -49,7 +49,7 @@ export const ar = {
     progressApproving: "جارٍ الموافقة على إنفاق cUSD...",
     progressCreating: "جارٍ إنشاء الضمان على Celo...",
     submitProcessing: "جارٍ المعالجة...",
-    submitButton: "قفل {amount} cUSD بأمان",
+    submitButton: "قفل {amount} {token} بأمان",
     feeNotice: "يتم تحصيل رسوم بنسبة 0.5% عند إصدار الأموال · مدعوم من Celo",
 
     // Error messages

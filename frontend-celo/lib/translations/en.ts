@@ -49,7 +49,7 @@ export const en = {
     progressApproving: "Approving cUSD spend...",
     progressCreating: "Creating escrow on Celo...",
     submitProcessing: "Processing...",
-    submitButton: "Lock {amount} cUSD safely", // replace {amount} at runtime
+    submitButton: "Lock {amount} {token} safely", // replace {amount} and {token} at runtime
     feeNotice: "A 0.5% fee is charged when funds are released · Powered by Celo",
 
     // Error messages

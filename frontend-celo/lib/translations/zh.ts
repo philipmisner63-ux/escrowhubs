@@ -49,7 +49,7 @@ export const zh = {
     progressApproving: "正在批准cUSD支出...",
     progressCreating: "正在Celo上创建托管...",
     submitProcessing: "处理中...",
-    submitButton: "安全锁定 {amount} cUSD",
+    submitButton: "安全锁定 {amount} {token}",
     feeNotice: "资金释放时收取0.5%手续费 · 由Celo提供支持",
 
     // Error messages

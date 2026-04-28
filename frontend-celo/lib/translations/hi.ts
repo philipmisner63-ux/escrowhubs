@@ -49,7 +49,7 @@ export const hi = {
     progressApproving: "cUSD खर्च की स्वीकृति...",
     progressCreating: "Celo पर एस्क्रो बना रहे हैं...",
     submitProcessing: "प्रोसेस हो रहा है...",
-    submitButton: "{amount} cUSD सुरक्षित रूप से लॉक करें",
+    submitButton: "{amount} {token} सुरक्षित रूप से लॉक करें",
     feeNotice: "धनराशि जारी होने पर 0.5% शुल्क लिया जाता है · Celo द्वारा संचालित",
 
     // Error messages

@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, erc20Abi } from "viem";
-import { CONTRACTS, CUSD } from "@/lib/config";
+import { CONTRACTS, TOKENS, type TokenSymbol } from "@/lib/config";
 import Link from "next/link";
 import FactoryABI from "@/abis/EscrowFactory.json";
 import { usePhoneResolution } from "@/hooks/usePhoneResolution";
@@ -18,6 +18,7 @@ export default function CreatePage() {
   const [recipientInput, setRecipientInput] = useState("");
   const [resolvedAddress, setResolvedAddress] = useState<`0x${string}` | null>(null);
   const [amount, setAmount] = useState("");
+  const [selectedToken, setSelectedToken] = useState<TokenSymbol>("cUSD");
   const [description, setDescription] = useState("");
   const [step, setStep] = useState<Step>("form");
   const [error, setError] = useState("");
@@ -58,7 +59,7 @@ export default function CreatePage() {
     }, 600);
   }
 
-  const amountWei = amount ? parseUnits(amount, 18) : 0n;
+  const amountWei = amount ? parseUnits(amount, TOKENS[selectedToken].decimals) : 0n;
   const inProgress = step === "approve" || step === "create";
 
   const effectiveAddress: `0x${string}` | null =
@@ -88,9 +89,11 @@ export default function CreatePage() {
     }
 
     try {
+      const tokenAddress = TOKENS[selectedToken].address;
+
       setStep("approve");
       await approve({
-        address: CUSD,
+        address: tokenAddress,
         abi: erc20Abi,
         functionName: "approve",
         args: [CONTRACTS.factory, amountWei],
@@ -103,7 +106,7 @@ export default function CreatePage() {
         functionName: "createSimpleEscrow",
         args: [
           effectiveAddress,
-          CUSD,
+          tokenAddress,
           amountWei,
           description.trim(),
           "0x0000000000000000000000000000000000000000",
@@ -234,8 +237,30 @@ export default function CreatePage() {
                 inputMode="decimal"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 font-medium text-sm">
-                cUSD
+                {TOKENS[selectedToken].symbol}
               </span>
+            </div>
+          </div>
+
+          {/* Token selector */}
+          <div>
+            <label className="block text-sm font-medium text-white/80 mb-2">Token</label>
+            <div className="flex gap-2">
+              {(Object.keys(TOKENS) as TokenSymbol[]).map((token) => (
+                <button
+                  key={token}
+                  type="button"
+                  onClick={() => setSelectedToken(token)}
+                  disabled={inProgress}
+                  className={
+                    selectedToken === token
+                      ? "bg-[#35D07F]/20 border border-[#35D07F]/40 text-[#35D07F] rounded-full px-4 py-1.5 text-sm font-medium"
+                      : "bg-white/5 border border-white/10 text-white/60 rounded-full px-4 py-1.5 text-sm"
+                  }
+                >
+                  {token}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -283,7 +308,7 @@ export default function CreatePage() {
           >
             {inProgress
               ? t("create.submitProcessing")
-              : t("create.submitButton", { amount: amount || "0" })}
+              : t("create.submitButton", { amount: amount || "0", token: selectedToken })}
           </button>
 
           <p className="text-xs text-white/40 text-center">{t("create.feeNotice")}</p>

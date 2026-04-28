@@ -49,7 +49,7 @@ export const fr = {
     progressApproving: "Approbation des dépenses cUSD...",
     progressCreating: "Création de l'escrow sur Celo...",
     submitProcessing: "Traitement...",
-    submitButton: "Bloquer {amount} cUSD en sécurité",
+    submitButton: "Bloquer {amount} {token} en sécurité",
     feeNotice: "Des frais de 0,5 % sont prélevés lors de la libération des fonds · Propulsé par Celo",
 
     // Error messages

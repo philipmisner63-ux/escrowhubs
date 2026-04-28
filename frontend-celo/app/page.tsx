@@ -2,7 +2,7 @@
 import { useAccount, useReadContract } from "wagmi";
 import { erc20Abi, formatUnits } from "viem";
 import { useMiniPay } from "@/hooks/useMiniPay";
-import { CUSD } from "@/lib/config";
+import { TOKENS } from "@/lib/config";
 import Link from "next/link";
 import { useTranslation, type Lang } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
@@ -15,15 +15,26 @@ export default function Home() {
   const { t, lang, setLang } = useTranslation();
 
   const { data: cUSDBalance } = useReadContract({
-    address: CUSD,
+    address: TOKENS.cUSD.address,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [address!],
     query: { enabled: !!address && isConnected },
   });
-  const balanceFormatted =
+  const { data: usdtBalance } = useReadContract({
+    address: TOKENS.USDT.address,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [address!],
+    query: { enabled: !!address && isConnected },
+  });
+  const cUSDFormatted =
     cUSDBalance != null
       ? parseFloat(formatUnits(cUSDBalance as bigint, 18)).toFixed(2)
+      : null;
+  const usdtFormatted =
+    usdtBalance != null
+      ? parseFloat(formatUnits(usdtBalance as bigint, 6)).toFixed(2)
       : null;
 
   const STEPS = [
@@ -139,11 +150,19 @@ export default function Home() {
                     {address?.slice(0, 6)}...{address?.slice(-4)} · Celo
                   </span>
                 </div>
-                {balanceFormatted !== null ? (
-                  <>
-                    <p className="text-3xl font-bold text-[#35D07F]">{balanceFormatted}</p>
-                    <p className="text-white/60 text-xs mt-0.5">cUSD</p>
-                  </>
+                {cUSDFormatted !== null ? (
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <div>
+                      <p className="text-3xl font-bold text-[#35D07F]">{cUSDFormatted}</p>
+                      <p className="text-white/60 text-xs mt-0.5">cUSD</p>
+                    </div>
+                    {usdtFormatted !== null && (
+                      <div>
+                        <p className="text-2xl font-bold text-white/70">{usdtFormatted}</p>
+                        <p className="text-white/40 text-xs mt-0.5">USDT</p>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="skeleton h-9 w-28 mt-1" />
                 )}

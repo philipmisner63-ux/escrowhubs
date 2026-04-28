@@ -51,7 +51,7 @@ export const sw = {
     progressApproving: "Inaidhinisha matumizi ya cUSD...",
     progressCreating: "Inaunda escrow kwenye Celo...",
     submitProcessing: "Inashughulikia...",
-    submitButton: "Funga {amount} cUSD salama", // replace {amount} at runtime
+    submitButton: "Funga {amount} {token} salama", // replace {amount} and {token} at runtime
     feeNotice: "Ada ya 0.5% inachajiwa wakati fedha zinapotolewa · Inayoendeshwa na Celo",
 
     // Error messages
