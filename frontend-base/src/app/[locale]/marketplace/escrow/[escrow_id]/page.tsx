@@ -151,7 +151,7 @@ export default function EscrowBuyerPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          currencyCode: process.env.NEXT_PUBLIC_MOONPAY_ENV === "production" ? "usdc_base" : "eth",
+          currencyCode: "usdc_base",
           baseCurrencyAmount: fees.total.toFixed(2),
           ...(escrow.buyer_wallet && { walletAddress: escrow.buyer_wallet }),
           ...(userEmail && { email: userEmail }),
@@ -167,7 +167,7 @@ export default function EscrowBuyerPage() {
         variant: "overlay",
         params: {
           apiKey: process.env.NEXT_PUBLIC_MOONPAY_API_KEY!,
-          currencyCode: process.env.NEXT_PUBLIC_MOONPAY_ENV === "production" ? "usdc_base" : "eth",
+          currencyCode: "usdc_base",
           theme: "dark",
           ...(escrow.buyer_wallet && { walletAddress: escrow.buyer_wallet }),
           baseCurrencyAmount: fees.total.toFixed(2),
