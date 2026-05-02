@@ -6,12 +6,12 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const CSP = [
   "default-src 'self' https://*.web3auth.io https://wallet.web3auth.io",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.hcaptcha.com https://*.hcaptcha.com https://*.web3auth.io https://cdn.segment.com https://js.stripe.com https://crypto-js.stripe.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.hcaptcha.com https://*.hcaptcha.com https://*.web3auth.io https://cdn.segment.com https://js.stripe.com https://crypto-js.stripe.com https://static.moonpay.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https: blob:",
   [
-    "connect-src 'self'",
+    "connect-src 'self' https://api.moonpay.com https://*.moonpay.com",
     "https://mainnet.base.org",
     "https://api.developer.coinbase.com",
     "https://base.llamarpc.com",
@@ -53,7 +53,7 @@ const CSP = [
     "https://polygon-rpc.com",
     "https://crypto-js.stripe.com",
   ].join(" "),
-  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com https://crypto-js.stripe.com https://js.stripe.com",
+  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com https://crypto-js.stripe.com https://js.stripe.com https://buy.moonpay.com https://*.moonpay.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
