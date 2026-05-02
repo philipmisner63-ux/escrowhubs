@@ -48,11 +48,21 @@ function createSimpleEscrow(
 
 ---
 
+### Deposit Funds (buyer locks cUSD)
+
+```solidity
+// Called on the individual escrow contract address returned by createSimpleEscrow
+function deposit(uint256 _amount) external payable
+```
+
+Buyer must first `approve(escrowAddress, amount)` on the cUSD contract, then call `deposit`.
+
+---
+
 ### Release Funds (buyer confirms delivery)
 
 ```solidity
-// Called on the individual escrow contract address
-function releaseFunds() external
+function release() external
 ```
 
 Only callable by the buyer. Sends cUSD to the seller.
@@ -62,20 +72,10 @@ Only callable by the buyer. Sends cUSD to the seller.
 ### Raise a Dispute
 
 ```solidity
-function raiseDispute() external
+function dispute() external
 ```
 
-Callable by either party. Locks the escrow and triggers the arbitration flow.
-
----
-
-### Submit Evidence
-
-```solidity
-function submitEvidence(string calldata evidenceURI) external
-```
-
-Both parties can submit evidence (IPFS URI). The AI arbiter reviews and issues a ruling.
+Callable by either party. Locks the escrow and triggers the arbitration flow. The AI arbiter reviews submitted evidence and issues a ruling automatically.
 
 ---
 
@@ -143,15 +143,71 @@ function createMilestoneEscrow(
 
 Listen for on-chain events to update your platform state:
 
+**EscrowFactory events:**
 ```solidity
-event EscrowCreated(address indexed escrow, address indexed buyer, address indexed seller)
-event FundsReleased(address indexed escrow, uint256 amount)
-event DisputeRaised(address indexed escrow, address indexed raisedBy)
-event DisputeResolved(address indexed escrow, address indexed winner)
+event SimpleEscrowCreated(address indexed contractAddress, address indexed depositor, address indexed beneficiary, address arbiter, uint256 amount, uint256 fee, uint8 trustTier, bool aiArbiter, address token)
+event MilestoneEscrowCreated(address indexed contractAddress, address indexed depositor, address indexed beneficiary, address arbiter, uint256 totalAmount, uint256 fee, uint8 trustTier, bool aiArbiter, address token)
+```
+
+**Individual escrow contract events:**
+```solidity
+event Deposited(address indexed depositor, uint256 amount)
+event Released()   // funds sent to seller
+event Refunded()   // funds returned to buyer
+event Disputed(address indexed by)
 ```
 
 Use The Graph subgraph for indexed queries:
 `https://api.studio.thegraph.com/query/1747596/escrowhubs-base/v0.1.0`
+
+---
+
+## Minimal ABIs
+
+### EscrowFactory ABI (create functions only)
+```json
+[
+  {
+    "name": "createSimpleEscrow",
+    "type": "function",
+    "stateMutability": "payable",
+    "inputs": [
+      {"name": "beneficiary", "type": "address"},
+      {"name": "arbiter",     "type": "address"},
+      {"name": "trustTier",   "type": "uint8"},
+      {"name": "useAIArbiter","type": "bool"},
+      {"name": "token",       "type": "address"},
+      {"name": "referrer",    "type": "address"}
+    ],
+    "outputs": [{"name": "escrowOut", "type": "address"}]
+  },
+  {
+    "name": "createMilestoneEscrow",
+    "type": "function",
+    "stateMutability": "payable",
+    "inputs": [
+      {"name": "beneficiary",   "type": "address"},
+      {"name": "arbiter",       "type": "address"},
+      {"name": "descriptions",  "type": "string[]"},
+      {"name": "amounts",       "type": "uint256[]"},
+      {"name": "trustTier",     "type": "uint8"},
+      {"name": "useAIArbiter",  "type": "bool"},
+      {"name": "token",         "type": "address"},
+      {"name": "referrer",      "type": "address"}
+    ],
+    "outputs": [{"name": "escrowOut", "type": "address"}]
+  }
+]
+```
+
+### SimpleEscrow ABI (interaction functions)
+```json
+[
+  {"name": "deposit",  "type": "function", "stateMutability": "payable",    "inputs": [{"name": "_amount", "type": "uint256"}], "outputs": []},
+  {"name": "release",  "type": "function", "stateMutability": "nonpayable", "inputs": [], "outputs": []},
+  {"name": "dispute",  "type": "function", "stateMutability": "nonpayable", "inputs": [], "outputs": []}
+]
+```
 
 ---
 
