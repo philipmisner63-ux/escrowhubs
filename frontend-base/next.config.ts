@@ -53,7 +53,7 @@ const CSP = [
     "https://polygon-rpc.com",
     "https://crypto-js.stripe.com",
   ].join(" "),
-  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com https://crypto-js.stripe.com https://js.stripe.com https://buy.moonpay.com https://*.moonpay.com",
+  "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://auth.web3auth.io https://*.web3auth.io https://wallet.web3auth.io https://*.hcaptcha.com https://newassets.hcaptcha.com https://crypto-js.stripe.com https://js.stripe.com https://m.stripe.network https://buy.moonpay.com https://*.moonpay.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
