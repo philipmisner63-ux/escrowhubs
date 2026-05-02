@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { loadMoonPay } from "@moonpay/moonpay-js";
 import { useParams } from "next/navigation";
 import { usePrivy } from "@/components/privy-provider";
 import { parseUnits, zeroAddress, createWalletClient, createPublicClient, custom, http } from "viem";
@@ -13,26 +14,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 import type { MarketplaceEscrow } from "@/lib/supabase";
 
-declare global {
-  interface Window {
-    StripeOnramp?: (key: string) => StripeOnrampInstance;
-  }
-}
 
-interface StripeOnrampInstance {
-  createSession: (opts: {
-    clientSecret: string;
-    appearance?: { theme?: string };
-  }) => StripeSessionEl;
-}
-
-interface StripeSessionEl {
-  addEventListener: (
-    event: string,
-    cb: (e: { payload: { session: { status: string } } }) => void
-  ) => StripeSessionEl;
-  mount: (el: HTMLElement) => void;
-}
 
 // Minimal ABIs for the two calls we need
 const ERC20_APPROVE_ABI = [
@@ -95,10 +77,8 @@ export default function EscrowBuyerPage() {
   const [funding, setFunding] = useState(false);
   const [walletCopied, setWalletCopied] = useState(false);
 
-  // Stripe onramp
+  // MoonPay onramp
   const onrampRef = useRef<HTMLDivElement>(null);
-  const stripeLoaded = useRef(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [onrampLoading, setOnrampLoading] = useState(false);
 
   // No wagmi — use viem directly with Web3Auth EIP-1193 provider
@@ -158,50 +138,11 @@ export default function EscrowBuyerPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress, escrow_id, authenticated]);
 
-  // Load Stripe scripts (only once)
-  useEffect(() => {
-    if (stripeLoaded.current) return;
-    stripeLoaded.current = true;
-    const s1 = document.createElement("script");
-    s1.src = "https://js.stripe.com/v3/";
-    s1.async = true;
-    document.head.appendChild(s1);
-    const s2 = document.createElement("script");
-    s2.src = "https://crypto-js.stripe.com/crypto-onramp-outer.js";
-    s2.async = true;
-    document.head.appendChild(s2);
-  }, []);
-
-  // Mount Stripe widget when clientSecret is available
-  useEffect(() => {
-    if (!clientSecret || !onrampRef.current) return;
-    const pubKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-    if (!pubKey) return;
-    const el = onrampRef.current;
-
-    const tryMount = () => {
-      if (window.StripeOnramp) {
-        window
-          .StripeOnramp(pubKey)
-          .createSession({ clientSecret, appearance: { theme: "dark" } })
-          .addEventListener("onramp_session_updated", (e) => {
-            if (e.payload.session.status === "fulfillment_complete") {
-              setOnrampDone(true);
-              addToast({ type: "success", message: "Payment complete! Now fund the escrow." });
-            }
-          })
-          .mount(el);
-      } else {
-        setTimeout(tryMount, 300);
-      }
-    };
-    tryMount();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientSecret]);
 
 
 
-  async function handleStartOnramp() {
+
+  const handleStartOnramp = useCallback(async () => {
     if (!escrow) return;
     setOnrampLoading(true);
     try {
@@ -210,21 +151,42 @@ export default function EscrowBuyerPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          destination_currency: "usdc",
-          destination_network: "base",
-          destination_exchange_amount: fees.total.toFixed(2),
-          ...(escrow.buyer_wallet && { wallet_address: escrow.buyer_wallet }),
+          currencyCode: "usdc_base",
+          baseCurrencyAmount: fees.total.toFixed(2),
+          ...(escrow.buyer_wallet && { walletAddress: escrow.buyer_wallet }),
+          ...(userEmail && { email: userEmail }),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to start payment");
-      setClientSecret(data.clientSecret);
+
+      const moonPay = await loadMoonPay();
+      const sdk = moonPay({
+        flow: "buy",
+        environment: process.env.NEXT_PUBLIC_MOONPAY_ENV === "production" ? "production" : "sandbox",
+        variant: "overlay",
+        params: {
+          apiKey: process.env.NEXT_PUBLIC_MOONPAY_API_KEY!,
+          currencyCode: "usdc_base",
+          theme: "dark",
+          ...(escrow.buyer_wallet && { walletAddress: escrow.buyer_wallet }),
+          baseCurrencyAmount: fees.total.toFixed(2),
+          ...(userEmail && { email: userEmail }),
+        },
+        handlers: {
+          onTransactionCompleted: () => {
+            setOnrampDone(true);
+            addToast({ type: "success", message: "Payment complete! Now fund the escrow." });
+          },
+        },
+      });
+      sdk.show();
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Failed to start payment" });
     } finally {
       setOnrampLoading(false);
     }
-  }
+  }, [escrow, userEmail, addToast]);
 
   async function handleFundEscrow() {
     if (!escrow || !walletAddress || !walletProvider) {
@@ -526,41 +488,11 @@ export default function EscrowBuyerPage() {
             {/* Onramp + fund flow */}
             {fundStep !== "done" && (
               <GlassCard className="p-6 space-y-5">
-                {/* Step 1: Copy wallet */}
+                {/* Step 1: MoonPay Onramp */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold flex items-center justify-center">
                       1
-                    </span>
-                    <h3 className="text-sm font-semibold text-white">Copy your wallet address</h3>
-                  </div>
-                  <p className="text-xs text-slate-400 ml-8">
-                    Stripe will ask for your wallet address. Copy it below and paste it in the payment form.
-                  </p>
-                  {(escrow.buyer_wallet || walletAddress) && (
-                    <div className="ml-8 flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5">
-                      <span className="text-xs text-slate-300 font-mono flex-1 truncate">
-                        {escrow.buyer_wallet || walletAddress}
-                      </span>
-                      <button
-                        onClick={handleCopyWallet}
-                        className={`text-xs px-3 py-1.5 rounded-lg flex-shrink-0 font-medium transition-colors ${
-                          walletCopied
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30"
-                        }`}
-                      >
-                        {walletCopied ? "✓ Copied!" : "📋 Copy"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Step 2: Stripe Onramp */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold flex items-center justify-center">
-                      2
                     </span>
                     <h3 className="text-sm font-semibold text-white">
                       Buy USDC with card
@@ -570,7 +502,7 @@ export default function EscrowBuyerPage() {
                     </h3>
                   </div>
 
-                  {!clientSecret && !onrampDone && (
+                  {!onrampDone && (
                     <div className="ml-8 space-y-2">
                       <GlowButton
                         onClick={handleStartOnramp}
@@ -579,7 +511,7 @@ export default function EscrowBuyerPage() {
                         variant="secondary"
                         className="w-full"
                       >
-                        {onrampLoading ? "Loading payment..." : `Pay $${fees?.total.toFixed(2) ?? "..."} with Card →`}
+                        {onrampLoading ? "Opening payment..." : `Pay $${fees?.total.toFixed(2) ?? "..."} with Card →`}
                       </GlowButton>
                       <button
                         onClick={() => setOnrampDone(true)}
@@ -589,17 +521,9 @@ export default function EscrowBuyerPage() {
                       </button>
                     </div>
                   )}
-
-                  {clientSecret && !onrampDone && (
-                    <div
-                      ref={onrampRef}
-                      id="onramp-element"
-                      className="rounded-xl overflow-hidden min-h-[500px] bg-white/5 border border-white/10"
-                    />
-                  )}
                 </div>
 
-                {/* Step 3: Fund Escrow */}
+                {/* Step 2: Fund Escrow */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <span className={`w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center ${
@@ -607,7 +531,7 @@ export default function EscrowBuyerPage() {
                         ? "bg-green-500/20 border-green-500/30 text-green-400"
                         : "bg-white/5 border-white/10 text-slate-500"
                     }`}>
-                      3
+                      2
                     </span>
                     <h3 className={`text-sm font-semibold ${onrampDone ? "text-white" : "text-slate-500"}`}>
                       Fund the escrow
