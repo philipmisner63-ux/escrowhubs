@@ -118,14 +118,17 @@ function CreatePageInner() {
         address: CONTRACTS.factory,
         abi: FactoryABI as any,
         functionName: "createSimpleEscrow",
+        // Correct arg order: (beneficiary, arbiter, trustTier, useAIArbiter, token, referrer)
+        // ERC-20 path: factory reads allowance for amount; no ETH value sent
         args: [
-          effectiveAddress,
-          tokenAddress,
-          amountWei,
-          description.trim(),
-          "0x0000000000000000000000000000000000000000",
+          effectiveAddress,                                      // beneficiary
+          CONTRACTS.arbiter,                                     // arbiter (AI arbiter on Celo)
+          0,                                                     // trustTier
+          false,                                                 // useAIArbiter (uses arbiter address above)
+          tokenAddress,                                          // token (cUSD or USDT)
+          "0x0000000000000000000000000000000000000000",          // referrer
         ],
-        gas: 500000n,
+        gas: 600000n,
       });
       setCreateTxHash(hash);
 
