@@ -67,27 +67,9 @@ export function ConnectWallet() {
       )}
 
       {/* WalletConnect for desktop */}
-      {!isMobile && (
+      {!isMobile && wcConnector && (
         <button
-          onClick={async () => {
-            if (!wcConnector) return;
-            try {
-              const { WalletConnectModal } = await import("@walletconnect/modal");
-              const modal = new WalletConnectModal({
-                projectId: "9401741cff120268fe4e4df8acbda44f",
-                chains: ["eip155:42220"],
-              });
-              // Listen for the display_uri event to get the QR code URI
-              wcConnector.emitter.on("message", ({ type, data }: { type: string; data?: unknown }) => {
-                if (type === "display_uri") {
-                  modal.openModal({ uri: data as string });
-                }
-              });
-              connect({ connector: wcConnector, chainId: 42220 });
-            } catch (e) {
-              console.error("WalletConnect error:", e);
-            }
-          }}
+          onClick={() => connect({ connector: wcConnector, chainId: 42220 })}
           disabled={isPending}
           className="tap-compress bg-white/10 border border-white/20 text-white rounded-2xl px-6 py-4 text-center font-semibold text-base disabled:opacity-50"
         >
