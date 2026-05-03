@@ -52,14 +52,10 @@ function CreatePageInner() {
     return "";
   });
   // const [debugLog, setDebugLog] = useState<string[]>([]);  // removed after debugging
-  const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("eh_approve_hash") as `0x${string}`) ?? undefined;
-    }
-    return undefined;
-  });
+  const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(undefined);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [resuming, setResuming] = useState(false);
 
   const { state: phoneState, resolve: resolvePhone, reset: resetPhone } = usePhoneResolution();
 
@@ -83,6 +79,69 @@ function CreatePageInner() {
       setEscrowAddress("0x" + topic1.slice(-40));
     }
   }, [receipt]);
+
+  // Auto-resume Step 2 on page load if we have a pending create step
+  useEffect(() => {
+    if (!isConnected) return;
+    const savedStep = localStorage.getItem("eh_create_step");
+    const savedHash = localStorage.getItem("eh_approve_hash");
+    const savedBeneficiary = localStorage.getItem("eh_beneficiary") as `0x${string}` | null;
+    const savedToken = localStorage.getItem("eh_token") as `0x${string}` | null;
+    if (savedStep === "create" && savedHash && savedBeneficiary && savedToken && !isSubmitting.current) {
+      resumeStep2(savedHash as `0x${string}`, savedBeneficiary, savedToken);
+    }
+  }, [isConnected]);
+
+  async function resumeStep2(approveHash: `0x${string}`, beneficiary: `0x${string}`, tokenAddress: `0x${string}`) {
+    if (isSubmitting.current) return;
+    isSubmitting.current = true;
+    setResuming(true);
+    setStep("create");
+    try {
+      // Best-effort wait for approval receipt, then proceed regardless
+      if (publicClient) {
+        await Promise.race([
+          publicClient.waitForTransactionReceipt({ hash: approveHash, confirmations: 1 }),
+          new Promise(r => setTimeout(r, 8_000)),
+        ]);
+      } else {
+        await new Promise(r => setTimeout(r, 8_000));
+      }
+
+      const hash = await createEscrow({
+        address: CONTRACTS.factory,
+        abi: FactoryABI as any,
+        functionName: "createSimpleEscrow",
+        args: [
+          beneficiary,
+          CONTRACTS.arbiter,
+          0,
+          false,
+          tokenAddress,
+          "0x0000000000000000000000000000000000000000",
+        ],
+        gas: 600000n,
+      });
+
+      setCreateTxHash(hash as `0x${string}`);
+      localStorage.removeItem("eh_create_step");
+      localStorage.removeItem("eh_approve_hash");
+      localStorage.removeItem("eh_beneficiary");
+      localStorage.removeItem("eh_token");
+      setStep("done");
+    } catch (err: any) {
+      console.error("[EscrowHubs] resumeStep2 error:", err);
+      const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
+      localStorage.setItem("eh_last_error", `[resume] ${msg}`.slice(0, 500));
+      setError(msg || "Transaction failed. Please try again.");
+      setStep("form");
+      localStorage.removeItem("eh_create_step");
+      localStorage.removeItem("eh_approve_hash");
+    } finally {
+      isSubmitting.current = false;
+      setResuming(false);
+    }
+  }
 
   function handleRecipientChange(val: string) {
     setRecipientInput(val);
@@ -134,6 +193,9 @@ function CreatePageInner() {
 
       setStep("approve");
       localStorage.setItem("eh_create_step", "approve");
+      // Save form args so page-reload resume can reconstruct the Step 2 call
+      localStorage.setItem("eh_beneficiary", effectiveAddress);
+      localStorage.setItem("eh_token", TOKENS[selectedToken].address);
       const approveTxHash = await approve({
         address: tokenAddress,
         abi: erc20Abi,
@@ -146,47 +208,14 @@ function CreatePageInner() {
         localStorage.setItem("eh_approve_hash", approveTxHash as string);
       }
 
-      // Wait for approval to be confirmed — 15s timeout then proceed anyway.
-      // Celo blocks every 5s so approval is almost certainly confirmed by then.
-      if (publicClient && approveTxHash) {
-        try {
-          await publicClient.waitForTransactionReceipt({
-            hash: approveTxHash as `0x${string}`,
-            confirmations: 1,
-            timeout: 15_000,
-          });
-        } catch {
-          // Timed out waiting for receipt — proceed anyway, factory reads live allowance
-          console.warn("[EscrowHubs] approve receipt timeout — proceeding to create");
-        }
-      } else {
-        // No publicClient or no hash — wait a fixed 8s for Celo to confirm
-        await new Promise(r => setTimeout(r, 8_000));
-      }
-
-      setStep("create");
-      localStorage.setItem("eh_create_step", "create");
-      const hash = await createEscrow({
-        address: CONTRACTS.factory,
-        abi: FactoryABI as any,
-        functionName: "createSimpleEscrow",
-        // Correct arg order: (beneficiary, arbiter, trustTier, useAIArbiter, token, referrer)
-        // ERC-20 path: factory reads allowance for amount; no ETH value sent
-        args: [
-          effectiveAddress,                                      // beneficiary
-          CONTRACTS.arbiter,                                     // arbiter (AI arbiter on Celo)
-          0,                                                     // trustTier
-          false,                                                 // useAIArbiter (uses arbiter address above)
-          tokenAddress,                                          // token (cUSD or USDT)
-          "0x0000000000000000000000000000000000000000",          // referrer
-        ],
-        gas: 600000n,
-      });
-      setCreateTxHash(hash);
-
-      setStep("done");
-      localStorage.removeItem("eh_create_step");
-      localStorage.removeItem("eh_approve_hash");
+      // Hand off to resumeStep2 which handles the wait + create with proper timeout/retry logic
+      isSubmitting.current = false; // resumeStep2 sets it again
+      await resumeStep2(
+        approveTxHash as `0x${string}`,
+        effectiveAddress,
+        tokenAddress,
+      );
+      return; // resumeStep2 handles done/error state
     } catch (err: any) {
       console.error("[EscrowHubs] create error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
@@ -261,26 +290,43 @@ function CreatePageInner() {
       {/* Wallet connection — show prominently when not connected */}
       {!isConnected && <ConnectWallet />}
 
-      {/* Mobile resume banner — shown when page reloaded mid-flow */}
+      {/* Resume banner — auto-resume fires on mount; this shows progress + retry option */}
       {isConnected && (step === "approve" || step === "create") && (
         <div className="bg-white/5 border border-[#35D07F]/30 rounded-2xl px-4 py-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-white">
-                {step === "approve" ? "Step 1 of 2 — Waiting for approval..." : "Step 2 of 2 — Creating escrow..."}
+                {step === "approve" ? "Step 1 of 2 — Approving token..." : "Step 2 of 2 — Creating escrow..."}
               </p>
-              <p className="text-xs text-white/50 mt-0.5">Check your wallet for a pending confirmation.</p>
+              <p className="text-xs text-white/50 mt-0.5">
+                {step === "create" ? "Check your wallet for a confirmation prompt." : "Approve the token spend in your wallet."}
+              </p>
             </div>
           </div>
+          {step === "create" && !resuming && (
+            <button
+              onClick={() => {
+                const h = localStorage.getItem("eh_approve_hash") as `0x${string}`;
+                const b = localStorage.getItem("eh_beneficiary") as `0x${string}`;
+                const tk = localStorage.getItem("eh_token") as `0x${string}`;
+                if (h && b && tk) resumeStep2(h, b, tk);
+              }}
+              className="mt-3 w-full bg-[#35D07F]/20 border border-[#35D07F]/30 text-[#35D07F] rounded-xl py-2 text-sm font-semibold"
+            >
+              Retry Step 2
+            </button>
+          )}
           <button
             onClick={() => {
               localStorage.removeItem("eh_create_step");
               localStorage.removeItem("eh_approve_hash");
+              localStorage.removeItem("eh_beneficiary");
+              localStorage.removeItem("eh_token");
               isSubmitting.current = false;
               setStep("form");
             }}
-            className="mt-3 text-xs text-white/40 hover:text-white/70 underline w-full text-center"
+            className="mt-2 text-xs text-white/40 hover:text-white/70 underline w-full text-center"
           >
             Cancel and start over
           </button>
