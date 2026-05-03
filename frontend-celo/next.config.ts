@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       "@metamask/connect-evm": false,
       "@safe-global/safe-apps-provider": false,
       "@safe-global/safe-apps-sdk": false,
-      "@walletconnect/ethereum-provider": false,
+      // "@walletconnect/ethereum-provider": false, // re-enabled for WalletConnect support
       accounts: false,
       porto: false,
       "porto/internal": false,
