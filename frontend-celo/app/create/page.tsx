@@ -29,10 +29,21 @@ function CreatePageInner() {
     () => (searchParams.get("token") as TokenSymbol) ?? "cUSD"
   );
   const [description, setDescription] = useState(() => searchParams.get("note") ?? "");
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>(() => {
+    // Resume step after mobile page reload between MM confirmations
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("eh_create_step") as Step) ?? "form";
+    }
+    return "form";
+  });
   const [error, setError] = useState("");
   const [debugLog, setDebugLog] = useState<string[]>([]);
-  const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("eh_approve_hash") as `0x${string}`) ?? undefined;
+    }
+    return undefined;
+  });
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -108,12 +119,18 @@ function CreatePageInner() {
       const tokenAddress = TOKENS[selectedToken].address;
 
       setStep("approve");
+      localStorage.setItem("eh_create_step", "approve");
       const approveTxHash = await approve({
         address: tokenAddress,
         abi: erc20Abi,
         functionName: "approve",
         args: [CONTRACTS.factory, amountWei],
       });
+
+      // Persist approve hash so mobile can resume after page reload
+      if (approveTxHash) {
+        localStorage.setItem("eh_approve_hash", approveTxHash as string);
+      }
 
       // Wait for approval to be confirmed on-chain before calling factory
       // (factory checks allowance at execution time — race condition otherwise)
@@ -122,6 +139,7 @@ function CreatePageInner() {
       }
 
       setStep("create");
+      localStorage.setItem("eh_create_step", "create");
       const hash = await createEscrow({
         address: CONTRACTS.factory,
         abi: FactoryABI as any,
@@ -141,6 +159,8 @@ function CreatePageInner() {
       setCreateTxHash(hash);
 
       setStep("done");
+      localStorage.removeItem("eh_create_step");
+      localStorage.removeItem("eh_approve_hash");
     } catch (err: any) {
       console.error("[EscrowHubs] create error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
@@ -148,6 +168,8 @@ function CreatePageInner() {
       setError(msg || "Transaction failed. Please try again.");
       setDebugLog(prev => [...prev, debugMsg]);
       setStep("form");
+      localStorage.removeItem("eh_create_step");
+      localStorage.removeItem("eh_approve_hash");
     } finally {
       isSubmitting.current = false;
     }
@@ -212,6 +234,19 @@ function CreatePageInner() {
 
       {/* Wallet connection — show prominently when not connected */}
       {!isConnected && <ConnectWallet />}
+
+      {/* Mobile resume banner — shown when page reloaded mid-flow */}
+      {isConnected && (step === "approve" || step === "create") && (
+        <div className="bg-white/5 border border-[#35D07F]/30 rounded-2xl px-4 py-4 mb-4 flex items-center gap-3">
+          <div className="w-5 h-5 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-white">
+              {step === "approve" ? "Step 1 of 2 — Waiting for approval..." : "Step 2 of 2 — Creating escrow..."}
+            </p>
+            <p className="text-xs text-white/50 mt-0.5">Check your wallet for a pending confirmation.</p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
