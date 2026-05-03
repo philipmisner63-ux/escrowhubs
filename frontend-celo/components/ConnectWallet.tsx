@@ -59,6 +59,15 @@ export function ConnectWallet() {
           >
             🌿 Open in Valora
           </a>
+          {wcConnector && (
+            <button
+              onClick={() => connect({ connector: wcConnector, chainId: 42220 })}
+              disabled={isPending}
+              className="tap-compress bg-white/10 border border-white/20 text-white rounded-2xl px-6 py-4 text-center font-semibold text-base disabled:opacity-50 w-full"
+            >
+              {isPending ? "Connecting..." : "🔗 Connect via WalletConnect"}
+            </button>
+          )}
         </>
       )}
 
