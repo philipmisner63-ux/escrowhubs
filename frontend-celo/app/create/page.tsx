@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, Suspense } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, erc20Abi } from "viem";
 import { CONTRACTS, TOKENS, type TokenSymbol } from "@/lib/config";
 import Link from "next/link";
@@ -39,6 +39,7 @@ function CreatePageInner() {
 
   const { writeContractAsync: approve } = useWriteContract();
   const { writeContractAsync: createEscrow } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const { data: receipt } = useWaitForTransactionReceipt({ hash: createTxHash });
 
@@ -106,12 +107,18 @@ function CreatePageInner() {
       const tokenAddress = TOKENS[selectedToken].address;
 
       setStep("approve");
-      await approve({
+      const approveTxHash = await approve({
         address: tokenAddress,
         abi: erc20Abi,
         functionName: "approve",
         args: [CONTRACTS.factory, amountWei],
       });
+
+      // Wait for approval to be confirmed on-chain before calling factory
+      // (factory checks allowance at execution time — race condition otherwise)
+      if (publicClient && approveTxHash) {
+        await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}`, confirmations: 1 });
+      }
 
       setStep("create");
       const hash = await createEscrow({
@@ -134,7 +141,9 @@ function CreatePageInner() {
 
       setStep("done");
     } catch (err: any) {
-      setError(err?.shortMessage ?? err?.message ?? t("create.errorGeneric"));
+      console.error("[EscrowHubs] create error:", err);
+      const msg = err?.shortMessage ?? err?.message ?? t("create.errorGeneric");
+      setError(msg || "Transaction failed. Please try again.");
       setStep("form");
     } finally {
       isSubmitting.current = false;
