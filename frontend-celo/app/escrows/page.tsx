@@ -60,10 +60,10 @@ export default function EscrowsPage() {
   const { data: records = [], isLoading: loadingRecords } = useReadContracts({
     contracts: allIdxs.map(idx => ({
       address: CONTRACTS.factory,
-      abi: FactoryABI,
+      abi: FactoryABI as any,
       functionName: "escrows",
       args: [idx],
-    })),
+    })) as any,
     query: { enabled: allIdxs.length > 0 },
   });
 
