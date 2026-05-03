@@ -1,25 +1,34 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, erc20Abi } from "viem";
 import { CONTRACTS, TOKENS, type TokenSymbol } from "@/lib/config";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import FactoryABI from "@/abis/EscrowFactory.json";
 import { usePhoneResolution } from "@/hooks/usePhoneResolution";
 import { useTranslation } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
+import { ConnectWallet } from "@/components/ConnectWallet";
 
 type Step = "form" | "approve" | "create" | "done";
 
-export default function CreatePage() {
+function CreatePageInner() {
   const { address, isConnected } = useAccount();
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
 
-  const [recipientInput, setRecipientInput] = useState("");
-  const [resolvedAddress, setResolvedAddress] = useState<`0x${string}` | null>(null);
-  const [amount, setAmount] = useState("");
-  const [selectedToken, setSelectedToken] = useState<TokenSymbol>("cUSD");
-  const [description, setDescription] = useState("");
+  // Pre-fill from URL params: ?to=0x...&amount=5&token=cUSD&note=Logo+Design
+  const [recipientInput, setRecipientInput] = useState(() => searchParams.get("to") ?? "");
+  const [resolvedAddress, setResolvedAddress] = useState<`0x${string}` | null>(() => {
+    const to = searchParams.get("to");
+    return to?.startsWith("0x") && to.length === 42 ? (to as `0x${string}`) : null;
+  });
+  const [amount, setAmount] = useState(() => searchParams.get("amount") ?? "");
+  const [selectedToken, setSelectedToken] = useState<TokenSymbol>(
+    () => (searchParams.get("token") as TokenSymbol) ?? "cUSD"
+  );
+  const [description, setDescription] = useState(() => searchParams.get("note") ?? "");
   const [step, setStep] = useState<Step>("form");
   const [error, setError] = useState("");
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(undefined);
@@ -34,6 +43,8 @@ export default function CreatePage() {
   const { data: receipt } = useWaitForTransactionReceipt({ hash: createTxHash });
 
   const resolveTimeout = useRef<NodeJS.Timeout | null>(null);
+  // Synchronous re-entry guard — prevents multi-tap creating duplicate escrows
+  const isSubmitting = useRef(false);
 
   useEffect(() => {
     if (!receipt) return;
@@ -69,10 +80,13 @@ export default function CreatePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isSubmitting.current) return; // synchronous guard against multi-tap
+    isSubmitting.current = true;
     setError("");
 
     if (!isConnected || !address) {
       setError(t("create.errorNoWallet"));
+      isSubmitting.current = false;
       return;
     }
     if (!effectiveAddress) {
@@ -119,6 +133,8 @@ export default function CreatePage() {
     } catch (err: any) {
       setError(err?.shortMessage ?? err?.message ?? t("create.errorGeneric"));
       setStep("form");
+    } finally {
+      isSubmitting.current = false;
     }
   }
 
@@ -178,6 +194,9 @@ export default function CreatePage() {
 
       <h1 className="text-2xl font-bold text-white mb-1">{t("create.pageTitle")}</h1>
       <p className="text-white/60 text-sm mb-8">{t("create.pageSubtitle")}</p>
+
+      {/* Wallet connection — show prominently when not connected */}
+      {!isConnected && <ConnectWallet />}
 
       <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-5">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -287,11 +306,22 @@ export default function CreatePage() {
             </div>
           )}
 
-          {/* Progress */}
+          {/* Progress — explicitly shows 2-step flow so users don't re-tap */}
           {inProgress && (
-            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin" />
-              {step === "approve" ? t("create.progressApproving") : t("create.progressCreating")}
+            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <span>
+                  {step === "approve"
+                    ? `Step 1 of 2 — ${t("create.progressApproving")}`
+                    : `Step 2 of 2 — ${t("create.progressCreating")}`}
+                </span>
+              </div>
+              <p className="text-xs text-white/40 pl-6">
+                {step === "approve"
+                  ? "Approve token spend in your wallet, then a second confirmation will follow."
+                  : "Confirm the escrow creation in your wallet. Almost done."}
+              </p>
             </div>
           )}
 
@@ -317,5 +347,13 @@ export default function CreatePage() {
 
       <TrustFooter />
     </main>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense fallback={null}>
+      <CreatePageInner />
+    </Suspense>
   );
 }
