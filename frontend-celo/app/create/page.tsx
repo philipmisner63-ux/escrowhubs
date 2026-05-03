@@ -18,6 +18,14 @@ function CreatePageInner() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
 
+  // ?reset=1 clears all stored state for a clean start
+  useEffect(() => {
+    if (searchParams.get("reset") === "1") {
+      ["eh_create_step","eh_approve_hash","eh_beneficiary","eh_token","eh_last_error","eh_dbg"].forEach(k => localStorage.removeItem(k));
+      window.location.href = "/create";
+    }
+  }, []);
+
   // Pre-fill from URL params: ?to=0x...&amount=5&token=cUSD&note=Logo+Design
   const [recipientInput, setRecipientInput] = useState(() => searchParams.get("to") ?? "");
   const [resolvedAddress, setResolvedAddress] = useState<`0x${string}` | null>(() => {
