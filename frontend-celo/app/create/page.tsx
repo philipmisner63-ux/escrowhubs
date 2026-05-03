@@ -30,9 +30,13 @@ function CreatePageInner() {
   );
   const [description, setDescription] = useState(() => searchParams.get("note") ?? "");
   const [step, setStep] = useState<Step>(() => {
-    // Resume step after mobile page reload between MM confirmations
+    // Only resume if there's an actual pending approve tx hash saved
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("eh_create_step") as Step) ?? "form";
+      const savedStep = localStorage.getItem("eh_create_step") as Step;
+      const savedHash = localStorage.getItem("eh_approve_hash");
+      if (savedStep && savedHash) return savedStep;
+      // Clean up stale step with no hash
+      localStorage.removeItem("eh_create_step");
     }
     return "form";
   });
@@ -247,14 +251,27 @@ function CreatePageInner() {
 
       {/* Mobile resume banner — shown when page reloaded mid-flow */}
       {isConnected && (step === "approve" || step === "create") && (
-        <div className="bg-white/5 border border-[#35D07F]/30 rounded-2xl px-4 py-4 mb-4 flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-white">
-              {step === "approve" ? "Step 1 of 2 — Waiting for approval..." : "Step 2 of 2 — Creating escrow..."}
-            </p>
-            <p className="text-xs text-white/50 mt-0.5">Check your wallet for a pending confirmation.</p>
+        <div className="bg-white/5 border border-[#35D07F]/30 rounded-2xl px-4 py-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">
+                {step === "approve" ? "Step 1 of 2 — Waiting for approval..." : "Step 2 of 2 — Creating escrow..."}
+              </p>
+              <p className="text-xs text-white/50 mt-0.5">Check your wallet for a pending confirmation.</p>
+            </div>
           </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("eh_create_step");
+              localStorage.removeItem("eh_approve_hash");
+              isSubmitting.current = false;
+              setStep("form");
+            }}
+            className="mt-3 text-xs text-white/40 hover:text-white/70 underline w-full text-center"
+          >
+            Cancel and start over
+          </button>
         </div>
       )}
 
