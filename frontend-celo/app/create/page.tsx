@@ -114,6 +114,23 @@ function CreatePageInner() {
         await new Promise(r => setTimeout(r, 8_000));
       }
 
+      // Pre-flight simulation to catch revert reason before MetaMask opens
+      if (publicClient) {
+        try {
+          await publicClient.simulateContract({
+            address: CONTRACTS.factory,
+            abi: FactoryABI as any,
+            functionName: "createSimpleEscrow",
+            args: [beneficiary, CONTRACTS.arbiter, 0, false, tokenAddress, "0x0000000000000000000000000000000000000000"],
+            account: beneficiary,
+            value: 0n,
+          });
+        } catch (simErr: any) {
+          const simMsg = simErr?.cause?.reason ?? simErr?.shortMessage ?? simErr?.message ?? "Simulation failed";
+          throw new Error(`Pre-flight failed: ${simMsg}`);
+        }
+      }
+
       const hash = await createEscrow({
         address: CONTRACTS.factory,
         abi: FactoryABI as any,
