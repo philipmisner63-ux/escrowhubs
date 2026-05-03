@@ -69,10 +69,22 @@ export default function EscrowsPage() {
 
   const isLoading = loadingSent || loadingReceived || loadingRecords;
 
-  // Filter out zero-address or failed records
+  // escrows(uint256) returns a positional tuple — index into array, not named fields
+  // [0]=contractAddress [1]=escrowType [2]=depositor [3]=beneficiary [4]=arbiter
+  // [5]=totalAmount [6]=fee [7]=trustTier [8]=aiArbiter [9]=createdAt [10]=referrer [11]=token
   const validRecords = records
-    .map((r, i) => ({ result: r.result as any, idx: allIdxs[i], sent: sentSet.has(String(allIdxs[i])) }))
-    .filter(r => r.result && r.result.contractAddress && r.result.contractAddress !== "0x0000000000000000000000000000000000000000");
+    .map((r, i) => {
+      const rec = r.result as any;
+      if (!rec) return null;
+      const contractAddress = Array.isArray(rec) ? rec[0] : rec.contractAddress;
+      const beneficiary    = Array.isArray(rec) ? rec[3] : rec.beneficiary;
+      const depositor      = Array.isArray(rec) ? rec[2] : rec.depositor;
+      const totalAmount    = Array.isArray(rec) ? rec[5] : rec.totalAmount;
+      const token          = Array.isArray(rec) ? rec[11] : rec.token;
+      if (!contractAddress || contractAddress === "0x0000000000000000000000000000000000000000") return null;
+      return { contractAddress, beneficiary, depositor, totalAmount, token, idx: allIdxs[i], sent: sentSet.has(String(allIdxs[i])) };
+    })
+    .filter(Boolean) as { contractAddress: `0x${string}`; beneficiary: string; depositor: string; totalAmount: bigint; token: string; idx: bigint; sent: boolean }[];
 
   if (!isConnected) {
     return (
@@ -123,18 +135,17 @@ export default function EscrowsPage() {
       )}
 
       <div className="flex flex-col gap-3">
-        {validRecords.map(({ result, sent }, index) => {
-          const stateNum = Number(result.escrowType ?? 0); // escrowType ≠ state but we read state from contract below
-          const amt = formatAmount(result.totalAmount as bigint, result.token as string);
-          const sym = tokenSymbol(result.token as string);
+        {validRecords.map(({ contractAddress, beneficiary, depositor, totalAmount, token, sent }, index) => {
+          const amt = formatAmount(totalAmount, token);
+          const sym = tokenSymbol(token);
           const counterpart = sent
-            ? `To ${(result.beneficiary as string).slice(0, 8)}...${(result.beneficiary as string).slice(-6)}`
-            : `From ${(result.depositor as string).slice(0, 8)}...${(result.depositor as string).slice(-6)}`;
+            ? `To ${beneficiary.slice(0, 8)}...${beneficiary.slice(-6)}`
+            : `From ${depositor.slice(0, 8)}...${depositor.slice(-6)}`;
 
           return (
             <EscrowCard
-              key={result.contractAddress}
-              address={result.contractAddress as `0x${string}`}
+              key={contractAddress}
+              address={contractAddress}
               amount={`${amt} ${sym}`}
               counterpart={counterpart}
               index={index}
