@@ -36,7 +36,17 @@ function CreatePageInner() {
     }
     return "form";
   });
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => {
+    // Restore last error from localStorage so it survives mobile page reloads
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("eh_last_error") ?? "";
+      if (saved) {
+        localStorage.removeItem("eh_last_error"); // show once
+        return saved;
+      }
+    }
+    return "";
+  });
   // const [debugLog, setDebugLog] = useState<string[]>([]);  // removed after debugging
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(() => {
     if (typeof window !== "undefined") {
@@ -164,6 +174,8 @@ function CreatePageInner() {
     } catch (err: any) {
       console.error("[EscrowHubs] create error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
+      // Persist error to localStorage so it survives page reloads on mobile
+      localStorage.setItem("eh_last_error", `[step:${step}] ${msg}`.slice(0, 500));
       setError(msg || "Transaction failed. Please try again.");
       setStep("form");
       localStorage.removeItem("eh_create_step");
