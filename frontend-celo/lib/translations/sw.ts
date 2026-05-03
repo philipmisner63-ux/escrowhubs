@@ -20,7 +20,7 @@ export const sw = {
     ctaMyPayments: "📋 Malipo Yangu",
     howItWorksTitle: "Inavyofanya kazi",
     steps: {
-      lockFunds: { title: "Funga fedha", desc: "cUSD yako inashikiliwa kwenye mkataba mwerevu — si na sisi" },
+      lockFunds: { title: "Funga fedha", desc: "cUSD au USDT yako inashikiliwa kwenye mkataba mwerevu — si na sisi" },
       jobDone: { title: "Kazi inakamilika", desc: "Mtu mwingine anakamilisha kazi" },
       releasePayment: { title: "Toa malipo", desc: "Uthibitishe na fedha zitatumwa mara moja" },
       dispute: { title: "Tatizo?", desc: "AI itathmini ushahidi na kuamua kwa haki" },

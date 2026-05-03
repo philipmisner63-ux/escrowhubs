@@ -18,7 +18,7 @@ export const en = {
     ctaMyPayments: "📋 My Payments",
     howItWorksTitle: "How it works",
     steps: {
-      lockFunds: { title: "Lock funds", desc: "Your cUSD is held in a smart contract — not by us" },
+      lockFunds: { title: "Lock funds", desc: "Your cUSD or USDT is held in a smart contract — not by us" },
       jobDone: { title: "Job gets done", desc: "The other party completes the work" },
       releasePayment: { title: "Release payment", desc: "You confirm and funds are released instantly" },
       dispute: { title: "Dispute?", desc: "AI reviews the evidence and decides fairly" },

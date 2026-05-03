@@ -18,7 +18,7 @@ export const zh = {
     ctaMyPayments: "📋 我的付款",
     howItWorksTitle: "如何运作",
     steps: {
-      lockFunds: { title: "锁定资金", desc: "您的cUSD存放在智能合约中 — 不在我们这里" },
+      lockFunds: { title: "锁定资金", desc: "您的cUSD或USDT存放在智能合约中 — 不在我们这里" },
       jobDone: { title: "工作完成", desc: "另一方完成工作" },
       releasePayment: { title: "释放付款", desc: "您确认后资金立即释放" },
       dispute: { title: "纠纷？", desc: "AI审查证据并公平裁决" },

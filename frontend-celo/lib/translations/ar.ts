@@ -18,7 +18,7 @@ export const ar = {
     ctaMyPayments: "📋 مدفوعاتي",
     howItWorksTitle: "كيف يعمل",
     steps: {
-      lockFunds: { title: "قفل الأموال", desc: "يتم الاحتفاظ بـ cUSD الخاص بك في عقد ذكي — وليس لدينا" },
+      lockFunds: { title: "قفل الأموال", desc: "يتم الاحتفاظ بـ cUSD أو USDT الخاص بك في عقد ذكي — وليس لدينا" },
       jobDone: { title: "اكتمل العمل", desc: "يكمل الطرف الآخر العمل" },
       releasePayment: { title: "تحرير الدفعة", desc: "تؤكد ويتم إصدار الأموال فوراً" },
       dispute: { title: "نزاع؟", desc: "يراجع الذكاء الاصطناعي الأدلة ويقرر بعدل" },

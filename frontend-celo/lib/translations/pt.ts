@@ -18,7 +18,7 @@ export const pt = {
     ctaMyPayments: "📋 Meus Pagamentos",
     howItWorksTitle: "Como funciona",
     steps: {
-      lockFunds: { title: "Bloquear fundos", desc: "Seu cUSD é mantido em um contrato inteligente — não por nós" },
+      lockFunds: { title: "Bloquear fundos", desc: "Seu cUSD ou USDT é mantido em um contrato inteligente — não por nós" },
       jobDone: { title: "Trabalho concluído", desc: "A outra parte conclui o trabalho" },
       releasePayment: { title: "Liberar pagamento", desc: "Você confirma e os fundos são liberados instantaneamente" },
       dispute: { title: "Disputa?", desc: "A IA revisa as evidências e decide de forma justa" },
