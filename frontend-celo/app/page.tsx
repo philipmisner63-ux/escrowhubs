@@ -8,6 +8,7 @@ import { useTranslation, type Lang } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
 import { Tile } from "@/components/Tile";
 import { IconCircle } from "@/components/IconCircle";
+import { ConnectWallet } from "@/components/ConnectWallet";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -91,7 +92,7 @@ export default function Home() {
     </div>
   );
 
-  // Non-MiniPay: show explainer layout
+  // Non-MiniPay: show full connect layout
   if (detected && !isMiniPay) {
     return (
       <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
@@ -110,13 +111,22 @@ export default function Home() {
           </p>
         </div>
 
+        <ConnectWallet />
+
+        {isConnected && (
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            <Tile icon="💸" title="Send a Safe Payment" subtitle="Funds held until done →" href="/create" className="slide-in-1" />
+            <Tile icon="📋" title="My Payments" subtitle="Track & release →" href="/escrows" className="slide-in-2" />
+          </div>
+        )}
+
         {howItWorks}
 
         <a
           href="https://minipay.opera.com/open?url=https://celo.escrowhubs.io"
-          className="tap-compress btn-pulse bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-5 text-center font-bold text-lg shadow-lg shadow-green-900/30 mb-4 block"
+          className="tap-compress text-center text-white/40 text-sm mb-4 block mt-2"
         >
-          Open in MiniPay
+          Or open in MiniPay →
         </a>
         <Link href="/demo" className="tap-compress text-center text-white/50 text-sm mb-6 block">
           Try Demo →

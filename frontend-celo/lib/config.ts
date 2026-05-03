@@ -1,9 +1,24 @@
 import { http, createConfig } from "wagmi";
 import { celo } from "wagmi/chains";
+import { injected, walletConnect } from "wagmi/connectors";
 
-// Celo mainnet only — this app is purpose-built for MiniPay
+const WC_PROJECT_ID = "9401741cff120268fe4e4df8acbda44f";
+
+// Celo mainnet — supports MiniPay, MetaMask, Valora, WalletConnect
 export const wagmiConfig = createConfig({
   chains: [celo],
+  connectors: [
+    injected(),
+    walletConnect({
+      projectId: WC_PROJECT_ID,
+      metadata: {
+        name: "EscrowHubs",
+        description: "Safe payments on Celo",
+        url: "https://celo.escrowhubs.io",
+        icons: ["https://celo.escrowhubs.io/icon.png"],
+      },
+    }),
+  ],
   transports: {
     [celo.id]: http("https://forno.celo.org"),
   },
