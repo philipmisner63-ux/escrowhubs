@@ -1,13 +1,15 @@
 "use client";
-import { useConnect, useAccount, useDisconnect } from "wagmi";
-import { injected, walletConnect } from "wagmi/connectors";
-
-const WC_PROJECT_ID = "9401741cff120268fe4e4df8acbda44f";
+import { useConnect, useAccount, useDisconnect, useConfig } from "wagmi";
 
 export function ConnectWallet() {
   const { connect, isPending } = useConnect();
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
+  const config = useConfig();
+
+  // Get connectors registered in wagmi config
+  const injectedConnector = config.connectors.find((c) => c.id === "injected");
+  const wcConnector = config.connectors.find((c) => c.id === "walletConnect");
 
   if (isConnected && address) {
     return (
@@ -27,33 +29,24 @@ export function ConnectWallet() {
 
   return (
     <div className="flex flex-col gap-3 mb-6">
-      <button
-        onClick={() => connect({ connector: injected(), chainId: 42220 })}
-        disabled={isPending}
-        className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 text-center font-bold text-base shadow-lg shadow-green-900/30 disabled:opacity-50"
-      >
-        {isPending ? "Connecting..." : "Connect Wallet (MetaMask / Valora)"}
-      </button>
-      <button
-        onClick={() =>
-          connect({
-            connector: walletConnect({
-              projectId: WC_PROJECT_ID,
-              metadata: {
-                name: "EscrowHubs",
-                description: "Safe payments on Celo",
-                url: "https://celo.escrowhubs.io",
-                icons: ["https://celo.escrowhubs.io/icon.png"],
-              },
-            }),
-            chainId: 42220,
-          })
-        }
-        disabled={isPending}
-        className="tap-compress bg-white/10 border border-white/20 text-white rounded-2xl px-6 py-4 text-center font-semibold text-base disabled:opacity-50"
-      >
-        {isPending ? "Connecting..." : "Connect via WalletConnect"}
-      </button>
+      {injectedConnector && (
+        <button
+          onClick={() => connect({ connector: injectedConnector, chainId: 42220 })}
+          disabled={isPending}
+          className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 text-center font-bold text-base shadow-lg shadow-green-900/30 disabled:opacity-50"
+        >
+          {isPending ? "Connecting..." : "Connect Wallet (MetaMask / Valora)"}
+        </button>
+      )}
+      {wcConnector && (
+        <button
+          onClick={() => connect({ connector: wcConnector, chainId: 42220 })}
+          disabled={isPending}
+          className="tap-compress bg-white/10 border border-white/20 text-white rounded-2xl px-6 py-4 text-center font-semibold text-base disabled:opacity-50"
+        >
+          {isPending ? "Connecting..." : "Connect via WalletConnect"}
+        </button>
+      )}
     </div>
   );
 }
