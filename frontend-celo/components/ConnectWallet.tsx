@@ -67,9 +67,23 @@ export function ConnectWallet() {
       )}
 
       {/* WalletConnect for desktop */}
-      {!isMobile && wcConnector && (
+      {!isMobile && (
         <button
-          onClick={() => connect({ connector: wcConnector, chainId: 42220 })}
+          onClick={async () => {
+            try {
+              const { WalletConnectModal } = await import("@walletconnect/modal");
+              const modal = new WalletConnectModal({
+                projectId: "9401741cff120268fe4e4df8acbda44f",
+                chains: ["eip155:42220"],
+              });
+              if (wcConnector) {
+                connect({ connector: wcConnector, chainId: 42220 });
+              }
+              modal.openModal();
+            } catch (e) {
+              console.error("WalletConnect error:", e);
+            }
+          }}
           disabled={isPending}
           className="tap-compress bg-white/10 border border-white/20 text-white rounded-2xl px-6 py-4 text-center font-semibold text-base disabled:opacity-50"
         >
