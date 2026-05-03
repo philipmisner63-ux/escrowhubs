@@ -126,7 +126,7 @@ function CreatePageInner() {
           tokenAddress,
           "0x0000000000000000000000000000000000000000",
         ],
-        gas: 600000n,
+        gas: 1_500_000n,
       });
 
       setCreateTxHash(hash as `0x${string}`);
