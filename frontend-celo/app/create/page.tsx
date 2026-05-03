@@ -37,7 +37,7 @@ function CreatePageInner() {
     return "form";
   });
   const [error, setError] = useState("");
-  const [debugLog, setDebugLog] = useState<string[]>([]);
+  // const [debugLog, setDebugLog] = useState<string[]>([]);  // removed after debugging
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("eh_approve_hash") as `0x${string}`) ?? undefined;
@@ -164,9 +164,7 @@ function CreatePageInner() {
     } catch (err: any) {
       console.error("[EscrowHubs] create error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
-      const debugMsg = `Step: ${step} | ${msg.slice(0, 200)}`;
       setError(msg || "Transaction failed. Please try again.");
-      setDebugLog(prev => [...prev, debugMsg]);
       setStep("form");
       localStorage.removeItem("eh_create_step");
       localStorage.removeItem("eh_approve_hash");
@@ -356,15 +354,7 @@ function CreatePageInner() {
             </div>
           )}
 
-          {/* Debug log — temporary, remove after fixing */}
-          {debugLog.length > 0 && (
-            <div className="bg-black/40 border border-yellow-400/30 rounded-xl px-4 py-3 space-y-1">
-              <p className="text-xs font-bold text-yellow-400">Debug log (share with Philip):</p>
-              {debugLog.map((line, i) => (
-                <p key={i} className="text-xs text-yellow-300/80 break-all font-mono">{line}</p>
-              ))}
-            </div>
-          )}
+
 
           {/* Progress — explicitly shows 2-step flow so users don't re-tap */}
           {inProgress && (
