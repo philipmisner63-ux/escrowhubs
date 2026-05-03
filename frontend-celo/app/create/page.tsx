@@ -42,10 +42,6 @@ function CreatePageInner() {
   });
   const [error, setError] = useState(() => {
     if (typeof window !== "undefined") {
-      // Check URL param first (redirect-based error capture)
-      const urlErr = new URLSearchParams(window.location.search).get("err");
-      if (urlErr) return decodeURIComponent(urlErr);
-      // Fall back to localStorage
       const saved = localStorage.getItem("eh_last_error") ?? "";
       if (saved) {
         localStorage.removeItem("eh_last_error");
@@ -54,7 +50,6 @@ function CreatePageInner() {
     }
     return "";
   });
-  // const [debugLog, setDebugLog] = useState<string[]>([]);  // removed after debugging
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(undefined);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -100,9 +95,7 @@ function CreatePageInner() {
     isSubmitting.current = true;
     setResuming(true);
     setStep("create");
-    localStorage.setItem("eh_dbg", "A:entered");
     try {
-      localStorage.setItem("eh_dbg", "B:waiting-receipt");
       // Best-effort wait for approval receipt, then proceed regardless
       if (publicClient) {
         await Promise.race([
@@ -112,7 +105,6 @@ function CreatePageInner() {
       } else {
         await new Promise(r => setTimeout(r, 8_000));
       }
-      localStorage.setItem("eh_dbg", "C:calling-createEscrow");
 
       const hash = await createEscrow({
         address: CONTRACTS.factory,
@@ -129,7 +121,6 @@ function CreatePageInner() {
         gas: 600000n,
       });
 
-      localStorage.setItem("eh_dbg", `D:got-hash-${hash?.slice(0,10)}`);
       setCreateTxHash(hash as `0x${string}`);
       localStorage.removeItem("eh_create_step");
       localStorage.removeItem("eh_approve_hash");
@@ -139,16 +130,14 @@ function CreatePageInner() {
     } catch (err: any) {
       console.error("[EscrowHubs] resumeStep2 error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
+      // Persist so error survives a page reload on mobile
       localStorage.setItem("eh_last_error", `[resume] ${msg}`.slice(0, 500));
-      // Redirect with error in URL so it survives page reload and is always visible
-      if (typeof window !== "undefined") {
-        window.location.href = `/create?err=${encodeURIComponent(msg.slice(0, 300))}`;
-        return;
-      }
       setError(msg || "Transaction failed. Please try again.");
       setStep("form");
       localStorage.removeItem("eh_create_step");
       localStorage.removeItem("eh_approve_hash");
+      localStorage.removeItem("eh_beneficiary");
+      localStorage.removeItem("eh_token");
     } finally {
       isSubmitting.current = false;
       setResuming(false);
@@ -215,9 +204,10 @@ function CreatePageInner() {
         args: [CONTRACTS.factory, amountWei],
       });
 
-      // Persist approve hash so mobile can resume after page reload
+      // Persist approve hash and advance step so mobile can resume after page reload
       if (approveTxHash) {
         localStorage.setItem("eh_approve_hash", approveTxHash as string);
+        localStorage.setItem("eh_create_step", "create");
       }
 
       // Hand off to resumeStep2 which handles the wait + create with proper timeout/retry logic
@@ -298,9 +288,6 @@ function CreatePageInner() {
 
       <h1 className="text-2xl font-bold text-white mb-1">{t("create.pageTitle")}</h1>
       <p className="text-white/60 text-sm mb-8">{t("create.pageSubtitle")}</p>
-
-      {/* Debug marker — TEMP */}
-      <DebugMarker />
 
       {/* Wallet connection — show prominently when not connected */}
       {!isConnected && <ConnectWallet />}
@@ -456,8 +443,6 @@ function CreatePageInner() {
             </div>
           )}
 
-
-
           {/* Progress — explicitly shows 2-step flow so users don't re-tap */}
           {inProgress && (
             <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 space-y-2">
@@ -499,22 +484,6 @@ function CreatePageInner() {
 
       <TrustFooter />
     </main>
-  );
-}
-
-function DebugMarker() {
-  const [dbg, setDbg] = useState("");
-  useEffect(() => {
-    const v = localStorage.getItem("eh_dbg") ?? "";
-    setDbg(v);
-    const t = setInterval(() => setDbg(localStorage.getItem("eh_dbg") ?? ""), 500);
-    return () => clearInterval(t);
-  }, []);
-  if (!dbg) return null;
-  return (
-    <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-xl px-3 py-2 mb-3 text-xs text-yellow-300 font-mono">
-      DBG: {dbg}
-    </div>
   );
 }
 
