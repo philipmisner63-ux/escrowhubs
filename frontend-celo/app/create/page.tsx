@@ -133,6 +133,8 @@ function CreatePageInner() {
       console.error("[EscrowHubs] resumeStep2 error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
       localStorage.setItem("eh_last_error", `[resume] ${msg}`.slice(0, 500));
+      // Temporary: force visible alert so we can read the error on mobile
+      if (typeof window !== "undefined") window.alert(`EscrowHubs error:\n${msg.slice(0, 300)}`);
       setError(msg || "Transaction failed. Please try again.");
       setStep("form");
       localStorage.removeItem("eh_create_step");
