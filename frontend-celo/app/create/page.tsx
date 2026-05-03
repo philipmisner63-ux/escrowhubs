@@ -41,11 +41,14 @@ function CreatePageInner() {
     return "form";
   });
   const [error, setError] = useState(() => {
-    // Restore last error from localStorage so it survives mobile page reloads
     if (typeof window !== "undefined") {
+      // Check URL param first (redirect-based error capture)
+      const urlErr = new URLSearchParams(window.location.search).get("err");
+      if (urlErr) return decodeURIComponent(urlErr);
+      // Fall back to localStorage
       const saved = localStorage.getItem("eh_last_error") ?? "";
       if (saved) {
-        localStorage.removeItem("eh_last_error"); // show once
+        localStorage.removeItem("eh_last_error");
         return saved;
       }
     }
@@ -133,8 +136,11 @@ function CreatePageInner() {
       console.error("[EscrowHubs] resumeStep2 error:", err);
       const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
       localStorage.setItem("eh_last_error", `[resume] ${msg}`.slice(0, 500));
-      // Temporary: force visible alert so we can read the error on mobile
-      if (typeof window !== "undefined") window.alert(`EscrowHubs error:\n${msg.slice(0, 300)}`);
+      // Redirect with error in URL so it survives page reload and is always visible
+      if (typeof window !== "undefined") {
+        window.location.href = `/create?err=${encodeURIComponent(msg.slice(0, 300))}`;
+        return;
+      }
       setError(msg || "Transaction failed. Please try again.");
       setStep("form");
       localStorage.removeItem("eh_create_step");
