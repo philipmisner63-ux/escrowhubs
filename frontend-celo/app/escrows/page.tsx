@@ -1,5 +1,5 @@
 "use client";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { useMiniPay } from "@/hooks/useMiniPay";
 import { CONTRACTS } from "@/lib/config";
 import FactoryABI from "@/abis/EscrowFactory.json";
@@ -9,14 +9,31 @@ import { useTranslation } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
 import { StatusCard } from "@/components/StatusCard";
 
-const STATUS_BY_STATE = ["ACTIVE", "FUNDED", "RELEASED", "DISPUTED", "ACTIVE"] as const;
+const ESCROW_STATE_NAMES = ["ACTIVE", "FUNDED", "RELEASED", "DISPUTED"] as const;
+
+// Returns cUSD-formatted amount (decimals=18) or USDT (decimals=6)
+// We use a simple heuristic: if amount > 1e15 it's likely 18-decimal, else 6
+function formatAmount(amount: bigint, token: string): string {
+  const isNativeOrCUSD = token === "0x0000000000000000000000000000000000000000"
+    || token.toLowerCase() === "0x765de816845861e75a25fca122bb6898b8b1282a";
+  const decimals = isNativeOrCUSD ? 18 : 6;
+  return parseFloat(formatUnits(amount, decimals)).toFixed(2);
+}
+
+function tokenSymbol(token: string): string {
+  if (token === "0x0000000000000000000000000000000000000000") return "CELO";
+  if (token.toLowerCase() === "0x765de816845861e75a25fca122bb6898b8b1282a") return "cUSD";
+  if (token.toLowerCase() === "0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e") return "USDT";
+  return "token";
+}
 
 export default function EscrowsPage() {
   const { address, isConnected } = useAccount();
   const { t } = useTranslation();
   useMiniPay();
 
-  const { data: sentAddrs = [], isLoading: loadingSent } = useReadContract({
+  // Step 1: get indices (uint256[]) for depositor and beneficiary
+  const { data: sentIdxs = [], isLoading: loadingSent } = useReadContract({
     address: CONTRACTS.factory,
     abi: FactoryABI,
     functionName: "getEscrowsByDepositor",
@@ -24,7 +41,7 @@ export default function EscrowsPage() {
     query: { enabled: !!address },
   });
 
-  const { data: receivedAddrs = [], isLoading: loadingReceived } = useReadContract({
+  const { data: receivedIdxs = [], isLoading: loadingReceived } = useReadContract({
     address: CONTRACTS.factory,
     abi: FactoryABI,
     functionName: "getEscrowsByBeneficiary",
@@ -32,8 +49,30 @@ export default function EscrowsPage() {
     query: { enabled: !!address },
   });
 
-  const isLoading = loadingSent || loadingReceived;
-  const allAddrs = [...new Set([...(sentAddrs as string[]), ...(receivedAddrs as string[])])];
+  // Merge unique indices
+  const sentSet = new Set((sentIdxs as bigint[]).map(String));
+  const allIdxs = [
+    ...(sentIdxs as bigint[]),
+    ...(receivedIdxs as bigint[]).filter(i => !sentSet.has(String(i))),
+  ];
+
+  // Step 2: batch-fetch each EscrowRecord from escrows(index)
+  const { data: records = [], isLoading: loadingRecords } = useReadContracts({
+    contracts: allIdxs.map(idx => ({
+      address: CONTRACTS.factory,
+      abi: FactoryABI,
+      functionName: "escrows",
+      args: [idx],
+    })),
+    query: { enabled: allIdxs.length > 0 },
+  });
+
+  const isLoading = loadingSent || loadingReceived || loadingRecords;
+
+  // Filter out zero-address or failed records
+  const validRecords = records
+    .map((r, i) => ({ result: r.result as any, idx: allIdxs[i], sent: sentSet.has(String(allIdxs[i])) }))
+    .filter(r => r.result && r.result.contractAddress && r.result.contractAddress !== "0x0000000000000000000000000000000000000000");
 
   if (!isConnected) {
     return (
@@ -41,10 +80,7 @@ export default function EscrowsPage() {
         <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-6 text-center">
           <div className="text-4xl mb-3 text-white">👛</div>
           <p className="text-white/70 text-center mb-5">{t("escrows.notConnected")}</p>
-          <Link
-            href="/"
-            className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 font-bold inline-block"
-          >
+          <Link href="/" className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 font-bold inline-block">
             Open MiniPay
           </Link>
         </div>
@@ -76,29 +112,35 @@ export default function EscrowsPage() {
         </div>
       )}
 
-      {!isLoading && allAddrs.length === 0 && (
+      {!isLoading && validRecords.length === 0 && (
         <div className="text-center py-12">
           <div className="text-4xl mb-3">📭</div>
           <p className="text-white/60 mb-6">{t("escrows.noPayments")}</p>
-          <Link
-            href="/create"
-            className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 font-bold inline-block shadow-lg shadow-green-900/30"
-          >
+          <Link href="/create" className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 font-bold inline-block shadow-lg shadow-green-900/30">
             {t("escrows.ctaSendFirst")}
           </Link>
         </div>
       )}
 
       <div className="flex flex-col gap-3">
-        {(allAddrs as string[]).map((escrowAddr, index) => (
-          <EscrowCard
-            key={escrowAddr}
-            address={escrowAddr as `0x${string}`}
-            myAddress={address!}
-            sent={(sentAddrs as string[]).includes(escrowAddr)}
-            index={index}
-          />
-        ))}
+        {validRecords.map(({ result, sent }, index) => {
+          const stateNum = Number(result.escrowType ?? 0); // escrowType ≠ state but we read state from contract below
+          const amt = formatAmount(result.totalAmount as bigint, result.token as string);
+          const sym = tokenSymbol(result.token as string);
+          const counterpart = sent
+            ? `To ${(result.beneficiary as string).slice(0, 8)}...${(result.beneficiary as string).slice(-6)}`
+            : `From ${(result.depositor as string).slice(0, 8)}...${(result.depositor as string).slice(-6)}`;
+
+          return (
+            <EscrowCard
+              key={result.contractAddress}
+              address={result.contractAddress as `0x${string}`}
+              amount={`${amt} ${sym}`}
+              counterpart={counterpart}
+              index={index}
+            />
+          );
+        })}
       </div>
 
       <TrustFooter />
@@ -108,13 +150,13 @@ export default function EscrowsPage() {
 
 function EscrowCard({
   address: escrowAddr,
-  myAddress,
-  sent,
+  amount,
+  counterpart,
   index,
 }: {
   address: `0x${string}`;
-  myAddress: `0x${string}`;
-  sent: boolean;
+  amount: string;
+  counterpart: string;
   index: number;
 }) {
   const { data: state } = useReadContract({
@@ -123,32 +165,17 @@ function EscrowCard({
     functionName: "state",
   });
 
-  const { data: amount } = useReadContract({
-    address: escrowAddr,
-    abi: [{ name: "amount", type: "function", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" }],
-    functionName: "amount",
-  });
-
-  const { data: beneficiary } = useReadContract({
-    address: escrowAddr,
-    abi: [{ name: "beneficiary", type: "function", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" }],
-    functionName: "beneficiary",
-  });
-
   const stateNum = typeof state === "number" ? state : Number(state ?? 0);
-  const status = STATUS_BY_STATE[stateNum] ?? STATUS_BY_STATE[0];
-  const amountFormatted = amount
-    ? parseFloat(formatUnits(amount as bigint, 18)).toFixed(2)
-    : "...";
-  const recipientAddress = (beneficiary as string | undefined) ?? myAddress;
-  const recipient = `${sent ? "To" : "From"} ${recipientAddress.slice(0, 8)}...${recipientAddress.slice(-6)}`;
+  // SimpleEscrow states: 0=AWAITING_PAYMENT, 1=AWAITING_DELIVERY, 2=COMPLETE, 3=DISPUTED
+  const STATUS_MAP: Record<number, string> = { 0: "ACTIVE", 1: "FUNDED", 2: "RELEASED", 3: "DISPUTED" };
+  const status = STATUS_MAP[stateNum] ?? "ACTIVE";
 
   return (
     <StatusCard
       status={status}
-      amount={`${amountFormatted} cUSD`}
+      amount={amount}
       description="Payment"
-      recipient={recipient}
+      recipient={counterpart}
       href={`/escrow/${escrowAddr}`}
       className={`slide-in-${Math.min(index + 1, 4)}`}
     />
