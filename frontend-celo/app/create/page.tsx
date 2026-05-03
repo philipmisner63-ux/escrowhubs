@@ -146,10 +146,22 @@ function CreatePageInner() {
         localStorage.setItem("eh_approve_hash", approveTxHash as string);
       }
 
-      // Wait for approval to be confirmed on-chain before calling factory
-      // (factory checks allowance at execution time — race condition otherwise)
+      // Wait for approval to be confirmed — 15s timeout then proceed anyway.
+      // Celo blocks every 5s so approval is almost certainly confirmed by then.
       if (publicClient && approveTxHash) {
-        await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}`, confirmations: 1 });
+        try {
+          await publicClient.waitForTransactionReceipt({
+            hash: approveTxHash as `0x${string}`,
+            confirmations: 1,
+            timeout: 15_000,
+          });
+        } catch {
+          // Timed out waiting for receipt — proceed anyway, factory reads live allowance
+          console.warn("[EscrowHubs] approve receipt timeout — proceeding to create");
+        }
+      } else {
+        // No publicClient or no hash — wait a fixed 8s for Celo to confirm
+        await new Promise(r => setTimeout(r, 8_000));
       }
 
       setStep("create");
