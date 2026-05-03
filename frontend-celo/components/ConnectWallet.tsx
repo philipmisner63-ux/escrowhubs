@@ -70,16 +70,20 @@ export function ConnectWallet() {
       {!isMobile && (
         <button
           onClick={async () => {
+            if (!wcConnector) return;
             try {
               const { WalletConnectModal } = await import("@walletconnect/modal");
               const modal = new WalletConnectModal({
                 projectId: "9401741cff120268fe4e4df8acbda44f",
                 chains: ["eip155:42220"],
               });
-              if (wcConnector) {
-                connect({ connector: wcConnector, chainId: 42220 });
-              }
-              modal.openModal();
+              // Listen for the display_uri event to get the QR code URI
+              wcConnector.emitter.on("message", ({ type, data }: { type: string; data?: unknown }) => {
+                if (type === "display_uri") {
+                  modal.openModal({ uri: data as string });
+                }
+              });
+              connect({ connector: wcConnector, chainId: 42220 });
             } catch (e) {
               console.error("WalletConnect error:", e);
             }
