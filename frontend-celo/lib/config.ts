@@ -11,6 +11,7 @@ export const wagmiConfig = createConfig({
     injected(),
     walletConnect({
       projectId: WC_PROJECT_ID,
+      showQrModal: true,
       metadata: {
         name: "EscrowHubs",
         description: "Safe payments on Celo",
