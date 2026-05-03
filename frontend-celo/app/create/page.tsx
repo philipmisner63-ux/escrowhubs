@@ -100,7 +100,9 @@ function CreatePageInner() {
     isSubmitting.current = true;
     setResuming(true);
     setStep("create");
+    localStorage.setItem("eh_dbg", "A:entered");
     try {
+      localStorage.setItem("eh_dbg", "B:waiting-receipt");
       // Best-effort wait for approval receipt, then proceed regardless
       if (publicClient) {
         await Promise.race([
@@ -110,6 +112,7 @@ function CreatePageInner() {
       } else {
         await new Promise(r => setTimeout(r, 8_000));
       }
+      localStorage.setItem("eh_dbg", "C:calling-createEscrow");
 
       const hash = await createEscrow({
         address: CONTRACTS.factory,
@@ -126,6 +129,7 @@ function CreatePageInner() {
         gas: 600000n,
       });
 
+      localStorage.setItem("eh_dbg", `D:got-hash-${hash?.slice(0,10)}`);
       setCreateTxHash(hash as `0x${string}`);
       localStorage.removeItem("eh_create_step");
       localStorage.removeItem("eh_approve_hash");
@@ -294,6 +298,9 @@ function CreatePageInner() {
 
       <h1 className="text-2xl font-bold text-white mb-1">{t("create.pageTitle")}</h1>
       <p className="text-white/60 text-sm mb-8">{t("create.pageSubtitle")}</p>
+
+      {/* Debug marker — TEMP */}
+      <DebugMarker />
 
       {/* Wallet connection — show prominently when not connected */}
       {!isConnected && <ConnectWallet />}
@@ -492,6 +499,22 @@ function CreatePageInner() {
 
       <TrustFooter />
     </main>
+  );
+}
+
+function DebugMarker() {
+  const [dbg, setDbg] = useState("");
+  useEffect(() => {
+    const v = localStorage.getItem("eh_dbg") ?? "";
+    setDbg(v);
+    const t = setInterval(() => setDbg(localStorage.getItem("eh_dbg") ?? ""), 500);
+    return () => clearInterval(t);
+  }, []);
+  if (!dbg) return null;
+  return (
+    <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-xl px-3 py-2 mb-3 text-xs text-yellow-300 font-mono">
+      DBG: {dbg}
+    </div>
   );
 }
 
