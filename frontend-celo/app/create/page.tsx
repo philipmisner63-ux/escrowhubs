@@ -31,6 +31,7 @@ function CreatePageInner() {
   const [description, setDescription] = useState(() => searchParams.get("note") ?? "");
   const [step, setStep] = useState<Step>("form");
   const [error, setError] = useState("");
+  const [debugLog, setDebugLog] = useState<string[]>([]);
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>(undefined);
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -142,8 +143,10 @@ function CreatePageInner() {
       setStep("done");
     } catch (err: any) {
       console.error("[EscrowHubs] create error:", err);
-      const msg = err?.shortMessage ?? err?.message ?? t("create.errorGeneric");
+      const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
+      const debugMsg = `Step: ${step} | ${msg.slice(0, 200)}`;
       setError(msg || "Transaction failed. Please try again.");
+      setDebugLog(prev => [...prev, debugMsg]);
       setStep("form");
     } finally {
       isSubmitting.current = false;
@@ -315,6 +318,16 @@ function CreatePageInner() {
           {error && (
             <div className="bg-[#FF5B5B]/10 border border-[#FF5B5B]/30 rounded-xl px-4 py-3 text-sm text-[#FF5B5B]">
               {error}
+            </div>
+          )}
+
+          {/* Debug log — temporary, remove after fixing */}
+          {debugLog.length > 0 && (
+            <div className="bg-black/40 border border-yellow-400/30 rounded-xl px-4 py-3 space-y-1">
+              <p className="text-xs font-bold text-yellow-400">Debug log (share with Philip):</p>
+              {debugLog.map((line, i) => (
+                <p key={i} className="text-xs text-yellow-300/80 break-all font-mono">{line}</p>
+              ))}
             </div>
           )}
 
