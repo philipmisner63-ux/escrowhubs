@@ -1,22 +1,20 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { http } from "wagmi";
 import { celo } from "wagmi/chains";
 
 const WC_PROJECT_ID = "9401741cff120268fe4e4df8acbda44f";
 
 // Celo mainnet — supports MiniPay, MetaMask, Valora, WalletConnect
-export const wagmiConfig = getDefaultConfig({
-  appName: "EscrowHubs",
+export const wagmiAdapter = new WagmiAdapter({
+  networks: [celo],
   projectId: WC_PROJECT_ID,
-  appDescription: "Safe payments on Celo",
-  appUrl: "https://celo.escrowhubs.io",
-  appIcon: "https://celo.escrowhubs.io/icon.png",
-  chains: [celo],
+  ssr: true,
   transports: {
     [celo.id]: http("https://forno.celo.org"),
   },
-  ssr: true,
 });
+
+export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
 // Contract addresses (Celo mainnet — deployed 2026-04-11)
 export const CONTRACTS = {

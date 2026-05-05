@@ -11,7 +11,8 @@
   "dependencies": {
     "@celo/abis": "^14.0.1",
     "@celo/identity": "^5.1.2",
-    "@rainbow-me/rainbowkit": "^2.2.10",
+    "@reown/appkit": "^1.8.19",
+    "@reown/appkit-adapter-wagmi": "^1.8.19",
     "@tanstack/react-query": "^5.100.5",
     "@walletconnect/modal": "^2.7.0",
     "next": "16.2.4",
