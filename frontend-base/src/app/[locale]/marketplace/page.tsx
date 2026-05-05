@@ -78,7 +78,11 @@ export default function MarketplacePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create escrow");
-      setSuccessState({ escrow_id: data.escrow_id, escrow_url: data.escrow_url, buyer_notified_by: data.buyer_notified_by ?? "email" });
+      setSuccessState({
+        escrow_id: data.escrow_id,
+        escrow_url: data.escrow_url,
+        buyer_notified_by: data.buyer_notified_by ?? "email",
+      });
       addToast({ type: "success", message: "Escrow created! Email sent to buyer." });
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Something went wrong" });
@@ -122,53 +126,9 @@ export default function MarketplacePage() {
       <AnimatedBackground />
       <MarketplaceNav />
 
-      <div className="bg-yellow-500/20 border-b border-yellow-500/40 px-4 py-2 text-center text-yellow-300 text-sm font-medium">⚠️ Test Mode — Marketplace is under development and not yet open to the public</div><main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <span className="inline-block px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium mb-4">
-            Marketplace Mode
-          </span>
-          <h1 className="text-3xl font-bold mb-3">Create Protected Escrow</h1>
-          <p className="text-slate-400 text-sm max-w-md mx-auto">
-            Send a payment request to your buyer. Funds are locked on-chain until
-            you deliver — no disputes, no chargebacks.
-          </p>
-        </div>
-
-        {/* Trust indicators */}
-        <div className="flex items-center justify-center gap-6 mb-10 flex-wrap">
-          {[
-            { icon: "🔒", label: "Funds locked on-chain" },
-            { icon: "🤖", label: "AI dispute arbiter" },
-            { icon: "⚡", label: "Instant setup" },
-            { icon: "🌍", label: "Global payments" },
-          ].map((t) => (
-            <div key={t.label} className="flex items-center gap-2 text-xs text-slate-400">
-              <span>{t.icon}</span>
-              <span>{t.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Login gate */}
-        {!authenticated && (
-          <GlassCard className="p-8 text-center space-y-5">
-            <div className="text-4xl">🔐</div>
-            <h2 className="text-lg font-semibold text-white">Login to create an escrow</h2>
-            <p className="text-slate-400 text-sm max-w-xs mx-auto">
-              Sign in with your email or phone number to create a protected payment request for your buyer.
-            </p>
-            <GlowButton onClick={login} className="w-full">
-              Continue with Email or Phone →
-            </GlowButton>
-            <p className="text-xs text-slate-600">
-              A secure wallet is created automatically — no seed phrases needed.
-            </p>
-          </GlassCard>
-        )}
-
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
         {/* Success state */}
-        {authenticated && successState && (
+        {successState ? (
           <GlassCard className="p-10 text-center space-y-6">
             <div className="text-6xl">✅</div>
             <h2 className="text-2xl font-bold text-white">Escrow Created!</h2>
@@ -178,26 +138,34 @@ export default function MarketplacePage() {
                 : "Your buyer has been emailed the payment link."}
             </p>
 
-            {/* Next steps */}
             <div className="bg-white/3 border border-white/8 rounded-xl p-4 text-left space-y-3">
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">What happens next</p>
               <ol className="space-y-2 text-sm text-slate-300">
-                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">1.</span>
-                  <span>{successState.buyer_notified_by === "link_only" ? "Send the link below to your buyer so they can complete payment." : "Your buyer receives the email and clicks the payment link — no action needed from you yet."}</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-400 font-bold shrink-0">1.</span>
+                  <span>
+                    {successState.buyer_notified_by === "link_only"
+                      ? "Send the link below to your buyer so they can complete payment."
+                      : "Your buyer receives the email and clicks the payment link — no action needed from you yet."}
+                  </span>
                 </li>
-                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">2.</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-400 font-bold shrink-0">2.</span>
                   <span>Your buyer verifies their identity and funds the escrow with USDC.</span>
                 </li>
-                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">3.</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-400 font-bold shrink-0">3.</span>
                   <span>You deliver the goods or service as agreed.</span>
                 </li>
-                <li className="flex items-start gap-2"><span className="text-cyan-400 font-bold shrink-0">4.</span>
-                  <span>Go to your <strong className="text-white">Dashboard</strong> and release the funds once delivery is confirmed.</span>
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-400 font-bold shrink-0">4.</span>
+                  <span>
+                    Go to your <strong className="text-white">Dashboard</strong> and release the funds once delivery is confirmed.
+                  </span>
                 </li>
               </ol>
             </div>
 
-            {/* Escrow URL */}
             <div className="space-y-2 text-left">
               <p className="text-xs text-slate-400 font-medium">Share this link with your buyer:</p>
               <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5">
@@ -219,9 +187,7 @@ export default function MarketplacePage() {
 
             <div className="flex flex-col gap-3">
               <Link href="/marketplace/dashboard">
-                <GlowButton className="w-full">
-                  View Dashboard →
-                </GlowButton>
+                <GlowButton className="w-full">View Dashboard →</GlowButton>
               </Link>
               <button
                 onClick={handleReset}
@@ -231,165 +197,195 @@ export default function MarketplacePage() {
               </button>
             </div>
           </GlassCard>
-        )}
-
-        {/* Creation form */}
-        {authenticated && !successState && (
-          <GlassCard className="p-8 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Escrow Details</h2>
-              <span className="text-xs text-slate-500">
-                Selling as: <span className="text-slate-300">{sellerEmail}</span>
-              </span>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1.5 text-xs font-medium text-cyan-300 mb-4">
+                ⚡ Powered by Base
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-2">EscrowHubs Marketplace</h1>
+              <p className="text-slate-400 text-sm max-w-md mx-auto">
+                Sell anything to anyone, anywhere. Funds locked on-chain until delivery is confirmed — no banks, no chargebacks, no middlemen.
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Buyer email */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">
-                  Buyer Email or Phone <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="buyer@example.com or +1 234 567 8900"
-                  value={buyerContact}
-                  onChange={(e) => setBuyerContact(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  A secure wallet will be created for the buyer automatically.
-                </p>
+            {/* How it works */}
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              {[
+                { icon: "📋", step: "1", title: "Create Escrow", desc: "Set amount, describe the deal, enter buyer contact" },
+                { icon: "💳", step: "2", title: "Buyer Pays", desc: "Buyer receives link, pays in USDC via card or crypto — funds locked on-chain" },
+                { icon: "✅", step: "3", title: "Confirm & Release", desc: "You confirm delivery, funds released to your wallet" },
+              ].map((s) => (
+                <GlassCard key={s.step} className="p-4 text-center">
+                  <div className="text-2xl mb-2">{s.icon}</div>
+                  <div className="text-xs font-bold text-cyan-400 mb-1">Step {s.step}</div>
+                  <div className="text-xs font-semibold text-white mb-1">{s.title}</div>
+                  <div className="text-xs text-slate-500">{s.desc}</div>
+                </GlassCard>
+              ))}
+            </div>
+
+            {/* Form */}
+            <GlassCard className="p-6 space-y-5">
+              <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                <span className="text-lg">🛍️</span>
+                <h2 className="text-sm font-semibold text-white uppercase tracking-widest">Create Escrow</h2>
+                <span className="ml-auto text-xs text-slate-500">
+                  {authenticated && sellerEmail ? `Selling as: ${sellerEmail}` : "Seller"}
+                </span>
               </div>
 
-              {/* Amount */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">
-                  Amount (USD) <span className="text-red-400">*</span>{" "}
-                  <span className="text-slate-600">(minimum $1)</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                    What are you selling?
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="e.g. Custom logo design, vintage guitar, freelance dev work..."
+                    rows={2}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-cyan-400/50 focus:outline-none focus:ring-1 focus:ring-cyan-400/30 resize-none"
+                  />
+                </div>
+
+                {/* Buyer contact */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                    Buyer Email or Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={buyerContact}
+                    onChange={(e) => setBuyerContact(e.target.value)}
+                    placeholder="buyer@email.com or +1 555 000 0000"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-cyan-400/50 focus:outline-none focus:ring-1 focus:ring-cyan-400/30"
+                  />
+                  <p className="text-xs text-slate-600">
+                    They&apos;ll receive a secure payment link — no crypto wallet required to pay.
+                  </p>
+                </div>
+
+                {/* Amount */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                    Amount (USDC)
+                  </label>
                   <input
                     type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
                     min="1"
                     step="0.01"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-cyan-400/50 focus:outline-none focus:ring-1 focus:ring-cyan-400/30"
                   />
+                </div>
+
+                {/* Dispute resolution */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                    Dispute Resolution
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setUseAIArbiter(false)}
+                      className={`rounded-xl border p-3 text-left transition-all ${
+                        !useAIArbiter
+                          ? "border-cyan-400/40 bg-cyan-400/5"
+                          : "border-white/10 bg-white/5 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="text-lg mb-1">👤</div>
+                      <p className="text-xs font-semibold text-white">Human Review</p>
+                      <p className="text-xs text-slate-500 mt-0.5">EscrowHubs team resolves disputes</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUseAIArbiter(true)}
+                      className={`rounded-xl border p-3 text-left transition-all ${
+                        useAIArbiter
+                          ? "border-violet-400/40 bg-violet-400/5"
+                          : "border-white/10 bg-white/5 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="text-lg mb-1">🤖</div>
+                      <p className="text-xs font-semibold text-white">AI Arbiter</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Automated dispute resolution (~$1 flat fee)</p>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Fee breakdown */}
                 {fees && (
-                  <div className="mt-2 px-3 py-2 rounded-lg bg-white/3 border border-white/8 space-y-1">
-                    <div className="flex justify-between text-xs text-slate-500">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2 text-xs">
+                    <p className="font-medium text-slate-400 uppercase tracking-widest">Fee Breakdown</p>
+                    <div className="flex justify-between text-slate-300">
                       <span>Escrow amount</span>
-                      <span>${parseFloat(amount).toFixed(2)}</span>
+                      <span>{parseFloat(amount).toFixed(2)} USDC</span>
                     </div>
-                    <div className="flex justify-between text-xs text-slate-500">
+                    <div className="flex justify-between text-slate-400">
                       <span>Protocol fee (0.5%)</span>
-                      <span>${fees.protocolFee.toFixed(2)}</span>
+                      <span>{fees.protocolFee.toFixed(2)} USDC</span>
                     </div>
                     {useAIArbiter && (
-                      <div className="flex justify-between text-xs text-slate-500">
-                        <span>AI Arbiter fee</span>
-                        <span>~${fees.arbiterFee.toFixed(2)}</span>
+                      <div className="flex justify-between text-slate-400">
+                        <span>AI arbiter fee</span>
+                        <span>~{fees.arbiterFee.toFixed(2)} USDC</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-xs text-white font-semibold border-t border-white/10 pt-1 mt-1">
-                      <span>Total buyer pays</span>
-                      <span>${fees.total.toFixed(2)}</span>
+                    <div className="flex justify-between text-white font-semibold border-t border-white/10 pt-2 mt-1">
+                      <span>Buyer pays total</span>
+                      <span>{fees.total.toFixed(2)} USDC</span>
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Description */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">
-                  Description <span className="text-slate-600">(optional)</span>
-                </label>
-                <textarea
-                  placeholder="Describe what you're selling or the terms of the deal..."
-                  rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors resize-none"
-                />
-              </div>
-
-              {/* AI Arbiter toggle */}
-              <div className="px-4 py-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">🤖</span>
-                    <div>
-                      <p className="text-sm font-medium text-white">AI Dispute Protection</p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        If there&apos;s a disagreement, AI reviews evidence and rules within 48h.
-                        {useAIArbiter ? " ~$1 flat fee added." : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setUseAIArbiter((v) => !v)}
-                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      useAIArbiter ? "bg-purple-500" : "bg-white/10"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                        useAIArbiter ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-                {!useAIArbiter && (
-                  <p className="text-xs text-yellow-400/70 mt-2">
-                    ⚠️ Without AI arbitration, disputes require manual resolution.
+                {/* Submit */}
+                <div className="pt-1">
+                  {authenticated ? (
+                    <GlowButton
+                      type="submit"
+                      loading={loading}
+                      disabled={loading || !buyerContact || !amount}
+                      className="w-full"
+                    >
+                      {loading ? "Creating Escrow..." : "Create Escrow & Notify Buyer →"}
+                    </GlowButton>
+                  ) : (
+                    <GlowButton type="button" onClick={login} className="w-full">
+                      Sign In to Create Escrow →
+                    </GlowButton>
+                  )}
+                  <p className="text-center text-xs text-slate-600 mt-2">
+                    Buyer pays in USDC · Funds locked on-chain · Released on your confirmation
                   </p>
-                )}
-              </div>
-
-              <GlowButton
-                type="submit"
-                loading={loading}
-                disabled={loading || !buyerContact || !amount}
-                className="w-full"
-              >
-                {loading ? "Creating Escrow..." : "Create Protected Escrow →"}
-              </GlowButton>
-
-              <p className="text-center text-xs text-slate-600">
-                0.5% protocol fee · Buyer email notification sent instantly · Funds locked until delivery
-              </p>
-            </form>
-          </GlassCard>
-        )}
-
-        {/* How it works */}
-        {!successState && (
-          <div className="mt-10 grid grid-cols-3 gap-4 text-center">
-            {[
-              { n: "1", title: "Create escrow", desc: "Set amount and buyer email" },
-              { n: "2", title: "Buyer pays", desc: "They fund via card or crypto" },
-              { n: "3", title: "You get paid", desc: "Release on delivery confirmation" },
-            ].map((item) => (
-              <div key={item.n} className="space-y-2">
-                <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-bold flex items-center justify-center mx-auto">
-                  {item.n}
                 </div>
-                <p className="text-xs font-medium text-white">{item.title}</p>
-                <p className="text-xs text-slate-500">{item.desc}</p>
-              </div>
-            ))}
-          </div>
+              </form>
+            </GlassCard>
+
+            {/* Value props */}
+            <div className="mt-8 grid grid-cols-2 gap-3">
+              {[
+                { icon: "⚡", title: "No Wallet Required", desc: "Buyers pay via credit card or debit card — onramp handled automatically" },
+                { icon: "🔐", title: "Funds Locked On-Chain", desc: "Smart contracts hold funds — neither party can withdraw unilaterally" },
+                { icon: "🤖", title: "AI Dispute Resolution", desc: "Evidence reviewed by AI oracle — binding decision in 48 hours" },
+                { icon: "🌐", title: "Sell to Anyone", desc: "No geographic restrictions — works for Facebook Marketplace, freelance, DAO work" },
+              ].map((v) => (
+                <GlassCard key={v.title} className="p-4">
+                  <div className="text-xl mb-2">{v.icon}</div>
+                  <p className="text-xs font-semibold text-white mb-1">{v.title}</p>
+                  <p className="text-xs text-slate-500">{v.desc}</p>
+                </GlassCard>
+              ))}
+            </div>
+          </>
         )}
       </main>
+
       <Footer />
     </div>
   );
