@@ -1,4 +1,4 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { http } from "wagmi";
 import { baseMainnet, celoMainnet } from "@/lib/chains";
 import { Attribution } from "ox/erc8021";
@@ -10,17 +10,22 @@ const DATA_SUFFIX = Attribution.toDataSuffix({
 
 const COINBASE_RPC = process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://mainnet.base.org";
 
-export const wagmiConfig = getDefaultConfig({
-  appName: "EscrowHubs",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-  appDescription: "Trustless escrow on Base and Celo",
-  appUrl: "https://base.escrowhubs.io",
-  appIcon: "https://base.escrowhubs.io/icon.png",
-  chains: [baseMainnet, celoMainnet],
+const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
+
+export const wagmiAdapter = new WagmiAdapter({
+  networks: [baseMainnet, celoMainnet],
+  projectId: PROJECT_ID,
+  ssr: true,
   transports: {
     [baseMainnet.id]: http(COINBASE_RPC),
     [celoMainnet.id]: http("https://forno.celo.org"),
   },
-  ssr: true,
-  dataSuffix: DATA_SUFFIX,
+  // Note: dataSuffix (Base Builder Code attribution) temporarily removed —
+  // WagmiAdapter does not expose this option; pending AppKit support.
+  // Original value: DATA_SUFFIX (Attribution.toDataSuffix({ codes: ["bc_7z5atl48"] }))
 });
+
+// Suppress unused-variable warning for DATA_SUFFIX until AppKit supports it
+void DATA_SUFFIX;
+
+export const wagmiConfig = wagmiAdapter.wagmiConfig;

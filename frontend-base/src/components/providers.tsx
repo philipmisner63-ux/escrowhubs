@@ -1,15 +1,14 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider, useAccount, useDisconnect } from "wagmi";
 import { wagmiConfig } from "@/lib/wagmi";
+import "@/lib/appkit"; // initializes AppKit (createAppKit) once, outside any component
 import { ToastProvider, useToast } from "@/components/toast";
 import { useWalletTimeout } from "@/lib/hooks/useWalletTimeout";
 import { SupportButton } from "@/components/SupportButton";
 import { useMiniPay } from "@/lib/hooks/useMiniPay";
 import { FeedbackButton } from "@/components/feedback-button";
-import "@rainbow-me/rainbowkit/styles.css";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { base } from "viem/chains";
 
@@ -42,15 +41,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={wagmiConfig} reconnectOnMount={true}>
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider chain={base} apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY ?? ""}>
-        <RainbowKitProvider
-          theme={darkTheme({
-            accentColor: "#00f5ff",
-            accentColorForeground: "#030303",
-            borderRadius: "medium",
-            fontStack: "system",
-            // overlayBlur removed — causes black screen on mobile WebViews (see AGENTS.md)
-          })}
-        >
           <ToastProvider>
             <WalletTimeoutGuard />
             <MiniPayAutoConnect />
@@ -58,7 +48,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <FeedbackButton />
             {children}
           </ToastProvider>
-        </RainbowKitProvider>
         </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

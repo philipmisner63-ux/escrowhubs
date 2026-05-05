@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useId } from "react";
 import { createPortal } from "react-dom";
 import { useContext } from "react";
 import { useAccount, WagmiContext } from "wagmi";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAppKit } from "@reown/appkit/react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/components/toast";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -48,7 +48,7 @@ function NotificationModalInner({ open, onClose }: NotificationModalProps) {
   const t          = useTranslations("notifications");
   const uid        = useId();
   const { address: wallet } = useAccount();
-  const { openConnectModal } = useConnectModal();
+  const { open: openConnectModal } = useAppKit();
   const { addToast }        = useToast();
   const backdropRef         = useRef<HTMLDivElement>(null);
 
@@ -154,7 +154,7 @@ function NotificationModalInner({ open, onClose }: NotificationModalProps) {
             <p className="text-sm text-slate-500">Connect your wallet to manage notifications.</p>
             <GlowButton
               variant="primary"
-              onClick={() => { onClose(); openConnectModal?.(); }}
+              onClick={() => { onClose(); openConnectModal(); }}
               className="px-6 py-2.5 text-sm"
             >
               Connect Wallet

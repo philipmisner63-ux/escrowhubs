@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, useContext } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { WagmiContext } from "wagmi";
+import { useEffect, useState } from "react";
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { useDisconnect } from "wagmi";
 
 export function WalletConnectButton() {
-  const wagmiCtx = useContext(WagmiContext);
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+  const { disconnect } = useDisconnect();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!wagmiCtx) return null;
 
   if (!mounted) {
     return (
@@ -21,7 +22,23 @@ export function WalletConnectButton() {
     );
   }
 
+  if (isConnected && address) {
+    return (
+      <button
+        onClick={() => disconnect()}
+        className="px-4 py-2 rounded-lg text-sm font-semibold bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
+      >
+        {address.slice(0, 6)}...{address.slice(-4)}
+      </button>
+    );
+  }
+
   return (
-    <ConnectButton chainStatus="icon" showBalance={false} accountStatus="avatar" />
+    <button
+      onClick={() => open()}
+      className="px-4 py-2 rounded-lg text-sm font-semibold bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 hover:bg-cyan-400/20 transition-colors"
+    >
+      Connect Wallet
+    </button>
   );
 }
