@@ -45,7 +45,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 export function useToast() {
   const ctx = useContext(ToastContext);
-  if (!ctx) return { toasts: [], addToast: () => {}, removeToast: () => {} };
+  if (!ctx) return { toasts: [], addToast: () => "", removeToast: () => {} };
   return ctx;
 }
 

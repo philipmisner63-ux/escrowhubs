@@ -6,6 +6,8 @@ import { useState, useEffect, createContext, useContext, useCallback, useRef } f
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
 import type { IProvider } from "@web3auth/base";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CustomChainConfig = any;
 
 interface Web3AuthUser {
   email?: string;
@@ -100,13 +102,11 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
 
         const currentUrl = typeof window !== "undefined" ? window.location.href : "https://base.escrowhubs.io";
 
-        const w3a = new Web3Auth({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const w3aOptions: any = {
           clientId,
           web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
-          // Use popup on desktop, redirect on mobile — redirect needs redirectUrl to return to current page
-          uiConfig: {
-            redirectUrl: currentUrl,
-          },
+          uiConfig: {},
           chainConfig: {
             chainNamespace: CHAIN_NAMESPACES.EIP155,
             chainId: "0x2105",
@@ -131,7 +131,8 @@ export function PrivyWalletProvider({ children }: { children: React.ReactNode })
             ticker: "ETH",
             tickerName: "Ethereum",
           },
-        });
+        };
+        const w3a = new Web3Auth(w3aOptions);
 
         await w3a.init();
         w3aRef.current = w3a;

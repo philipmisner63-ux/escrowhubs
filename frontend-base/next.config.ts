@@ -81,7 +81,9 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  // eslint is not in NextConfig type but works at runtime — suppress TS error
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...(({ eslint: { ignoreDuringBuilds: true } }) as any),
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

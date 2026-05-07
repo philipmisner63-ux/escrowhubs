@@ -161,6 +161,7 @@ export default function EscrowBuyerPage() {
       if (!res.ok) throw new Error(data.error ?? "Failed to start payment");
 
       const moonPay = await loadMoonPay();
+      if (!moonPay) throw new Error("MoonPay failed to load");
       const sdk = moonPay({
         flow: "buy",
         environment: process.env.NEXT_PUBLIC_MOONPAY_ENV === "production" ? "production" : "sandbox",
@@ -174,13 +175,13 @@ export default function EscrowBuyerPage() {
           ...(userEmail && { email: userEmail }),
         },
         handlers: {
-          onTransactionCompleted: () => {
+          onTransactionCompleted: async () => {
             setOnrampDone(true);
             addToast({ type: "success", message: "Payment complete! Now fund the escrow." });
           },
         },
       });
-      sdk.show();
+      sdk?.show();
     } catch (err: unknown) {
       addToast({ type: "error", message: err instanceof Error ? err.message : "Failed to start payment" });
     } finally {
@@ -270,7 +271,7 @@ export default function EscrowBuyerPage() {
       let contractAddress: string | undefined;
       for (const log of [...receipt.logs].reverse()) {
         if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics.length >= 2) {
-          contractAddress = "0x" + log.topics[1].slice(-40);
+          contractAddress = "0x" + (log.topics[1] ?? "").slice(-40);
           break;
         }
       }
