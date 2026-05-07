@@ -159,7 +159,7 @@ export function useFactoryEvents(chainId?: number) {
 
   const add = useCallback((name: string, args: Record<string, unknown>) => {
     setEvents(prev => [{ name, args, timestamp: Date.now() }, ...prev].slice(0, 50));
-  }, []);
+  }, [setEvents]);
 
   useWatchContractEvent({
     address: factoryAddress,

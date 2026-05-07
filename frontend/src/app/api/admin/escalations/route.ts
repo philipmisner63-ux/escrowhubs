@@ -27,6 +27,7 @@ function loadEscalations(): Record<string, unknown> {
 
 export async function GET() {
   const data = loadEscalations();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pending = Object.values(data).filter((v: any) => !v.resolved);
   return NextResponse.json({ escalations: pending, total: pending.length });
 }

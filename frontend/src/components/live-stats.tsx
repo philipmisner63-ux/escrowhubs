@@ -42,7 +42,11 @@ function useCountUp(target: number, duration = 1500, active = false) {
   const raf = useRef<number>(0);
 
   useEffect(() => {
-    if (!active || target === 0) { setValue(target); return; }
+    if (!active || target === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setValue(target);
+      return;
+    }
     const start = performance.now();
     const animate = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
@@ -155,11 +159,11 @@ export function LiveStats() {
 
       const totalEscrows = countResult.status === "fulfilled"
         ? Number(countResult.value as bigint)
-        : stats?.totalEscrows ?? 0;
+        : statsRef.current?.totalEscrows ?? 0;
 
       const bdagLocked = balanceResult.status === "fulfilled"
         ? parseFloat(formatEther(balanceResult.value as bigint))
-        : stats?.bdagLocked ?? 0;
+        : statsRef.current?.bdagLocked ?? 0;
 
       const newStats: StatsData = {
         totalEscrows,
@@ -178,15 +182,22 @@ export function LiveStats() {
         setStats({ totalEscrows: 0, bdagLocked: 0, successRate: 100, fetchedAt: 0 });
       }
     }
-  }, [stats]);
+  }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 30_000);
     return () => clearInterval(interval);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchStats]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  const isLive = !!stats && Date.now() - stats.fetchedAt < 60_000;
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const iv = setInterval(() => setNow(Date.now()), 5_000);
+    return () => clearInterval(iv);
+  }, []);
+  const isLive = !!stats && now - stats.fetchedAt < 60_000;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">

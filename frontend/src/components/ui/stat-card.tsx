@@ -40,17 +40,19 @@ function useCountUp(target: number, duration = 1500) {
 }
 
 function AnimatedValue({ raw }: { raw: string | number }) {
-  // Extract numeric part and suffix (e.g. "284.5 BDAG" → 284.5 + " BDAG")
-  if (typeof raw === "number") {
-    const v = useCountUp(raw);
-    return <>{v}</>;
-  }
-  const match = String(raw).match(/^([\d.]+)(.*)$/);
-  if (!match) return <>{raw}</>;
-  const num = parseFloat(match[1]);
-  const suffix = match[2];
-  const v = useCountUp(Math.round(num));
-  return <>{v}{suffix}</>;
+  // Always extract numeric so useCountUp is called unconditionally
+  const numeric = typeof raw === "number"
+    ? raw
+    : (() => {
+        const m = String(raw).match(/^(\d+)(.*)$/);
+        return m ? parseInt(m[1], 10) : 0;
+      })();
+  const suffix = typeof raw === "number" ? "" : (String(raw).match(/^\d+(.*)$/)?.[1] ?? "");
+  const count = useCountUp(numeric);
+
+  if (typeof raw === "number") return <>{count}</>;
+  if (!/^\d+/.test(String(raw))) return <>{raw}</>;
+  return <>{count}{suffix}</>;
 }
 
 export function StatCard({ label, value, icon, accent = "cyan", className }: StatCardProps) {

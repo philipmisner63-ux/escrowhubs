@@ -76,6 +76,8 @@ export default function DashboardPage() {
     .filter((e): e is { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } => !!e);
 
   useEffect(() => {
+    // Read persisted viewed escrows on client mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setViewed(getViewedEscrows());
   }, []);
 

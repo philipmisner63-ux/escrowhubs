@@ -24,6 +24,22 @@ const ADMIN_ABI = [
   { type: "function", name: "setTreasury",      inputs: [{ name: "_treasury", type: "address" }], outputs: [], stateMutability: "nonpayable" },
 ] as const;
 
+interface Escalation {
+  key: string;
+  contractAddress: string;
+  chainId: number;
+  chainName: string;
+  depositor: string;
+  beneficiary: string;
+  amount: string;
+  nativeSymbol: string;
+  aiRuling: "RELEASE" | "REFUND";
+  confidence: number;
+  reasoning?: string;
+  scores?: Record<string, number | boolean>;
+  escalatedAt: number;
+}
+
 
 
 function TxStatus({ hash }: { hash?: `0x${string}` }) {
@@ -60,9 +76,10 @@ export default function AdminPage() {
   const [txError, setTxError] = useState("");
 
   // Escalation queue
-  const [escalations, setEscalations] = useState<any[]>([]);
+  const [escalations, setEscalations] = useState<Escalation[]>([]);
+  const [selectedEsc, setSelectedEsc] = useState<Escalation | null>(null);
   const [loadingEsc, setLoadingEsc] = useState(false);
-  const [selectedEsc, setSelectedEsc] = useState<any | null>(null);
+
   const [review, setReview] = useState("");
   const [arbiterRuling, setArbiterRuling] = useState<"RELEASE"|"REFUND"|"">("");
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -90,7 +107,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) { setReviewResult("Review submitted. Tx: " + data.txHash); setReview(""); setArbiterRuling(""); await loadEscalations(); }
       else setReviewResult("Error: " + data.error);
-    } catch (err: any) { setReviewResult("Error: " + err.message); }
+    } catch (err: unknown) { setReviewResult("Error: " + (err instanceof Error ? err.message : String(err))); }
     setSubmittingReview(false);
   }
 
@@ -318,7 +335,7 @@ export default function AdminPage() {
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {escalations.map((esc: any) => (
+                  {escalations.map((esc) => (
                     <div key={esc.key}
                       className={`rounded-xl border p-4 cursor-pointer transition-colors ${selectedEsc?.key === esc.key ? "border-violet-400/50 bg-violet-400/5" : "border-white/10 hover:border-violet-400/30"}`}
                       onClick={() => setSelectedEsc(selectedEsc?.key === esc.key ? null : esc)}>
@@ -384,7 +401,7 @@ export default function AdminPage() {
                             <select
                               className="w-full rounded-xl bg-[#1a1a2e] border border-violet-400/20 px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-400/50 transition-colors cursor-pointer"
                               value={arbiterRuling}
-                              onChange={e => setArbiterRuling(e.target.value as any)}>
+                              onChange={e => setArbiterRuling(e.target.value as "RELEASE" | "REFUND" | "")}>
                               <option value="">— No explicit recommendation (let AI weigh your assessment) —</option>
                               <option value="RELEASE">RELEASE — release payment to seller</option>
                               <option value="REFUND">REFUND — return funds to buyer</option>

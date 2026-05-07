@@ -5,7 +5,11 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export function WalletConnectButton() {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    // Hydration guard: SSR renders placeholder, client swap-in avoids hydration mismatch
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
     return (
