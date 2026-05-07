@@ -33,12 +33,12 @@ const TranslationContext = createContext<TranslationContextValue>({
 });
 
 export function TranslationProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
-
-  useEffect(() => {
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "en";
     const stored = localStorage.getItem("eh-lang") as Lang | null;
-    if (stored && stored in translations) setLangState(stored as Lang);
-  }, []);
+    if (stored && stored in translations) return stored as Lang;
+    return "en";
+  });
 
   function setLang(l: Lang) {
     setLangState(l);
