@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import FactoryABI from "@/abis/EscrowFactory.json";
 import { usePhoneResolution } from "@/hooks/usePhoneResolution";
 import { useTranslation } from "@/lib/useTranslation";
+import { useReferrer } from "@/hooks/useReferrer";
 import { TrustFooter } from "@/components/TrustFooter";
 import { ConnectWallet } from "@/components/ConnectWallet";
 
@@ -63,6 +64,7 @@ function CreatePageInner() {
   const [copied, setCopied] = useState(false);
   const [resuming, setResuming] = useState(false);
 
+  const referrer = useReferrer();
   const { state: phoneState, resolve: resolvePhone, reset: resetPhone } = usePhoneResolution();
 
   const { writeContractAsync: approve } = useWriteContract();
@@ -121,7 +123,7 @@ function CreatePageInner() {
             address: CONTRACTS.factory,
             abi: FactoryABI as Abi,
             functionName: "createSimpleEscrow",
-            args: [beneficiary, CONTRACTS.arbiter, 0, false, tokenAddress, "0x0000000000000000000000000000000000000000"],
+            args: [beneficiary, CONTRACTS.arbiter, 0, false, tokenAddress, referrer],
             account: beneficiary,
             value: 0n,
           });
@@ -142,7 +144,7 @@ function CreatePageInner() {
           0,
           false,
           tokenAddress,
-          "0x0000000000000000000000000000000000000000",
+          referrer,
         ],
         gas: 1_500_000n,
       });
