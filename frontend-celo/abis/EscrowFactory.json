@@ -702,6 +702,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "volume",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "earned",
         "type": "uint256"
       },
@@ -709,9 +714,70 @@
         "internalType": "uint256",
         "name": "claimable",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint16",
+        "name": "shareBps",
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "referrerShareBps",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "referralVolume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_bps",
+        "type": "uint16"
+      }
+    ],
+    "name": "setReferrerShare",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

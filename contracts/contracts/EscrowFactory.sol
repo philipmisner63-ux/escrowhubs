@@ -40,6 +40,12 @@ contract EscrowFactory is ReentrancyGuard {
     /// Default 2000 = 20% of protocol fee. Max 5000 (50%).
     uint16 public referralShareBps = 2000;
 
+    /// Per-referrer share override. If set (>0), used instead of global referralShareBps.
+    mapping(address => uint16) public referrerShareBps;
+
+    /// Total gross value of escrows attributed to each referrer (for volume tier tracking)
+    mapping(address => uint256) public referralVolume;
+
     /// Accumulated referral earnings per wallet (claimable via pull pattern)
     mapping(address => uint256) public referralEarnings;
 
@@ -169,6 +175,13 @@ contract EscrowFactory is ReentrancyGuard {
         emit ReferralShareUpdated(_referralShareBps);
     }
 
+    /// @notice Set a per-referrer share override. Set to 0 to use global rate.
+    function setReferrerShare(address referrer, uint16 _bps) external onlyOwner {
+        require(_bps <= 5000, "Max 50%");
+        referrerShareBps[referrer] = _bps;
+        emit ReferralShareUpdated(_bps);
+    }
+
     // ─── Referral: claim ──────────────────────────────────────────────────────
 
     /// @notice Referrers call this to withdraw accumulated BDAG earnings.
@@ -182,11 +195,14 @@ contract EscrowFactory is ReentrancyGuard {
 
     /// @notice Get referral stats for a wallet.
     function getReferralStats(address wallet)
-        external view returns (uint256 count, uint256 earned, uint256 claimable)
+        external view
+        returns (uint256 count, uint256 volume, uint256 earned, uint256 claimable, uint16 shareBps)
     {
         count     = referralCount[wallet];
+        volume    = referralVolume[wallet];
         earned    = referralTotalEarned[wallet];
         claimable = referralEarnings[wallet];
+        shareBps  = referrerShareBps[wallet] > 0 ? referrerShareBps[wallet] : referralShareBps;
     }
 
     // ─── Internal: fee calculation ────────────────────────────────────────────
@@ -207,12 +223,14 @@ contract EscrowFactory is ReentrancyGuard {
     {
         if (referrer == address(0) || referrer == msg.sender) return 0;
         // Combine multiplications before dividing to avoid precision loss
-        kickback = (grossValue * protocolFeeBps * referralShareBps) / (10_000 * 10_000);
+        uint16 effectiveShareBps = referrerShareBps[referrer] > 0 ? referrerShareBps[referrer] : referralShareBps;
+        kickback = (grossValue * protocolFeeBps * effectiveShareBps) / (10_000 * 10_000);
         if (kickback == 0 || kickback > fee) return 0;
         accumulatedFees -= kickback;
         referralEarnings[referrer]    += kickback;
         referralTotalEarned[referrer] += kickback;
         referralCount[referrer]       += 1;
+        referralVolume[referrer]      += grossValue;
         emit ReferralCredited(referrer, escrow, kickback);
     }
 

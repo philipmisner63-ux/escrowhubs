@@ -16,10 +16,10 @@ export const wagmiAdapter = new WagmiAdapter({
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
-// Contract addresses (Celo mainnet — deployed 2026-04-11)
+// Contract addresses (Celo mainnet — deployed 2026-05-08, with per-referrer BPS + volume tracking)
 export const CONTRACTS = {
-  factory:    "0x43572a85597e82a7153dbcae8f2fe93d1602a836" as `0x${string}`,
-  arbiter:    "0x73198f6bdf2537bcd6138e35175498c631c5b42b" as `0x${string}`,
+  factory:    "0x2fcec726073a47b71242f24fa3821d299b5119e1" as `0x${string}`,
+  arbiter:    "0x34dd4dda6d704ddbc0b800a7eaff3fea710eba9c" as `0x${string}`,
   trustOracle:"0xf2612fddf7505f6d168c1cbe8b725f3449ea535e" as `0x${string}`,
 } as const;
 
