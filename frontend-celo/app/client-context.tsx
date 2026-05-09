@@ -2,12 +2,7 @@
 import { useEffect, useState } from "react"
 import { detectContext, type AppContext } from "@/lib/context"
 import { useAutoConnect } from "@/hooks/useAutoConnect"
-import { useNaijaLancers } from "@/hooks/useNaijaLancers"
-
-function NaijaLancersListener() {
-  useNaijaLancers()
-  return null
-}
+import { NaijaLancersEscrowBridge } from "./naijalancers-escrow-bridge"
 
 export function ClientContext({ children }: { children: React.ReactNode }) {
   const [context, setContext] = useState<AppContext>("browser")
@@ -17,10 +12,21 @@ export function ClientContext({ children }: { children: React.ReactNode }) {
     detectContext().then(setContext)
   }, [])
 
-  return (
-    <>
-      {context === "naijalancers" && <NaijaLancersListener />}
-      {children}
-    </>
-  )
+  // MiniPay mode — auto-connect running silently
+  if (context === "minipay") {
+    return <>{children}</>
+  }
+
+  // NaijaLancers iframe mode — postMessage handles everything
+  if (context === "naijalancers") {
+    return (
+      <>
+        <NaijaLancersEscrowBridge />
+        {children}
+      </>
+    )
+  }
+
+  // Browser mode — show connect buttons normally
+  return <>{children}</>
 }
