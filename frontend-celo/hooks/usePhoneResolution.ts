@@ -131,7 +131,7 @@ export function usePhoneResolution() {
         setState({ status: "not-found", phone });
         return null;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setState({ status: "error", message: "Couldn't look up that number. Try entering a wallet address instead." });
       return null;
     }

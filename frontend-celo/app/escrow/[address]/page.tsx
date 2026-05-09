@@ -1,7 +1,7 @@
 "use client";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useMiniPay } from "@/hooks/useMiniPay";
-import { formatUnits } from "viem";
+import { formatUnits, Abi } from "viem";
 import Link from "next/link";
 import { use, useState } from "react";
 import SimpleEscrowABI from "@/abis/SimpleEscrow.json";
@@ -29,7 +29,7 @@ const STATE_AMOUNT_COLOR = [
   "text-red-400",
 ] as const;
 
-const ESCROW_ABI = SimpleEscrowABI as any;
+const ESCROW_ABI = SimpleEscrowABI as Abi;
 
 export default function EscrowDetailPage({ params }: { params: Promise<{ address: `0x${string}` }> }) {
   const { address: escrowAddr } = use(params);
@@ -103,8 +103,9 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
         gas: 200000n,
       });
       await refetchState();
-    } catch (e: any) {
-      setTxError(e?.shortMessage ?? e?.message ?? t("escrowDetail.errorGeneric"));
+    } catch (e: unknown) {
+      const err = e as { shortMessage?: string; message?: string };
+      setTxError(err?.shortMessage ?? err?.message ?? t("escrowDetail.errorGeneric"));
     } finally {
       setReleasing(false);
     }
@@ -121,8 +122,9 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
         gas: 200000n,
       });
       await refetchState();
-    } catch (e: any) {
-      setTxError(e?.shortMessage ?? e?.message ?? t("escrowDetail.errorGeneric"));
+    } catch (e: unknown) {
+      const err = e as { shortMessage?: string; message?: string };
+      setTxError(err?.shortMessage ?? err?.message ?? t("escrowDetail.errorGeneric"));
     } finally {
       setDisputing(false);
     }

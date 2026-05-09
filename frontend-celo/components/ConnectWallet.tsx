@@ -3,8 +3,16 @@ import { useAppKit } from "@reown/appkit/react";
 import { useConnect, useAccount, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useEffect, useState } from "react";
+import { useShowConnectButton } from "@/hooks/useShowConnectButton";
 
+// Outer guard: only mounts ConnectWalletInner (which calls useAppKit) in browser context
 export function ConnectWallet() {
+  const showConnect = useShowConnectButton();
+  if (!showConnect) return null;
+  return <ConnectWalletInner />;
+}
+
+function ConnectWalletInner() {
   const { open } = useAppKit();
   const { connect, isPending } = useConnect();
   const { isConnected, address } = useAccount();
@@ -12,7 +20,9 @@ export function ConnectWallet() {
   const [hasInjected, setHasInjected] = useState(false);
 
   useEffect(() => {
-    setHasInjected(typeof window !== "undefined" && !!(window as any).ethereum);
+    const ethereum = (window as unknown as { ethereum?: unknown }).ethereum;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration guard
+    setHasInjected(typeof window !== "undefined" && !!ethereum);
   }, []);
 
   if (isConnected && address) {

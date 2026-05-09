@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
-import { parseUnits, erc20Abi } from "viem";
+import { parseUnits, erc20Abi, Abi } from "viem";
 import { CONTRACTS, TOKENS, type TokenSymbol } from "@/lib/config";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -82,7 +82,7 @@ function CreatePageInner() {
     );
     const topic1 = log?.topics?.[1];
     if (topic1) {
-      setEscrowAddress("0x" + topic1.slice(-40));
+      queueMicrotask(() => setEscrowAddress("0x" + topic1.slice(-40)));
     }
   }, [receipt]);
 
@@ -119,21 +119,22 @@ function CreatePageInner() {
         try {
           await publicClient.simulateContract({
             address: CONTRACTS.factory,
-            abi: FactoryABI as any,
+            abi: FactoryABI as Abi,
             functionName: "createSimpleEscrow",
             args: [beneficiary, CONTRACTS.arbiter, 0, false, tokenAddress, "0x0000000000000000000000000000000000000000"],
             account: beneficiary,
             value: 0n,
           });
-        } catch (simErr: any) {
-          const simMsg = simErr?.cause?.reason ?? simErr?.shortMessage ?? simErr?.message ?? "Simulation failed";
+        } catch (simErr: unknown) {
+          const s = simErr as { cause?: { reason?: string }; shortMessage?: string; message?: string };
+          const simMsg = s?.cause?.reason ?? s?.shortMessage ?? s?.message ?? "Simulation failed";
           throw new Error(`Pre-flight failed: ${simMsg}`);
         }
       }
 
       const hash = await createEscrow({
         address: CONTRACTS.factory,
-        abi: FactoryABI as any,
+        abi: FactoryABI as Abi,
         functionName: "createSimpleEscrow",
         args: [
           beneficiary,
@@ -152,9 +153,10 @@ function CreatePageInner() {
       localStorage.removeItem("eh_beneficiary");
       localStorage.removeItem("eh_token");
       setStep("done");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[EscrowHubs] resumeStep2 error:", err);
-      const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
+      const e = err as { shortMessage?: string; message?: string; toString?: () => string };
+      const msg = e?.shortMessage ?? e?.message ?? e?.toString?.() ?? "Unknown error";
       // Persist so error survives a page reload on mobile
       localStorage.setItem("eh_last_error", `[resume] ${msg}`.slice(0, 500));
       setError(msg || "Transaction failed. Please try again.");
@@ -243,9 +245,10 @@ function CreatePageInner() {
         tokenAddress,
       );
       return; // resumeStep2 handles done/error state
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[EscrowHubs] create error:", err);
-      const msg = err?.shortMessage ?? err?.message ?? err?.toString() ?? "Unknown error";
+      const e = err as { shortMessage?: string; message?: string; toString?: () => string };
+      const msg = e?.shortMessage ?? e?.message ?? e?.toString?.() ?? "Unknown error";
       // Persist error to localStorage so it survives page reloads on mobile
       localStorage.setItem("eh_last_error", `[step:${step}] ${msg}`.slice(0, 500));
       setError(msg || "Transaction failed. Please try again.");
@@ -271,7 +274,7 @@ function CreatePageInner() {
         <h1 className="text-2xl font-bold text-white mb-2">{t("create.doneTitle")}</h1>
         <p className="text-white/70 text-center mb-3">{t("create.doneSubtitle")}</p>
         {description && (
-          <p className="text-white/80 text-sm text-center italic mb-8">"{description}"</p>
+          <p className="text-white/80 text-sm text-center italic mb-8">&ldquo;{description}&rdquo;</p>
         )}
         {escrowAddress && (
           <div className="w-full mb-4">

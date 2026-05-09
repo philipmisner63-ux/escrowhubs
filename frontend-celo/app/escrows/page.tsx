@@ -4,14 +4,12 @@ import { useMiniPay } from "@/hooks/useMiniPay";
 import { CONTRACTS } from "@/lib/config";
 import FactoryABI from "@/abis/EscrowFactory.json";
 import Link from "next/link";
-import { formatUnits } from "viem";
+import { formatUnits, Abi } from "viem";
 import { useTranslation } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
 import { StatusCard } from "@/components/StatusCard";
 
-const ESCROW_STATE_NAMES = ["ACTIVE", "FUNDED", "RELEASED", "DISPUTED"] as const;
 
-// Returns cUSD-formatted amount (decimals=18) or USDT (decimals=6)
 // We use a simple heuristic: if amount > 1e15 it's likely 18-decimal, else 6
 function formatAmount(amount: bigint, token: string): string {
   const isNativeOrCUSD = token === "0x0000000000000000000000000000000000000000"
@@ -60,10 +58,10 @@ export default function EscrowsPage() {
   const { data: records = [], isLoading: loadingRecords } = useReadContracts({
     contracts: allIdxs.map(idx => ({
       address: CONTRACTS.factory,
-      abi: FactoryABI as any,
+      abi: FactoryABI as Abi,
       functionName: "escrows",
       args: [idx],
-    })) as any,
+    })) as readonly { address: `0x${string}`; abi: Abi; functionName: string; args: readonly [bigint] }[],
     query: { enabled: allIdxs.length > 0 },
   });
 
@@ -74,7 +72,7 @@ export default function EscrowsPage() {
   // [5]=totalAmount [6]=fee [7]=trustTier [8]=aiArbiter [9]=createdAt [10]=referrer [11]=token
   const validRecords = records
     .map((r, i) => {
-      const rec = r.result as any;
+      const rec = r.result as unknown as Record<string, unknown> | unknown[] | null | undefined;
       if (!rec) return null;
       const contractAddress = Array.isArray(rec) ? rec[0] : rec.contractAddress;
       const beneficiary    = Array.isArray(rec) ? rec[3] : rec.beneficiary;

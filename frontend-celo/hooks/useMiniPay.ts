@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useConnect, useAccount } from "wagmi";
 import { injected } from "wagmi/connectors";
 
@@ -13,16 +13,22 @@ export function useMiniPay() {
   const [detected, setDetected] = useState(false);
   const { connect } = useConnect();
   const { isConnected } = useAccount();
+  const hasAttempted = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const mp = (window as any).ethereum?.isMiniPay;
-    setIsMiniPay(!!mp);
-    setDetected(true);
-    if (mp && !isConnected) {
-      connect({ connector: injected(), chainId: 42220 });
-    }
-  }, [connect, isConnected]);
+    const raw = (window as unknown as { ethereum?: unknown }).ethereum;
+    const mp = typeof raw === "object" && raw !== null && (raw as Record<string, unknown>).isMiniPay === true;
+    queueMicrotask(() => {
+      setIsMiniPay(mp);
+      setDetected(true);
+      if (mp && !isConnected && !hasAttempted.current) {
+        hasAttempted.current = true;
+        connect({ connector: injected(), chainId: 42220 });
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { isMiniPay, detected };
 }
