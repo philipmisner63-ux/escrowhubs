@@ -40,9 +40,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ─── ABIs (imported from JSON — single source of truth) ──────────────────────
 
-const { default: SimpleEscrowABI }    = await import("./abis/SimpleEscrow.json",    { with: { type: "json" } });
-const { default: MilestoneEscrowABI } = await import("./abis/MilestoneEscrow.json", { with: { type: "json" } });
-const { default: AIArbiterABI }       = await import("./abis/AIArbiter.json",       { with: { type: "json" } });
+const { default: SimpleEscrowABI }        = await import("./abis/SimpleEscrow.json",        { with: { type: "json" } });
+const { default: MilestoneEscrowABI }     = await import("./abis/MilestoneEscrow.json",     { with: { type: "json" } });
+const { default: AIArbiterABI }           = await import("./abis/AIArbiter.json",           { with: { type: "json" } });
+const { default: ValidationRegistryABI } = await import("./abis/ValidationRegistry.json", { with: { type: "json" } });
+
+// Oracle agentId in AgentCred (keccak256("escrowhubs-oracle-v1"))
+const ORACLE_AGENT_ID = "0x6644591c623772087d0a6418243ef0aabe51acbe27a2415ff5fb1d92b70f6239";
 
 // ─── Chain config (from chains.json or CHAINS_FILE env var) ──────────────────
 // Use CHAINS_FILE=chains.base.json to run a Base-specific oracle instance.
@@ -925,7 +929,7 @@ async function waitForReturnTracking(escrowAddress, depositorAddress, prevEviden
 }
 
 function startChainListener(chainConfig) {
-  const { chainId, name, rpcUrl, factoryAddress, arbiterAddress, nativeCurrency } = chainConfig;
+  const { chainId, name, rpcUrl, factoryAddress, arbiterAddress, nativeCurrency, validationRegistryAddress } = chainConfig;
   const tag = `[${name}/${chainId}]`;
 
   // Build viem chain descriptor
@@ -972,6 +976,24 @@ function startChainListener(chainConfig) {
 
   // ── Resolution executors ────────────────────────────────────────────────────
 
+  async function recordToValidationRegistry(escrowAddress, ruling) {
+    if (!validationRegistryAddress) return; // only wired on chains that have it (Celo)
+    try {
+      const resolutionEnum = ruling === "RELEASE" ? 0 : 1; // 0=Release, 1=Refund
+      const credHash = ORACLE_AGENT_ID; // use agentId as credHash snapshot for v1
+      const vrHash = await walletClient.writeContract({
+        address: validationRegistryAddress,
+        abi: ValidationRegistryABI,
+        functionName: "recordArbitration",
+        args: [escrowAddress, resolutionEnum, credHash],
+      });
+      console.log(`🔐 ${tag} [AGENTCRED] ValidationRegistry record tx: ${vrHash}`);
+    } catch (err) {
+      // Non-fatal — log but don't block resolution
+      console.warn(`⚠️ ${tag} [AGENTCRED] ValidationRegistry record failed: ${err.message}`);
+    }
+  }
+
   async function executeSimpleResolution(escrowAddress, ruling) {
     const functionName = ruling === "RELEASE" ? "resolveRelease" : "resolveRefund";
     const hash = await walletClient.writeContract({
@@ -981,6 +1003,7 @@ function startChainListener(chainConfig) {
       args: [escrowAddress],
     });
     console.log(`✅ ${tag} [SIMPLE] Resolution tx: ${hash}`);
+    await recordToValidationRegistry(escrowAddress, ruling);
     return hash;
   }
 
@@ -993,6 +1016,7 @@ function startChainListener(chainConfig) {
       args: [escrowAddress, BigInt(milestoneIndex)],
     });
     console.log(`✅ ${tag} [MILESTONE] Resolution tx: ${hash}`);
+    await recordToValidationRegistry(escrowAddress, ruling);
     return hash;
   }
 

@@ -1,0 +1,31 @@
+[
+  {
+    "name": "recordArbitration",
+    "type": "function",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "escrow", "type": "address" },
+      { "name": "resolution", "type": "uint8" },
+      { "name": "credHash", "type": "bytes32" }
+    ],
+    "outputs": [{ "name": "recordId", "type": "uint256" }]
+  },
+  {
+    "name": "isOracleValid",
+    "type": "function",
+    "stateMutability": "view",
+    "inputs": [{ "name": "principal", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }]
+  },
+  {
+    "name": "ArbitrationRecorded",
+    "type": "event",
+    "inputs": [
+      { "name": "recordId", "type": "uint256", "indexed": true },
+      { "name": "agentId",  "type": "bytes32", "indexed": true },
+      { "name": "escrow",   "type": "address", "indexed": true },
+      { "name": "resolution","type": "uint8",  "indexed": false },
+      { "name": "timestamp","type": "uint256", "indexed": false }
+    ]
+  }
+]
