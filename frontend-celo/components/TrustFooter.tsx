@@ -7,7 +7,7 @@ export function TrustFooter() {
       <p>
         EscrowHubs LLC ·{" "}
         <a
-          href="https://celoscan.io/address/0x43572a85597e82a7153dbcae8f2fe93d1602a836"
+          href="https://celoscan.io/address/0x2fcec726073a47b71242f24fa3821d299b5119e1"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white/60 hover:text-white/80 transition-colors"
@@ -22,6 +22,20 @@ export function TrustFooter() {
           className="text-white/60 hover:text-white/80 transition-colors"
         >
           @escrowhubs94501 ↗
+        </a>
+        {" · "}
+        <a
+          href="/terms"
+          className="text-white/60 hover:text-white/80 transition-colors"
+        >
+          Terms
+        </a>
+        {" · "}
+        <a
+          href="/privacy"
+          className="text-white/60 hover:text-white/80 transition-colors"
+        >
+          Privacy
         </a>
       </p>
     </footer>
