@@ -178,9 +178,9 @@ export function Footer() {
             {t("builtOn")}
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-600">
-            <a href="#" className="hover:text-slate-400 transition-colors">{t("terms")}</a>
+            <a href="/terms" className="hover:text-slate-400 transition-colors">{t("terms")}</a>
             <span className="text-white/10">·</span>
-            <a href="#" className="hover:text-slate-400 transition-colors">{t("privacy")}</a>
+            <a href="/privacy" className="hover:text-slate-400 transition-colors">{t("privacy")}</a>
             <span className="text-white/10">·</span>
             <span className="text-slate-400">© 2026 EscrowHubs — Patent Pending</span>
           </div>
