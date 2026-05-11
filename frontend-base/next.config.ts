@@ -72,6 +72,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  outputFileTracingRoot: '/root/blockdag-escrow/frontend-base',
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
@@ -81,9 +83,7 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   typescript: { ignoreBuildErrors: true },
-  // eslint is not in NextConfig type but works at runtime — suppress TS error
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...(({ eslint: { ignoreDuringBuilds: true } }) as any),
+
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
