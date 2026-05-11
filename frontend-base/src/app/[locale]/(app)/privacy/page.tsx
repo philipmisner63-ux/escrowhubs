@@ -1,94 +1,77 @@
-"use client";
-
-import { Nav } from "@/components/nav";
-import { Footer } from "@/components/footer";
-
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#080b14] text-white flex flex-col">
-      <Nav />
-      <main className="flex-1 max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-bold mb-2 text-cyan-400">Privacy Policy</h1>
-        <p className="text-slate-400 text-sm mb-10">Last updated: April 12, 2026</p>
+    <main className="max-w-2xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold mb-2">Privacy Policy</h1>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: May 2026</p>
 
-        <div className="space-y-8 text-slate-300 text-sm leading-relaxed">
+      <div className="space-y-6 text-sm leading-relaxed text-gray-300">
+        <p>EscrowHubs ("we", "our", "us") is a decentralized, non-custodial escrow protocol. We are committed to collecting as little information as possible while still providing a secure and functional service. By using EscrowHubs, you agree to the practices described in this Privacy Policy.</p>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">1. Information We Collect</h2>
-            <p>EscrowHubs collects minimal information to operate the Platform:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
-              <li>Wallet addresses used to interact with the Platform</li>
-              <li>Transaction data recorded on-chain (public by nature)</li>
-              <li>Evidence submitted during dispute resolution (stored on IPFS)</li>
-              <li>Support requests submitted through the Platform</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">1. What Data We Collect</h2>
+          <h3 className="font-medium text-white/80 mb-1">1.1 Wallet Information</h3>
+          <p>When you connect a wallet, we collect your public wallet address and your public on-chain transaction history (as visible on the blockchain). We do not collect or store private keys.</p>
+          <h3 className="font-medium text-white/80 mt-3 mb-1">1.2 On-Chain Escrow Data</h3>
+          <p>All escrow activity is recorded on supported blockchains (e.g., Celo, Base). This includes escrow contract addresses, deposit amounts, release conditions, dispute events, and arbitration outcomes. This information is publicly visible on the blockchain and cannot be altered or deleted.</p>
+          <h3 className="font-medium text-white/80 mt-3 mb-1">1.3 Optional Arbitration Evidence</h3>
+          <p>If you submit evidence during a dispute, we may temporarily process text descriptions, uploaded files, and links. Evidence is used only for arbitration and is deleted after the dispute is resolved unless required for fraud prevention.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">2. Information We Do Not Collect</h2>
-            <p>EscrowHubs does not collect:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
-              <li>Your name or personal identity (unless voluntarily provided in support)</li>
-              <li>Payment card information (handled entirely by Stripe)</li>
-              <li>Bank account details (handled by Stripe)</li>
-              <li>Cookies for tracking or advertising</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">2. What Data We Do NOT Collect</h2>
+          <p>EscrowHubs does not collect names, email addresses, phone numbers, government IDs, passwords, private keys, biometric data, location data, or device identifiers. We do not require account registration.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">3. How We Use Information</h2>
-            <p>Information collected is used solely to:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
-              <li>Operate and improve the escrow platform</li>
-              <li>Facilitate dispute resolution</li>
-              <li>Respond to support requests</li>
-              <li>Comply with legal obligations</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">3. How We Use Your Data</h2>
+          <p>We use limited data to operate the escrow protocol (creating and managing contracts, verifying transaction status, enabling dispute resolution), for security and fraud prevention, and to improve the service through aggregated, anonymized usage patterns. We do not sell or share personal data with advertisers.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">4. Blockchain Data</h2>
-            <p>All on-chain transactions are public by nature of the blockchain networks we operate on (Base, Polygon, Celo). Transaction details including wallet addresses, amounts, and contract interactions are permanently recorded on-chain and are not within our ability to delete or modify.</p>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">4. Blockchain Data & Public Visibility</h2>
+          <p>EscrowHubs operates on public blockchains. Transactions are public and permanent, anyone can view escrow activity using block explorers, and blockchain data cannot be modified or deleted. Your use of the Service constitutes acceptance of blockchain transparency.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">5. Third-Party Services</h2>
-            <p>EscrowHubs integrates with the following third-party services:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
-              <li><strong className="text-slate-300">Stripe</strong> — payment processing and fiat onramp/offramp. Subject to Stripe's Privacy Policy.</li>
-              <li><strong className="text-slate-300">Pinata / IPFS</strong> — decentralized storage for dispute evidence files.</li>
-              <li><strong className="text-slate-300">Anthropic Claude</strong> — AI arbitration processing. Evidence submitted to disputes may be processed by Claude.</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">5. Third-Party Services</h2>
+          <p>EscrowHubs integrates with Celoscan/Basescan for transaction verification, ODIS (optional) for phone-number-based verification (we do not receive or store your phone number), and wallet providers such as MetaMask, Celo Wallet, and MiniPay. These services have their own privacy policies and we do not control their data practices.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">6. Data Retention</h2>
-            <p>On-chain data is permanent. Off-chain data (support requests, evidence files) is retained for a minimum of 2 years for dispute resolution purposes.</p>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">6. Cookies & Analytics</h2>
+          <p>EscrowHubs does not use tracking cookies, advertising cookies, fingerprinting, or cross-site tracking. We may use basic, privacy-preserving analytics to understand aggregate usage without collecting personal data.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">7. Your Rights</h2>
-            <p>You may request deletion of any off-chain data we hold about you by contacting us through the Platform. On-chain data cannot be deleted due to the immutable nature of blockchain technology.</p>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">7. Data Retention</h2>
+          <p>On-chain data is retained permanently (it is public and immutable). Arbitration evidence is retained only until the dispute is resolved. Support emails are retained as long as necessary to address your inquiry.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibent text-white mb-3">8. Security</h2>
-            <p>We take reasonable measures to protect the Platform and any off-chain data. However, no system is perfectly secure. Smart contract interactions carry inherent risks as described in our Terms of Service.</p>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">8. Security</h2>
+          <p>We implement industry-standard security practices including non-custodial architecture, no private key storage, encrypted evidence storage (temporary), and smart contract audits where applicable. You are responsible for securing your wallet and private keys.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">9. Changes to This Policy</h2>
-            <p>We may update this Privacy Policy from time to time. The date at the top of this page indicates when it was last updated.</p>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">9. Children's Privacy</h2>
+          <p>EscrowHubs is not intended for individuals under 18. We do not knowingly collect data from minors.</p>
+        </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">10. Contact</h2>
-            <p>For privacy-related questions, contact us through the support button on the Platform or visit <a href="https://app.escrowhubs.io" className="text-cyan-400 hover:underline">app.escrowhubs.io</a>.</p>
-          </section>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">10. Your Rights</h2>
+          <p>You may disconnect your wallet at any time, delete arbitration evidence before submission, and request deletion of off-chain evidence after a dispute. On-chain data cannot be deleted or altered.</p>
+        </section>
 
-        </div>
-      </main>
-      <Footer />
-    </div>
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">11. Changes to This Policy</h2>
+          <p>We may update this Privacy Policy from time to time. Continued use of the Service constitutes acceptance of the updated policy.</p>
+        </section>
+
+        <section>
+          <h2 className="font-semibold text-base text-white mb-2">12. Contact Us</h2>
+          <p>For privacy questions or requests: <a href="mailto:support@escrowhubs.io" className="text-blue-400 hover:underline">support@escrowhubs.io</a></p>
+        </section>
+      </div>
+    </main>
   );
 }

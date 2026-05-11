@@ -11,6 +11,8 @@ import { formatUnits, parseEther, isAddress, type Abi } from "viem";
 import { CONTRACTS } from "@/lib/config";
 import FactoryABI from "@/abis/EscrowFactory.json";
 import Link from "next/link";
+import { useConnect } from "wagmi";
+import { injected } from "wagmi/connectors";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -184,6 +186,7 @@ function ReferrerRow({
 
 export default function AdminPage() {
   const { address: wallet, isConnected } = useAccount();
+  const { connect, isPending: isConnecting } = useConnect();
 
   // Form state
   const [feeBps,      setFeeBps]      = useState("");
@@ -302,20 +305,31 @@ export default function AdminPage() {
 
       {/* Access denied */}
       {!isOwner && (
-        <Card className="p-8 text-center">
-          <div className="text-4xl mb-4">🔒</div>
-          <p className="text-white font-semibold mb-1">Access Denied</p>
-          <p className="text-white/50 text-sm">
-            {isConnected
-              ? "Connected wallet is not the contract owner."
-              : "Connect the owner wallet to continue."}
-          </p>
-          {isConnected && wallet && (
-            <p className="text-xs text-white/30 mt-3 font-mono">{wallet}</p>
+        <Card className="p-8">
+          {!isConnected && (
+            <button
+              onClick={() => connect({ connector: injected(), chainId: 42220 })}
+              disabled={isConnecting}
+              className="tap-compress bg-gradient-to-r from-[#35D07F] to-[#0EA56F] text-white rounded-2xl px-6 py-4 text-center font-bold text-base shadow-lg shadow-green-900/30 w-full mb-6 disabled:opacity-50"
+            >
+              {isConnecting ? "Connecting…" : "Connect Wallet"}
+            </button>
           )}
-          {owner && (
-            <p className="text-xs text-white/30 mt-1">Owner: {owner}</p>
-          )}
+          <div className="text-center">
+            <div className="text-4xl mb-4">🔒</div>
+            <p className="text-white font-semibold mb-1">Access Denied</p>
+            <p className="text-white/50 text-sm">
+              {isConnected
+                ? "Connected wallet is not the contract owner."
+                : "Connect the owner wallet to continue."}
+            </p>
+            {isConnected && wallet && (
+              <p className="text-xs text-white/30 mt-3 font-mono">{wallet}</p>
+            )}
+            {owner && (
+              <p className="text-xs text-white/30 mt-1">Owner: {owner}</p>
+            )}
+          </div>
         </Card>
       )}
 

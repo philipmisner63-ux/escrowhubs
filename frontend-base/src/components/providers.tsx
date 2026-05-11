@@ -9,6 +9,7 @@ import { useWalletTimeout } from "@/lib/hooks/useWalletTimeout";
 import { SupportButton } from "@/components/SupportButton";
 import { useMiniPay } from "@/lib/hooks/useMiniPay";
 import { FeedbackButton } from "@/components/feedback-button";
+import { DebugPanel } from "@/components/DebugPanel";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { base } from "viem/chains";
 
@@ -46,6 +47,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <MiniPayAutoConnect />
             <SupportButton />
             <FeedbackButton />
+            <DebugPanel />
             {children}
           </ToastProvider>
         </OnchainKitProvider>

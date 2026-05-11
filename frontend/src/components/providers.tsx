@@ -9,6 +9,7 @@ import { ToastProvider, useToast } from "@/components/toast";
 import { useWalletTimeout } from "@/lib/hooks/useWalletTimeout";
 import { SupportButton } from "@/components/SupportButton";
 import { FeedbackButton } from "@/components/feedback-button";
+import { DebugPanel } from "@/components/DebugPanel";
 import "@rainbow-me/rainbowkit/styles.css";
 
 // Must be a child of WagmiProvider + ToastProvider to access their contexts
@@ -45,6 +46,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <WalletTimeoutGuard />
             <SupportButton />
             <FeedbackButton />
+            <DebugPanel />
             {children}
           </ToastProvider>
         </RainbowKitProvider>

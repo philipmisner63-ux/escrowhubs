@@ -4,6 +4,7 @@ import { useConnect, useAccount, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useEffect, useState } from "react";
 import { useShowConnectButton } from "@/hooks/useShowConnectButton";
+import { useMiniPay } from "@/hooks/useMiniPay";
 
 // Outer guard: only mounts ConnectWalletInner (which calls useAppKit) in browser context
 export function ConnectWallet() {
@@ -18,6 +19,7 @@ function ConnectWalletInner() {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
   const [hasInjected, setHasInjected] = useState(false);
+  const { iframeError, isIframe } = useMiniPay();
 
   useEffect(() => {
     const ethereum = (window as unknown as { ethereum?: unknown }).ethereum;
@@ -34,6 +36,25 @@ function ConnectWalletInner() {
         <button onClick={() => disconnect()} className="text-xs text-white/40 hover:text-white/70 transition-colors">
           Disconnect
         </button>
+      </div>
+    );
+  }
+
+  if (iframeError) {
+    return (
+      <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-4">
+        <p className="text-sm text-red-300 font-medium">Connection blocked</p>
+        <p className="text-xs text-red-200/70 mt-1">{iframeError}</p>
+        {isIframe && (
+          <a
+            href="https://celo.escrowhubs.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-[#35D07F] underline mt-2 inline-block"
+          >
+            Open directly →
+          </a>
+        )}
       </div>
     );
   }

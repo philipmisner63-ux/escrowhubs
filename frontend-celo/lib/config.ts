@@ -10,7 +10,7 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId: WC_PROJECT_ID,
   ssr: true,
   transports: {
-    [celo.id]: http("https://forno.celo.org"),
+    [celo.id]: http("https://rpc.ankr.com/celo"),
   },
 });
 
