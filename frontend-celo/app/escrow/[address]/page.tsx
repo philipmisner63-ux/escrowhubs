@@ -3,11 +3,13 @@ import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useMiniPay } from "@/hooks/useMiniPay";
 import { formatUnits, Abi } from "viem";
 import Link from "next/link";
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import SimpleEscrowABI from "@/abis/SimpleEscrow.json";
 import { useTranslation } from "@/lib/useTranslation";
 import { TrustFooter } from "@/components/TrustFooter";
 import { USDT } from "@/lib/config";
+import { useNaijaLancers } from "@/hooks/useNaijaLancers";
+import { NaijaLancersErrorCard } from "@/components/NaijaLancersErrorCard";
 
 const STATE = { PENDING: 0, FUNDED: 1, RELEASED: 2, DISPUTED: 3, REFUNDED: 4 };
 
@@ -35,11 +37,14 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
   const { address: escrowAddr } = use(params);
   const { address: myAddress } = useAccount();
   const { t } = useTranslation();
+  const naijaLancers = useNaijaLancers();
   useMiniPay();
 
   const [txError, setTxError] = useState("");
   const [releasing, setReleasing] = useState(false);
   const [disputing, setDisputing] = useState(false);
+  const [sellerWallet, setSellerWallet] = useState<string | null>(null);
+  const [loadingSellerWallet, setLoadingSellerWallet] = useState(false);
 
   const { writeContractAsync } = useWriteContract();
 
@@ -130,11 +135,60 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
     }
   }
 
+  // Probe NaijaLancers for seller settlement wallet when beneficiary
+  useEffect(() => {
+    if (!naijaLancers.isMode || !isBeneficiary || !amount) return;
+    let cancelled = false;
+    setLoadingSellerWallet(true);
+    naijaLancers.getSellerWallet({
+      amount: parseFloat(formatUnits(amount as bigint, tokenDecimals)),
+      description: "Escrow release",
+    }).then((res) => {
+      if (!cancelled) setSellerWallet(res.wallet_address ?? null);
+    }).catch(() => {
+      if (!cancelled) setSellerWallet(null);
+    }).finally(() => {
+      if (!cancelled) setLoadingSellerWallet(false);
+    });
+    return () => { cancelled = true; };
+  }, [naijaLancers.isMode, isBeneficiary, amount, tokenDecimals]);
+
   return (
     <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
       <Link href="/escrows" className="text-white/60 text-sm mb-6 flex items-center gap-1">
         {t("escrowDetail.backToPayments")}
       </Link>
+
+      {/* NaijaLancers mode badge */}
+      {naijaLancers.isMode && (
+        <div className="bg-[#4A9EFF]/10 border border-[#4A9EFF]/30 rounded-xl px-4 py-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">💎</span>
+              <span className="text-sm text-[#4A9EFF] font-medium">NaijaLancers Mode</span>
+            </div>
+            <div className="text-sm text-white/80">
+              {naijaLancers.loadingBalance ? (
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 border-2 border-white/40 border-t-transparent rounded-full animate-spin inline-block" />
+                  Loading...
+                </span>
+              ) : (
+                <span>NC Balance: <span className="font-semibold text-white">{naijaLancers.ncBalance}</span></span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NaijaLancers error card */}
+      {naijaLancers.isMode && naijaLancers.error && (
+        <NaijaLancersErrorCard
+          error={naijaLancers.error}
+          onRetry={naijaLancers.retry}
+          loading={naijaLancers.loadingBalance}
+        />
+      )}
 
       {/* Status hero card */}
       <div className={`bg-gradient-to-br ${stateGradient} border rounded-2xl p-6 mb-6 text-center`}>
@@ -174,6 +228,24 @@ export default function EscrowDetailPage({ params }: { params: Promise<{ address
           </div>
         </div>
       </div>
+
+      {/* Seller settlement wallet — NaijaLancers mode */}
+      {naijaLancers.isMode && isBeneficiary && (
+        <div className="bg-[#4A9EFF]/10 border border-[#4A9EFF]/30 rounded-2xl p-5 mb-4">
+          <p className="text-sm text-[#4A9EFF] font-medium mb-1">Settlement Wallet</p>
+          {loadingSellerWallet ? (
+            <span className="flex items-center gap-1 text-sm text-white/60">
+              <span className="w-3 h-3 border-2 border-white/40 border-t-transparent rounded-full animate-spin inline-block" />
+              Loading...
+            </span>
+          ) : sellerWallet ? (
+            <p className="text-sm font-mono text-white break-all">{sellerWallet}</p>
+          ) : (
+            <p className="text-sm text-white/60">Unable to load settlement address.</p>
+          )}
+          <p className="text-xs text-white/40 mt-1">Funds will be sent to this wallet when released.</p>
+        </div>
+      )}
 
       {/* Error */}
       {txError && (

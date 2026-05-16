@@ -11,12 +11,15 @@ import { useTranslation } from "@/lib/useTranslation";
 import { useReferrer } from "@/hooks/useReferrer";
 import { TrustFooter } from "@/components/TrustFooter";
 import { ConnectWallet } from "@/components/ConnectWallet";
+import { NaijaLancersErrorCard } from "@/components/NaijaLancersErrorCard";
+import { useNaijaLancers } from "@/hooks/useNaijaLancers";
 
 type Step = "form" | "approve" | "create" | "done";
 
 function CreatePageInner() {
   const { address, isConnected } = useAccount();
   const { t } = useTranslation();
+  const naijaLancers = useNaijaLancers();
   const searchParams = useSearchParams();
 
   // ?reset=1 clears all stored state for a clean start
@@ -63,6 +66,13 @@ function CreatePageInner() {
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [resuming, setResuming] = useState(false);
+
+  // NaijaLancers only supports USDT top-up — lock token selector
+  useEffect(() => {
+    if (naijaLancers.isMode) {
+      setSelectedToken("USDT");
+    }
+  }, [naijaLancers.isMode]);
 
   const referrer = useReferrer();
   const { state: phoneState, resolve: resolvePhone, reset: resetPhone } = usePhoneResolution();
@@ -207,16 +217,55 @@ function CreatePageInner() {
     }
     if (!effectiveAddress) {
       setError(t("create.errorNoAddress"));
+      isSubmitting.current = false;
       return;
     }
     if (!amount || parseFloat(amount) <= 0) {
       setError(t("create.errorNoAmount"));
+      isSubmitting.current = false;
       return;
     }
     if (!description.trim()) {
       setError(t("create.errorNoDescription"));
+      isSubmitting.current = false;
       return;
     }
+
+    // ─── NaijaLancers top-up ─────────────────────────────────────────────────
+    // If running inside NaijaLancers and user lacks token balance,
+    // request a USDT charge to their wallet first.
+    if (naijaLancers.isMode && address) {
+      try {
+        const tokenAddress = TOKENS[selectedToken].address;
+        let needsTopUp = false;
+        const bal = await publicClient?.readContract({
+          address: tokenAddress,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [address],
+        });
+        needsTopUp = (bal as bigint ?? 0n) < amountWei;
+        if (needsTopUp) {
+          setStep("approve"); // reuse existing spinner UI
+          localStorage.setItem("eh_create_step", "approve");
+          await naijaLancers.chargeUser({
+            amount: parseFloat(amount),
+            description: `Escrow payment: ${description}`,
+            currency: "USDT",
+            to: address,
+          });
+          // After charge, refresh balance display
+          await naijaLancers.refreshBalance();
+        }
+      } catch (topUpErr: unknown) {
+        const msg = topUpErr instanceof Error ? topUpErr.message : String(topUpErr);
+        setError(`NaijaLancers top-up failed: ${msg}`);
+        setStep("form");
+        isSubmitting.current = false;
+        return;
+      }
+    }
+    // ─── end NaijaLancers top-up ─────────────────────────────────────────────
 
     try {
       const tokenAddress = TOKENS[selectedToken].address;
@@ -321,6 +370,40 @@ function CreatePageInner() {
 
       {/* Wallet connection — show prominently when not connected */}
       {!isConnected && <ConnectWallet />}
+
+      {/* NaijaLancers mode badge */}
+      {naijaLancers.isMode && (
+        <div className="bg-[#4A9EFF]/10 border border-[#4A9EFF]/30 rounded-xl px-4 py-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">💎</span>
+              <span className="text-sm text-[#4A9EFF] font-medium">NaijaLancers Mode</span>
+            </div>
+            <div className="text-sm text-white/80">
+              {naijaLancers.loadingBalance ? (
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 border-2 border-white/40 border-t-transparent rounded-full animate-spin inline-block" />
+                  Loading...
+                </span>
+              ) : (
+                <span>NC Balance: <span className="font-semibold text-white">{naijaLancers.ncBalance}</span></span>
+              )}
+            </div>
+          </div>
+          {naijaLancers.error && (
+            <p className="text-xs text-[#FF5B5B] mt-1">{naijaLancers.error}</p>
+          )}
+        </div>
+      )}
+
+      {/* NaijaLancers error card */}
+      {naijaLancers.isMode && naijaLancers.error && (
+        <NaijaLancersErrorCard
+          error={naijaLancers.error}
+          onRetry={naijaLancers.retry}
+          loading={naijaLancers.loadingBalance}
+        />
+      )}
 
       {/* Resume banner — auto-resume fires on mount; this shows progress + retry option */}
       {isConnected && (step === "approve" || step === "create") && (
@@ -431,23 +514,31 @@ function CreatePageInner() {
           {/* Token selector */}
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">Token</label>
-            <div className="flex gap-2">
-              {(Object.keys(TOKENS) as TokenSymbol[]).map((token) => (
-                <button
-                  key={token}
-                  type="button"
-                  onClick={() => setSelectedToken(token)}
-                  disabled={inProgress}
-                  className={
-                    selectedToken === token
-                      ? "bg-[#35D07F]/20 border border-[#35D07F]/40 text-[#35D07F] rounded-full px-4 py-1.5 text-sm font-medium"
-                      : "bg-white/5 border border-white/10 text-white/60 rounded-full px-4 py-1.5 text-sm"
-                  }
-                >
-                  {token}
-                </button>
-              ))}
-            </div>
+            {naijaLancers.isMode ? (
+              <div className="flex gap-2">
+                <div className="bg-[#35D07F]/20 border border-[#35D07F]/40 text-[#35D07F] rounded-full px-4 py-1.5 text-sm font-medium">
+                  USDT
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                {(Object.keys(TOKENS) as TokenSymbol[]).map((token) => (
+                  <button
+                    key={token}
+                    type="button"
+                    onClick={() => setSelectedToken(token)}
+                    disabled={inProgress}
+                    className={
+                      selectedToken === token
+                        ? "bg-[#35D07F]/20 border border-[#35D07F]/40 text-[#35D07F] rounded-full px-4 py-1.5 text-sm font-medium"
+                        : "bg-white/5 border border-white/10 text-white/60 rounded-full px-4 py-1.5 text-sm"
+                    }
+                  >
+                    {token}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Description */}

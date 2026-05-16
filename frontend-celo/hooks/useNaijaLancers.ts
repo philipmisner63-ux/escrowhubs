@@ -1,47 +1,178 @@
 "use client";
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import {
+  isNaijaLancersMode,
+  sendReady,
+  charge,
+  getBalance,
+  payout,
+  verifyPin,
+  onIdentify,
+  type NaijaLancersUser,
+  type NaijaLancersChargeResult,
+  type NaijaLancersBalanceResult,
+  type NaijaLancersPayoutResult,
+  type NaijaLancersPinResult,
+} from "@/lib/naijalancers-sdk";
 
-const ALLOWED_ORIGINS = (
-  process.env.NEXT_PUBLIC_NAIJALANCERS_ORIGIN ?? "https://naijalancers.name.ng"
-).split(",")
-
-export interface NaijaLancersMessage {
-  type: "chargeUser" | "payoutUser" | "getEscrowStatus"
-  payload: Record<string, unknown>
+interface UseNaijaLancersReturn {
+  isMode: boolean;
+  isReady: boolean;
+  user: NaijaLancersUser | null;
+  ncBalance: string;
+  loadingBalance: boolean;
+  chargeUser: (opts: {
+    amount: number;
+    description: string;
+    to?: string;
+    currency?: "NC" | "USDT";
+  }) => Promise<NaijaLancersChargeResult>;
+  refreshBalance: () => Promise<void>;
+  getSellerWallet: (opts: {
+    amount: number;
+    description: string;
+  }) => Promise<NaijaLancersPayoutResult>;
+  verifyUserPin: (reason: string) => Promise<NaijaLancersPinResult>;
+  error: string;
+  retry: () => void;
 }
 
-export function useNaijaLancers() {
-  const [lastMessage, setLastMessage] = useState<NaijaLancersMessage | null>(null)
-  const [isReady, setIsReady] = useState(false)
+export function useNaijaLancers(): UseNaijaLancersReturn {
+  const isMode = useMemo(() => isNaijaLancersMode(), []);
 
+  const [isReady, setIsReady] = useState(false);
+  const [user, setUser] = useState<NaijaLancersUser | null>(null);
+  const [ncBalance, setNcBalance] = useState("0");
+  const [loadingBalance, setLoadingBalance] = useState(false);
+  const [error, setError] = useState("");
+  const [handshakeAttempt, setHandshakeAttempt] = useState(0);
+
+  const balanceAbortRef = useRef<AbortController | null>(null);
+
+  // Handshake: signal ready + listen for identity
   useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      // Validate message structure
-      if (typeof event.data?.type !== "string") return
-      const validTypes = ["chargeUser", "payoutUser", "getEscrowStatus"]
-      if (!validTypes.includes(event.data.type)) return
+    if (!isMode) return;
 
-      // Trim whitespace from origin matching
-      const trimmedOrigins = ALLOWED_ORIGINS.map(o => o.trim())
-      if (!trimmedOrigins.includes(event.origin)) {
-        console.warn("Rejected postMessage from unauthorized origin:", event.origin)
-        return
+    setError("");
+    sendReady();
+
+    let gotIdentity = false;
+    const unsub = onIdentify((u) => {
+      gotIdentity = true;
+      setUser(u);
+      setIsReady(true);
+    });
+
+    // Soft timeout: assume ready after 3s so UI doesn't block forever
+    const softTimeout = setTimeout(() => {
+      if (!gotIdentity) setIsReady(true);
+    }, 3000);
+
+    // Hard timeout: if still no identity after 8s, something is wrong
+    const hardTimeout = setTimeout(() => {
+      if (!gotIdentity) {
+        setError("Unable to connect to NaijaLancers. Please check your connection and retry.");
       }
-      setLastMessage(event.data as NaijaLancersMessage)
+    }, 8000);
+
+    return () => {
+      unsub();
+      clearTimeout(softTimeout);
+      clearTimeout(hardTimeout);
+    };
+  }, [isMode, handshakeAttempt]);
+
+  // Auto-fetch NC balance once ready
+  useEffect(() => {
+    if (!isMode || !isReady) return;
+    refreshBalance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMode, isReady]);
+
+  const refreshBalance = useCallback(async () => {
+    if (!isMode) return;
+    setLoadingBalance(true);
+    setError("");
+    try {
+      const result = await getBalance({ currency: "NC" });
+      setNcBalance(result.balance ?? "0");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg || "Failed to load NC balance.");
+    } finally {
+      setLoadingBalance(false);
     }
+  }, [isMode]);
 
-    window.addEventListener("message", handler)
-    // Signal ready to parent
-    window.parent.postMessage({ type: "escrowhubs:ready" }, ALLOWED_ORIGINS[0])
-    setIsReady(true)
+  const chargeUser = useCallback(
+    async (opts: {
+      amount: number;
+      description: string;
+      to?: string;
+      currency?: "NC" | "USDT";
+    }) => {
+      if (!isMode) throw new Error("Not in NaijaLancers mode");
+      setError("");
+      const result = await charge({
+        amount: opts.amount,
+        description: opts.description,
+        currency: opts.currency ?? "USDT",
+        to: opts.to,
+        chargeType: "purchase",
+      });
+      if (!result.success) {
+        throw new Error(result.error ?? "Charge failed");
+      }
+      return result;
+    },
+    [isMode]
+  );
 
-    return () => window.removeEventListener("message", handler)
-  }, [])
+  const getSellerWallet = useCallback(
+    async (opts: { amount: number; description: string }) => {
+      if (!isMode) throw new Error("Not in NaijaLancers mode");
+      setError("");
+      const result = await payout({
+        amount: opts.amount,
+        description: opts.description,
+        currency: "USDT",
+      });
+      if (!result.success) {
+        throw new Error(result.error ?? "Payout probe failed");
+      }
+      return result;
+    },
+    [isMode]
+  );
 
-  const sendToParent = useCallback((type: string, payload: Record<string, unknown>) => {
-    const origin = ALLOWED_ORIGINS[0]
-    window.parent.postMessage({ type: `escrowhubs:${type}`, payload }, origin)
-  }, [])
+  const verifyUserPin = useCallback(
+    async (reason: string) => {
+      if (!isMode) throw new Error("Not in NaijaLancers mode");
+      setError("");
+      return verifyPin({ reason });
+    },
+    [isMode]
+  );
 
-  return { lastMessage, isReady, sendToParent }
+  const retry = useCallback(() => {
+    setError("");
+    setIsReady(false);
+    setUser(null);
+    setNcBalance("0");
+    setHandshakeAttempt((n) => n + 1);
+  }, []);
+
+  return {
+    isMode,
+    isReady,
+    user,
+    ncBalance,
+    loadingBalance,
+    chargeUser,
+    refreshBalance,
+    getSellerWallet,
+    verifyUserPin,
+    error,
+    retry,
+  };
 }

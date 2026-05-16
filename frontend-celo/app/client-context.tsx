@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react"
 import { detectContext, type AppContext } from "@/lib/context"
 import { useAutoConnect } from "@/hooks/useAutoConnect"
-import { NaijaLancersEscrowBridge } from "./naijalancers-escrow-bridge"
 
 export function ClientContext({ children }: { children: React.ReactNode }) {
   const [context, setContext] = useState<AppContext>("browser")
@@ -17,14 +16,9 @@ export function ClientContext({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
 
-  // NaijaLancers iframe mode — postMessage handles everything
+  // NaijaLancers iframe mode — SDK is used directly in pages
   if (context === "naijalancers") {
-    return (
-      <>
-        <NaijaLancersEscrowBridge />
-        {children}
-      </>
-    )
+    return <>{children}</>
   }
 
   // Browser mode — show connect buttons normally

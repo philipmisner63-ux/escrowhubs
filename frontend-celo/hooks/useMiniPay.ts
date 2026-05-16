@@ -29,7 +29,12 @@ export function useMiniPay() {
       setIsMiniPay(mp || isMiniPayUA);
       setDetected(true);
 
-      // Iframe without provider = broken context (e.g. NaijaLancers iframe)
+      // NaijaLancers iframe — no provider expected; SDK handles payments
+      if (isIframe && window.location.href.includes("naijalancers")) {
+        return;
+      }
+
+      // Iframe without provider = broken context (e.g. general iframe)
       if (isIframe && !raw) {
         setIframeError(
           "Wallet not available in this view. Please open EscrowHubs directly in MiniPay or your wallet browser."
