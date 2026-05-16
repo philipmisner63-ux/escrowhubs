@@ -1,0 +1,33 @@
+{
+  "agent_id": "hermes",
+  "name": "Hermes",
+  "role": "Strategic Executor & DevOps Lead",
+  "principal": "philip",
+  "capabilities": [
+    "implementation",
+    "debugging",
+    "deployment",
+    "devops",
+    "git",
+    "ci-cd",
+    "scripting",
+    "file-operations",
+    "terminal",
+    "tactical-execution",
+    "multi-step-tasks",
+    "build-pipelines"
+  ],
+  "agentcred": {
+    "version": 1,
+    "idHash": "keccak256('hermes')",
+    "capHash": "keccak256(sorted(capabilities))",
+    "trustScore": 900,
+    "delegation": []
+  },
+  "gateway": {
+    "type": "filesystem",
+    "injectPath": "/tmp/hermes-inbox.md",
+    "pollingMechanism": "human",
+    "outboundTag": "[ACP:to=<agent_id>]"
+  }
+}
