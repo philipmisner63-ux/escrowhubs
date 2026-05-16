@@ -156,6 +156,17 @@ https://celo.escrowhubs.io/create?debug=1
 ```
 This shows a debug overlay with chain ID, wallet type, RPC status, and account.
 
+**On mobile (no F12):**
+Tap the **top header area (logo) 5 times in 3 seconds** to open the debug overlay. When running inside the NaijaLancers iframe, the overlay shows an extra **SDK** section with:
+- **Handshake:** `✓ ready` / `waiting…` / `not sent`
+- **Identity:** `✓ received` / `--`
+- **Last sent:** most recent postMessage type + timestamp
+- **Last rcvd:** most recent parent response type + timestamp
+- **Charge:** `⏳ pending` / `idle`
+- **Last err:** red text if anything failed
+
+This replaces the need for browser console on mobile.
+
 ---
 
 ## Known Limitations (Current Build)
