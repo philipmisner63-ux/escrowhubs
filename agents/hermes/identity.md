@@ -34,3 +34,9 @@
 - EscrowHubs: smart contract escrow on 4 chains (BlockDAG, Base, Polygon, Celo)
 - Six primitives: Credentials, Commitments, Reputation, Destructive Op Commitments, x402 Payment Layer, Multi-Agent Consensus Layer
 - Current sprint: NaijaLancers Mini App SDK integration (iframe postMessage protocol)
+
+## Presence Protocol
+- **At session start:** Update `agents/presence.json` with your status and current task
+- **Format:** `{"status": "active|idle", "working_on": "task-name", "since": "ISO8601"}`
+- **Before starting work:** Check `agents/presence.py --check` to avoid collisions
+- **After finishing:** Clear `working_on` and set `status: idle`

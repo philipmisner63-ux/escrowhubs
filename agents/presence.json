@@ -1,0 +1,26 @@
+{
+  "claw": {
+    "agent_id": "claw",
+    "status": "idle",
+    "working_on": null,
+    "since": null,
+    "last_seen": null,
+    "capabilities": ["architecture", "planning", "policy", "design", "analysis", "synthesis", "patent-strategy", "ecosystem-design"]
+  },
+  "hermes": {
+    "agent_id": "hermes",
+    "status": "active",
+    "working_on": "presence-registry-v0.1",
+    "since": "2026-05-16T18:50:00Z",
+    "last_seen": "2026-05-16T18:50:00Z",
+    "capabilities": ["implementation", "debugging", "deployment", "devops", "git", "ci-cd", "scripting", "terminal"]
+  },
+  "copilot": {
+    "agent_id": "copilot",
+    "status": "idle",
+    "working_on": null,
+    "since": null,
+    "last_seen": null,
+    "capabilities": ["analysis", "architecture", "planning", "integration", "policy", "critique", "ecosystem-design"]
+  }
+}
