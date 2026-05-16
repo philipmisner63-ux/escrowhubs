@@ -1,0 +1,30 @@
+{
+  "agent_id": "copilot",
+  "name": "Microsoft Copilot",
+  "role": "Ecosystem Architect & Integrator",
+  "principal": "philip",
+  "capabilities": [
+    "analysis",
+    "architecture",
+    "planning",
+    "integration",
+    "policy",
+    "critique",
+    "ecosystem-design",
+    "memory-synthesis",
+    "protocol-design"
+  ],
+  "agentcred": {
+    "version": 1,
+    "idHash": "keccak256('copilot')",
+    "capHash": "keccak256(sorted(capabilities))",
+    "trustScore": 900,
+    "delegation": []
+  },
+  "gateway": {
+    "type": "vscode-instructions",
+    "injectPath": ".github/copilot-instructions.md",
+    "pollingMechanism": "human",
+    "outboundTag": "[ACP:to=<agent_id>]"
+  }
+}
