@@ -14,7 +14,7 @@ import { defineChain, type Chain } from "viem";
 
 const blockdagRpc =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BLOCKDAG_RPC) ||
-  "https://rpc.blockdag.engineering";
+  "https://rpc.bdagscan.com";
 
 export const blockdagMainnet = defineChain({
   id: 1404,

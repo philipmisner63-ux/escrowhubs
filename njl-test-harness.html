@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaijaLancers SDK Test Harness</title>
+  <style>
+    body { font-family: monospace; background: #0a0a0a; color: #35D07F; padding: 20px; margin: 0; }
+    h1 { font-size: 16px; margin-bottom: 20px; color: #fff; }
+    .container { display: flex; gap: 20px; height: calc(100vh - 80px); }
+    .controls { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+    iframe { flex: 1; border: 2px solid #35D07F; border-radius: 8px; background: #000; }
+    button { background: #35D07F; color: #000; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 12px; font-weight: bold; }
+    button:hover { background: #2ab068; }
+    button.red { background: #FF5B5B; }
+    .log { background: #111; border: 1px solid #333; padding: 10px; border-radius: 6px; font-size: 11px; height: 300px; overflow-y: auto; flex: 1; }
+    .log .sent { color: #4A9EFF; }
+    .log .recv { color: #35D07F; }
+    .log .err { color: #FF5B5B; }
+    .log .info { color: #888; }
+    label { font-size: 11px; color: #888; display: block; margin-bottom: 2px; }
+    input { background: #111; border: 1px solid #333; color: #fff; padding: 6px 8px; border-radius: 4px; width: 100%; font-family: monospace; font-size: 11px; box-sizing: border-box; }
+    .section { background: #111; border: 1px solid #222; padding: 10px; border-radius: 6px; }
+    .section h3 { margin: 0 0 8px 0; font-size: 12px; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>🧪 NaijaLancers SDK Test Harness — simulates parent app</h1>
+  <div class="container">
+    <div class="controls">
+
+      <div class="section">
+        <h3>Simulated User</h3>
+        <label>User ID</label>
+        <input id="userId" value="test_user_awwal_123">
+        <label style="margin-top:6px">Name</label>
+        <input id="userName" value="Awwal Dayyabu">
+        <label style="margin-top:6px">NC Balance</label>
+        <input id="ncBalance" value="2041.23">
+        <label style="margin-top:6px">USDT Wallet</label>
+        <input id="walletAddr" value="0x7ed3d953ad3ef99f101f4808d4c123052c583282">
+      </div>
+
+      <div class="section">
+        <h3>Controls</h3>
+        <button onclick="sendIdentify()">1. Send njl_identify</button>
+        <button onclick="sendChargeSuccess()" style="margin-top:6px">2. Approve Charge ✓</button>
+        <button onclick="sendChargeFail()" class="red" style="margin-top:6px">2. Reject Charge ✗</button>
+        <button onclick="sendBalanceResult()" style="margin-top:6px">3. Send Balance</button>
+        <button onclick="sendPayoutResult()" style="margin-top:6px">4. Send Payout Result</button>
+        <button onclick="sendPinSuccess()" style="margin-top:6px">5. PIN Verify ✓</button>
+      </div>
+
+      <div class="log" id="log">
+        <div class="info">Waiting for iframe to send njl_ready...</div>
+      </div>
+    </div>
+
+    <iframe id="frame" src="https://celo.escrowhubs.io/create" allow="ethereum"></iframe>
+  </div>
+
+  <script>
+    const frame = document.getElementById('frame');
+    const log = document.getElementById('log');
+    let lastRequestId = null;
+
+    function addLog(cls, msg) {
+      const d = document.createElement('div');
+      d.className = cls;
+      d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Listen for messages from iframe
+    window.addEventListener('message', (e) => {
+      if (!e.data || !e.data.type) return;
+      const d = e.data;
+      addLog('recv', `← ${d.type}${d.requestId ? ' ('+d.requestId+')' : ''}`);
+      lastRequestId = d.requestId || lastRequestId;
+
+      if (d.type === 'njl_ready') {
+        addLog('info', 'App is ready — auto-sending identity...');
+        setTimeout(sendIdentify, 300);
+      }
+      if (d.type === 'njl_balance') {
+        addLog('info', `Balance query: currency=${d.currency}`);
+        setTimeout(() => sendBalanceResult(d.requestId, d.currency), 200);
+      }
+      if (d.type === 'njl_charge') {
+        addLog('info', `Charge request: ${d.amount} ${d.currency} → ${d.to}`);
+        // Send ACK immediately
+        sendMsg({ type: 'njl_charge_received', requestId: d.requestId });
+        lastRequestId = d.requestId;
+      }
+      if (d.type === 'njl_payout') {
+        addLog('info', `Payout request: ${d.amount} ${d.currency}`);
+        setTimeout(() => sendPayoutResult(d.requestId, d.currency), 300);
+      }
+      if (d.type === 'njl_verify_pin') {
+        addLog('info', `PIN verify: ${d.reason}`);
+        setTimeout(() => sendPinSuccess(d.requestId), 500);
+      }
+    });
+
+    function sendMsg(msg) {
+      frame.contentWindow.postMessage(msg, '*');
+      addLog('sent', `→ ${msg.type}${msg.requestId ? ' ('+msg.requestId+')' : ''}`);
+    }
+
+    function sendIdentify() {
+      sendMsg({
+        type: 'njl_identify',
+        user: {
+          user_id: document.getElementById('userId').value,
+          full_name: document.getElementById('userName').value,
+          email: 'awwal@naijalancers.com',
+          profile_picture_url: null,
+          wallet_address: document.getElementById('walletAddr').value
+        }
+      });
+    }
+
+    function sendBalanceResult(requestId, currency) {
+      const rid = requestId || lastRequestId;
+      sendMsg({
+        type: 'njl_balance_result',
+        balance: currency === 'USDT' ? '12.50' : document.getElementById('ncBalance').value,
+        currency: currency || 'NC',
+        address: document.getElementById('walletAddr').value,
+        requestId: rid
+      });
+    }
+
+    function sendChargeSuccess() {
+      sendMsg({
+        type: 'njl_charge_result',
+        success: true,
+        currency: 'USDT',
+        txRef: 'txref_test_' + Date.now(),
+        user_id: document.getElementById('userId').value,
+        to: '0x2fcec726073a47b71242f24fa3821d299b5119e1',
+        amount: '5.00',
+        requestId: lastRequestId
+      });
+    }
+
+    function sendChargeFail() {
+      sendMsg({
+        type: 'njl_charge_result',
+        success: false,
+        error: 'Insufficient NC balance',
+        requestId: lastRequestId
+      });
+    }
+
+    function sendPayoutResult(requestId, currency) {
+      const rid = requestId || lastRequestId;
+      sendMsg({
+        type: 'njl_payout_result',
+        success: true,
+        wallet_address: document.getElementById('walletAddr').value,
+        amount: '5.00',
+        user: {
+          user_id: document.getElementById('userId').value,
+          full_name: document.getElementById('userName').value,
+          wallet_address: document.getElementById('walletAddr').value
+        },
+        requestId: rid
+      });
+    }
+
+    function sendPinSuccess(requestId) {
+      sendMsg({
+        type: 'njl_verify_pin_result',
+        success: true,
+        requestId: requestId || lastRequestId
+      });
+    }
+  </script>
+</body>
+</html>

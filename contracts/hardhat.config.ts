@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
     },
     blockdag: {
       type: "http" as const,
-      url: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.blockdag.engineering",
+      url: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.bdagscan.com",
       chainId: 1404,
       accounts: process.env.DEPLOYER_PRIVATE_KEY
         ? [process.env.DEPLOYER_PRIVATE_KEY]
@@ -61,6 +61,14 @@ const config: HardhatUserConfig = {
       type: "http" as const,
       url: process.env.CELO_RPC_URL ?? "https://forno.celo.org",
       chainId: 42220,
+      accounts: process.env.DEPLOYER_PRIVATE_KEY
+        ? [process.env.DEPLOYER_PRIVATE_KEY]
+        : [],
+    },
+    polygon: {
+      type: "http" as const,
+      url: process.env.POLYGON_RPC_URL ?? "https://polygon-mainnet.g.alchemy.com/v2/YUs_6FzIKG617Yt8pMqay",
+      chainId: 137,
       accounts: process.env.DEPLOYER_PRIVATE_KEY
         ? [process.env.DEPLOYER_PRIVATE_KEY]
         : [],

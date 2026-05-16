@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NaijaLancers Simulator — EscrowHubs Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #0a0a0a; color: #fff; }
+    h1 { font-size: 18px; margin-bottom: 10px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .panel { flex: 1; min-width: 300px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 16px; }
+    .panel h2 { font-size: 14px; margin: 0 0 12px; color: #888; text-transform: uppercase; }
+    iframe { width: 100%; height: 500px; border: 1px solid #35D07F; border-radius: 8px; background: #000; }
+    button { background: #35D07F; color: #000; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-right: 8px; margin-bottom: 8px; }
+    button.secondary { background: #4A9EFF; color: #fff; }
+    button.danger { background: #FF5B5B; color: #fff; }
+    .log { background: #000; border: 1px solid #333; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+    .log .in { color: #35D07F; }
+    .log .out { color: #4A9EFF; }
+    .log .err { color: #FF5B5B; }
+    .field { margin-bottom: 10px; }
+    label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
+    input, select { width: 100%; padding: 6px 8px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <h1>🔷 NaijaLancers Simulator — Test EscrowHubs Iframe Handshake</h1>
+  <div class="row">
+    <div class="panel">
+      <h2>Controls</h2>
+      <div class="field">
+        <label>EscrowHubs URL</label>
+        <input id="url" value="https://celo.escrowhubs.io/create?debug=1" />
+      </div>
+      <div class="field">
+        <label>Simulated User</label>
+        <select id="userPreset">
+          <option value="test">Test User (NC 5000)</option>
+          <option value="awwal">Awwal Demo (NC 2041)</option>
+          <option value="broke">Broke User (NC 0)</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <button onclick="loadIframe()">Load / Reload</button>
+        <button class="secondary" onclick="sendIdentify()">1. Send njl_identify</button>
+        <button class="secondary" onclick="sendBalance()">2. Send njl_balance_result</button>
+        <button class="secondary" onclick="sendChargeAck()">3a. Send njl_charge_received</button>
+        <button class="secondary" onclick="sendChargeSuccess()">3b. Send njl_charge_result (success)</button>
+        <button class="danger" onclick="sendChargeFail()">3c. Send njl_charge_result (fail)</button>
+        <button onclick="clearLog()">Clear Log</button>
+      </div>
+      <div class="field">
+        <label>Custom Message (type + JSON payload)</label>
+        <input id="customMsg" placeholder='{ "type": "njl_custom", "requestId": "req_abc" }' />
+        <button style="margin-top:6px;" onclick="sendCustom()">Send Custom</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Event Log (child ↔ parent)</h2>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top: 12px;">
+    <h2>Iframe — EscrowHubs</h2>
+    <iframe id="ehFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+  </div>
+
+<script>
+const logEl = document.getElementById('log');
+const iframe = document.getElementById('ehFrame');
+let currentRequestId = null;
+
+function log(text, dir = 'in') {
+  const div = document.createElement('div');
+  div.className = dir;
+  const time = new Date().toLocaleTimeString();
+  div.textContent = `[${time}] ${dir === 'out' ? '→' : '←'} ${text}`;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function logErr(text) { log(text, 'err'); }
+function clearLog() { logEl.innerHTML = ''; }
+
+function getUser() {
+  const p = document.getElementById('userPreset').value;
+  if (p === 'awwal') return { user_id: "awwal_demo", full_name: "Awwal Demo", email: "awwal@naijalancers.ng", balance: "2041.23" };
+  if (p === 'broke') return { user_id: "broke_user", full_name: "Broke User", email: "broke@test.com", balance: "0" };
+  return { user_id: "test_user_1", full_name: "Test User", email: "test@example.com", balance: "5000" };
+}
+
+function loadIframe() {
+  const url = document.getElementById('url').value;
+  log(`Loading iframe: ${url}`, 'in');
+  iframe.src = url;
+}
+
+window.addEventListener('message', (e) => {
+  const data = e.data || {};
+  const type = data.type || '(no type)';
+  if (type.startsWith('njl_')) {
+    log(`${type} | requestId: ${data.requestId || '-'} | ${JSON.stringify(data).slice(0, 200)}`, 'out');
+    if (data.requestId) currentRequestId = data.requestId;
+  } else {
+    log(`(non-njl) ${type}: ${JSON.stringify(data).slice(0, 120)}`, 'out');
+  }
+});
+
+function sendIdentify() {
+  const user = getUser();
+  const msg = { type: "njl_identify", user };
+  iframe.contentWindow.postMessage(msg, "*");
+  log(`njl_identify → ${user.full_name} (${user.user_id})`, 'in');
+}
+
+function sendBalance() {
+  const user = getUser();
+  const msg = {
+    type: "njl_balance_result",
+    requestId: currentRequestId || `bal_${Date.now()}`,
+    balance: user.balance,
+    currency: "NC",
+  };
+  iframe.contentWindow.postMessage(msg, "*");
+  log(`njl_balance_result → NC ${user.balance}`, 'in');
+}
+
+function sendChargeAck() {
+  const msg = {
+    type: "njl_charge_received",
+    requestId: currentRequestId || `chg_${Date.now()}`,
+  };
+  iframe.contentWindow.postMessage(msg, "*");
+  log(`njl_charge_received → ack`, 'in');
+}
+
+function sendChargeSuccess() {
+  const user = getUser();
+  const msg = {
+    type: "njl_charge_result",
+    requestId: currentRequestId || `chg_${Date.now()}`,
+    success: true,
+    currency: "USDT",
+    amount: "1.00",
+    user_id: user.user_id,
+    to: "0x1234567890abcdef1234567890abcdef12345678",
+    txRef: `TX${Date.now()}`,
+    tx_hash: "0xdeadbeef...",
+  };
+  iframe.contentWindow.postMessage(msg, "*");
+  log(`njl_charge_result → success (USDT 1.00)`, 'in');
+}
+
+function sendChargeFail() {
+  const msg = {
+    type: "njl_charge_result",
+    requestId: currentRequestId || `chg_${Date.now()}`,
+    success: false,
+    error: "Insufficient NC balance",
+  };
+  iframe.contentWindow.postMessage(msg, "*");
+  log(`njl_charge_result → FAILED: Insufficient NC balance`, 'in');
+}
+
+function sendCustom() {
+  try {
+    const raw = document.getElementById('customMsg').value;
+    const msg = JSON.parse(raw);
+    iframe.contentWindow.postMessage(msg, "*");
+    log(`custom → ${msg.type}`, 'in');
+  } catch (e) {
+    logErr(`Invalid JSON: ${e.message}`);
+  }
+}
+
+// Auto-load on page open
+loadIframe();
+</script>
+</body>
+</html>

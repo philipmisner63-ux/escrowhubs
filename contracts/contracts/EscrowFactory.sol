@@ -217,8 +217,9 @@ contract EscrowFactory is ReentrancyGuard {
         netAmount = value - totalFee;
     }
 
-    /// @dev Apply referral kickback. Returns the kickback amount.
-    function _applyReferral(address referrer, uint256 grossValue, uint256 fee, address escrow)
+    /// @dev Compute and record referral kickback. Returns the kickback amount.
+    /// State changes happen BEFORE any external calls (CEI pattern).
+    function _recordReferralKickback(address referrer, uint256 grossValue, uint256 fee)
         internal returns (uint256 kickback)
     {
         if (referrer == address(0) || referrer == msg.sender) return 0;
@@ -231,7 +232,6 @@ contract EscrowFactory is ReentrancyGuard {
         referralTotalEarned[referrer] += kickback;
         referralCount[referrer]       += 1;
         referralVolume[referrer]      += grossValue;
-        emit ReferralCredited(referrer, escrow, kickback);
     }
 
     /// @dev Push record to storage and update indexes.
@@ -279,32 +279,36 @@ contract EscrowFactory is ReentrancyGuard {
                 // Native ETH path
                 (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
                 accumulatedFees += fee;
+                uint256 kickback = _recordReferralKickback(referrer, msg.value, fee);
                 rec.totalAmount = net;
                 rec.fee = fee;
 
                 SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, address(0));
                 esc.deposit{ value: net }(net);
                 rec.contractAddress = address(esc);
-                _applyReferral(referrer, msg.value, fee, rec.contractAddress);
+                if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
             } else {
                 // ERC-20 path: fee charged in tokens
                 uint256 gross = IERC20(token).allowance(msg.sender, address(this));
                 require(gross > 0, "No token allowance");
-                // Pull full approved amount; compute fee
-                IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
+                // Compute fee BEFORE any external call (CEI pattern)
                 uint256 fee = (gross * protocolFeeBps) / 10_000;
                 if (useAIArbiter) fee += aiArbiterFee;
                 require(gross > fee, "Amount too low to cover fees");
                 uint256 net = gross - fee;
+                // Update state BEFORE external call
                 accumulatedFees += fee; // tracked as token units in accumulatedTokenFees ideally, but kept simple
+                uint256 kickback = _recordReferralKickback(referrer, gross, fee);
                 rec.totalAmount = net;
                 rec.fee = fee;
 
+                // External calls after all state updates
+                IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
                 SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, token);
                 IERC20(token).safeTransfer(address(esc), net);
                 esc.deposit(net);
                 rec.contractAddress = address(esc);
-                _applyReferral(referrer, gross, fee, rec.contractAddress);
+                if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
             }
         }
 
@@ -357,29 +361,34 @@ contract EscrowFactory is ReentrancyGuard {
                 (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
                 require(net >= netTotal, "msg.value too low for amounts + fees");
                 accumulatedFees += fee + (net - netTotal);
+                uint256 kickback = _recordReferralKickback(referrer, msg.value, fee + (net - netTotal));
                 rec.fee = fee;
 
                 MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, address(0), descriptions, amounts);
                 esc.fund{ value: netTotal }(netTotal);
                 rec.contractAddress = address(esc);
-                _applyReferral(referrer, msg.value, fee + (net - netTotal), rec.contractAddress);
+                if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
             } else {
                 // ERC-20 path
                 uint256 gross = IERC20(token).allowance(msg.sender, address(this));
                 require(gross > 0, "No token allowance");
-                IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
+                // Compute fee BEFORE any external call (CEI pattern)
                 uint256 fee = (gross * protocolFeeBps) / 10_000;
                 if (useAIArbiter) fee += aiArbiterFee;
                 require(gross > fee, "Amount too low to cover fees");
                 require(gross - fee >= netTotal, "Insufficient amount for milestones");
+                // Update state BEFORE external call
                 accumulatedFees += fee + (gross - fee - netTotal);
+                uint256 kickback = _recordReferralKickback(referrer, gross, fee + (gross - fee - netTotal));
                 rec.fee = fee;
 
+                // External calls after all state updates
+                IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
                 MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, token, descriptions, amounts);
                 IERC20(token).safeTransfer(address(esc), netTotal);
                 esc.fund(netTotal);
                 rec.contractAddress = address(esc);
-                _applyReferral(referrer, gross, fee + (gross - fee - netTotal), rec.contractAddress);
+                if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
             }
         }
 

@@ -73,7 +73,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  outputFileTracingRoot: '/root/blockdag-escrow/frontend-base',
+  outputFileTracingRoot: process.cwd(),
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',

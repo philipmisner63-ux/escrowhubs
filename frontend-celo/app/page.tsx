@@ -98,7 +98,7 @@ export default function Home() {
       <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">EscrowHubs 🟢</h1>
+            <h1 className="text-2xl font-bold text-white" data-testid="brand-logo">EscrowHubs 🟢</h1>
             <p className="text-white/60 text-sm mt-1">{t("home.tagline")}</p>
           </div>
           {langPicker}
@@ -142,7 +142,7 @@ export default function Home() {
     <main className="flex flex-col min-h-screen px-5 pt-8 pb-20 max-w-md mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">EscrowHubs 🟢</h1>
+          <h1 className="text-2xl font-bold text-white" data-testid="brand-logo">EscrowHubs 🟢</h1>
           <p className="text-white/60 text-sm mt-1">{t("home.tagline")}</p>
         </div>
         {langPicker}

@@ -7,7 +7,7 @@ const chain = {
   id: 1404,
   name: "BlockDAG",
   nativeCurrency: { name: "BDAG", symbol: "BDAG", decimals: 18 },
-  rpcUrls: { default: { http: ["https://rpc.blockdag.engineering"] } },
+  rpcUrls: { default: { http: ["https://rpc.bdagscan.com"] } },
 } as const;
 
 async function main() {

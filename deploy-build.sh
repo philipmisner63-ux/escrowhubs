@@ -33,6 +33,22 @@ cd "$SOURCE_DIR"
 
 if [[ "$SKIP_BUILD" == false ]]; then
   echo "[BUILD] Building $CHAIN..."
+
+  # --- ENV GUARD: fail fast if WalletConnect project ID is missing ---
+  ENV_FILE=""
+  for f in .env.local .env; do [[ -f "$f" ]] && ENV_FILE="$f" && break; done
+  if [[ -z "$ENV_FILE" ]]; then
+    echo "[BUILD] ERROR: No environment file found in $SOURCE_DIR (expected .env.local or .env)"
+    exit 1
+  fi
+  if ! grep -qE "^NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=[a-f0-9]+" "$ENV_FILE"; then
+    echo "[BUILD] ERROR: NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is missing or empty in $ENV_FILE"
+    echo "[BUILD]        Fix: copy .env.local from another frontend or add the WalletConnect Cloud project ID."
+    exit 1
+  fi
+  echo "[BUILD] Env guard passed ($ENV_FILE contains NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID)"
+  # -----------------------------------------------------------------
+
   npm run build
 fi
 
