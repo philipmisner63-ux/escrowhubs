@@ -37,6 +37,7 @@ FILES = {
     "identity_json": AGENTS_DIR / "identity.json",
     "identity": AGENTS_DIR / "identity.md",
     "memory": AGENTS_DIR / "memory.md",
+    "session_notes": AGENTS_DIR / "session-notes.md",
     "inbox": AGENTS_DIR / "inbox.md",
     "outbox": AGENTS_DIR / "outbox.md",
     "last_seen": AGENTS_DIR / "last_seen.json",
@@ -105,6 +106,10 @@ def compile_instructions() -> str:
     outbox = read_file(FILES["outbox"])
     last_seen = read_json(FILES["last_seen"])
 
+    # Session notes — shared log all agents write to, merged so Copilot wakes current
+    session_notes_path = Path(__file__).resolve().parent / "session-notes.md"
+    session_notes = read_file(session_notes_path) if session_notes_path.exists() else "_(No session notes yet)_"
+
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     # Build capability list from identity.json
@@ -143,13 +148,21 @@ def compile_instructions() -> str:
 
 ---
 
-## 3. Messages Waiting (Inbox)
+## 3. Recent Ecosystem Activity (Session Notes)
+
+> All agents (Claw, Hermes, Philip) append to this. It keeps you current without manual intervention.
+
+{session_notes}
+
+---
+
+## 4. Messages Waiting (Inbox)
 
 {inbox}
 
 ---
 
-## 4. Outbound Queue (Needs Routing)
+## 5. Outbound Queue (Needs Routing)
 
 {outbox}
 
