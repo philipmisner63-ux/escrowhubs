@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
+import { getSdkDiagnostics } from "@/lib/naijalancers-sdk";
 
 const BUILD_AT = new Date().toISOString();
 
@@ -86,6 +87,14 @@ export function DebugPanel() {
   const isIframe = typeof window !== "undefined" && window.self !== window.top;
   const walletType = detectWalletType();
 
+  // Refresh SDK diagnostics every second while visible
+  const [sdkDiag, setSdkDiag] = useState(getSdkDiagnostics());
+  useEffect(() => {
+    if (!visible) return;
+    const id = setInterval(() => setSdkDiag(getSdkDiagnostics()), 1000);
+    return () => clearInterval(id);
+  }, [visible]);
+
   if (!visible) return null;
 
   return (
@@ -127,6 +136,26 @@ export function DebugPanel() {
         <span>Build</span>
         <span className="truncate">{BUILD_AT}</span>
       </div>
+
+      {isIframe && (
+        <div style={{ marginTop: 10, borderTop: "1px solid #35D07F", paddingTop: 8 }}>
+          <strong style={{ color: "#fff", fontSize: 11 }}>SDK</strong>
+          <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 mt-1">
+            <span>Handshake</span>
+            <span>{sdkDiag.handshakeComplete ? "✓ ready" : sdkDiag.lastSent?.type === "njl_ready" ? "waiting…" : "not sent"}</span>
+            <span>Identity</span>
+            <span>{sdkDiag.identityReceived ? "✓ received" : "--"}</span>
+            <span>Last sent</span>
+            <span className="truncate">{sdkDiag.lastSent ? `${sdkDiag.lastSent.type} (${new Date(sdkDiag.lastSent.time).toLocaleTimeString()})` : "--"}</span>
+            <span>Last rcvd</span>
+            <span className="truncate">{sdkDiag.lastReceived ? `${sdkDiag.lastReceived.type} (${new Date(sdkDiag.lastReceived.time).toLocaleTimeString()})` : "--"}</span>
+            <span>Charge</span>
+            <span>{sdkDiag.chargePending ? "⏳ pending" : "idle"}</span>
+            <span>Last err</span>
+            <span className="truncate" style={{ color: sdkDiag.lastError ? "#FF5B5B" : undefined }}>{sdkDiag.lastError ?? "--"}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

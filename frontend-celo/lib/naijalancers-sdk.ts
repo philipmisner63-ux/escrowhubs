@@ -139,6 +139,20 @@ let _listeners: {
   timeoutId: ReturnType<typeof setTimeout>;
 }[] = [];
 
+// ─── diagnostic state (exposed for DebugPanel) ───────────────────────────────
+let _diag = {
+  lastSent: null as { type: string; time: string } | null,
+  lastReceived: null as { type: string; time: string; data?: unknown } | null,
+  identityReceived: false,
+  handshakeComplete: false,
+  chargePending: false,
+  lastError: null as string | null,
+};
+
+export function getSdkDiagnostics() {
+  return { ..._diag };
+}
+
 function _detectOrigin(): string | null {
   if (_parentOrigin) return _parentOrigin;
   if (typeof window === "undefined") return null;
@@ -162,6 +176,7 @@ function _detectOrigin(): string | null {
 
 function _send(msg: OutgoingMessage) {
   if (typeof window === "undefined") return;
+  _diag.lastSent = { type: msg.type, time: new Date().toISOString() };
   const origin = _detectOrigin() ?? ALLOWED_ORIGINS[0];
   window.parent.postMessage(msg, origin);
 }
@@ -178,6 +193,7 @@ function _startListener<T>(
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       _listeners = _listeners.filter((l) => l.requestId !== requestId);
+      _diag.lastError = `Request ${requestId} timed out (${timeoutMs}ms)`;
       reject(new Error(`NaijaLancers request timed out (${timeoutMs}ms)`));
     }, timeoutMs);
 
@@ -234,6 +250,16 @@ function _handleMessage(event: MessageEvent) {
   // Capture origin for replies
   if (!_parentOrigin) _parentOrigin = event.origin;
 
+  _diag.lastReceived = {
+    type: data.type,
+    time: new Date().toISOString(),
+    data,
+  };
+  if (data.type === "njl_identify") {
+    _diag.identityReceived = true;
+    _diag.handshakeComplete = true;
+  }
+
   // Resolve only the listener whose requestId matches
   if (data.requestId) {
     const slot = _listeners.find((l) => l.requestId === data.requestId);
@@ -279,6 +305,8 @@ export function charge(opts: {
   requestId?: string;
 }): Promise<NaijaLancersChargeResult> {
   _ensureHandler();
+  _diag.chargePending = true;
+  _diag.lastError = null;
   const requestId = opts.requestId ?? _generateRequestId("chg");
   _send({
     type: "njl_charge",
@@ -294,7 +322,9 @@ export function charge(opts: {
     requestId,
     300_000, // 5 min base timeout
     ["njl_charge_received", "njl_charge_pending"]
-  );
+  ).finally(() => {
+    _diag.chargePending = false;
+  });
 }
 
 /** Query user balance (NC or USDT) */
