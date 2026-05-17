@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { CONTRACTS, CUSD, ERC20_APPROVE_ABI, FACTORY_ABI } from "@/lib/contracts";
+import { CONTRACTS, CUSD, ERC20_APPROVE_ABI, FACTORY_ABI, getFeeCurrency } from "@/lib/contracts";
 import { ConnectButton } from "@/components/connect-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -71,12 +71,14 @@ export default function CreatePage() {
       setStep("approve");
 
       // Step 1: Approve cUSD spend
+      const feeCurrency = getFeeCurrency();
       await approveToken({
         address: CUSD,
         abi: ERC20_APPROVE_ABI,
         functionName: "approve",
         args: [CONTRACTS.factory, amountWei],
-      });
+        ...(typeof window !== "undefined" ? { feeCurrency: feeCurrency as `0x${string}` } : {}) as any,
+      } as any);
 
       setStep("create");
 
@@ -99,7 +101,8 @@ export default function CreatePage() {
           "0x0000000000000000000000000000000000000000", // referrer
         ],
         gas: 1_500_000n,
-      });
+        ...(typeof window !== "undefined" ? { feeCurrency: feeCurrency as `0x${string}` } : {}) as any,
+      } as any);
 
       setCreateTxHash(hash as `0x${string}`);
       setStep("done");

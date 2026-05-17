@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, erc20Abi, Abi } from "viem";
-import { CONTRACTS, TOKENS, type TokenSymbol } from "@/lib/config";
+import { CONTRACTS, TOKENS, type TokenSymbol, getFeeCurrency } from "@/lib/config";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import FactoryABI from "@/abis/EscrowFactory.json";
@@ -157,6 +157,7 @@ function CreatePageInner() {
           referrer,
         ],
         gas: 1_500_000n,
+        ...(typeof window !== "undefined" ? { feeCurrency: getFeeCurrency() as `0x${string}` } : {}) as any,
       });
 
       setCreateTxHash(hash as `0x${string}`);
@@ -275,12 +276,14 @@ function CreatePageInner() {
       // Save form args so page-reload resume can reconstruct the Step 2 call
       localStorage.setItem("eh_beneficiary", effectiveAddress);
       localStorage.setItem("eh_token", TOKENS[selectedToken].address);
+      const feeCurrency = getFeeCurrency();
       const approveTxHash = await approve({
         address: tokenAddress,
         abi: erc20Abi,
         functionName: "approve",
         args: [CONTRACTS.factory, amountWei],
-      });
+        ...(typeof window !== "undefined" ? { feeCurrency: feeCurrency as `0x${string}` } : {}) as any,
+      } as any);
 
       // Persist approve hash and advance step so mobile can resume after page reload
       if (approveTxHash) {
