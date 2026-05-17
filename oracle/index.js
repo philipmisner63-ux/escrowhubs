@@ -87,6 +87,12 @@ const CHALLENGE_POLL_INTERVAL_MS   = 2 * 60 * 1000;      // check for new eviden
 const RETURN_WINDOW_MS             = 72 * 60 * 60 * 1000; // 72h for buyer to submit return tracking
 const RETURN_POLL_INTERVAL_MS      = 10 * 60 * 1000;     // check for return tracking every 10 min
 const ESCALATION_CHECK_MS          = 5 * 60 * 1000;       // check escalations every 5 min
+const ESCALATION_WINDOW_MS        = 48 * 60 * 60 * 1000;
+const ESCALATION_REMINDER_1_MS    = 24 * 60 * 60 * 1000;
+const ESCALATION_REMINDER_2_MS    = 47 * 60 * 60 * 1000;
+const ESCALATIONS_FILE            = path.join(__dirname, "escalations.json");
+const ARBITER_REVIEW_PREFIX       = "ARBITER_REVIEW:";
+
 const DECISIONS_FILE           = path.join(__dirname, "decisions.json");
 
 if (!PRIVATE_KEY || !ANTHROPIC_KEY) {
@@ -1586,6 +1592,132 @@ for (const chain of CHAINS) {
 
 // Start Telegram bot long-poll loop (runs alongside chain listeners)
 startTelegramBot();
+
+
+
+// --- Escalation Manager -------------------------------------------------------
+
+const EscalationManager = {
+  load() {
+    try {
+      if (fs.existsSync(ESCALATIONS_FILE)) {
+        const raw = fs.readFileSync(ESCALATIONS_FILE, "utf8").trim();
+        return raw ? JSON.parse(raw) : {};
+      }
+    } catch { /* ignore */ }
+    return {};
+  },
+
+  save(data) {
+    try { fs.writeFileSync(ESCALATIONS_FILE, JSON.stringify(data, null, 2), "utf8"); }
+    catch (err) { console.error("EscalationManager.save error:", err.message); }
+  },
+
+  add(escrowKey, record) {
+    const data = this.load();
+    data[escrowKey] = {
+      ...record,
+      escalatedAt: Date.now(),
+      reminder1Sent: false,
+      reminder2Sent: false,
+      resolved: false,
+    };
+    this.save(data);
+    console.log("[ESCALATION] Tracked:", escrowKey);
+  },
+
+  resolve(escrowKey) {
+    const data = this.load();
+    if (data[escrowKey]) {
+      data[escrowKey].resolved = true;
+      data[escrowKey].resolvedAt = Date.now();
+      this.save(data);
+    }
+  },
+
+  getPending() {
+    const data = this.load();
+    return Object.entries(data)
+      .filter(([, v]) => !v.resolved)
+      .map(([k, v]) => ({ key: k, ...v }));
+  },
+
+  markReminder(escrowKey, which) {
+    const data = this.load();
+    if (data[escrowKey]) {
+      data[escrowKey]["reminder" + which + "Sent"] = true;
+      this.save(data);
+    }
+  },
+};
+
+// --- Escalation timer loop ----------------------------------------------------
+
+async function runEscalationTimers(chainResolvers) {
+  const pending = EscalationManager.getPending();
+  const now = Date.now();
+
+  for (const esc of pending) {
+    const age = now - esc.escalatedAt;
+
+    if (!esc.reminder1Sent && age >= ESCALATION_REMINDER_1_MS) {
+      console.log("[ESCALATION] 24h reminder for", esc.key);
+      if (DISCORD_WEBHOOK) {
+        await fetch(DISCORD_WEBHOOK, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: "24h reminder - Escalated dispute still pending review." })
+        }).catch(() => {});
+      }
+      EscalationManager.markReminder(esc.key, "1");
+    }
+
+    if (!esc.reminder2Sent && age >= ESCALATION_REMINDER_2_MS) {
+      console.log("[ESCALATION] 47h urgent reminder for", esc.key);
+      if (DISCORD_WEBHOOK) {
+        await fetch(DISCORD_WEBHOOK, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: "URGENT - 1 hour left - Escalated dispute auto-resolves in ~1 hour." })
+        }).catch(() => {});
+      }
+      EscalationManager.markReminder(esc.key, "2");
+    }
+
+    if (age >= ESCALATION_WINDOW_MS) {
+      console.log("[ESCALATION] 48h expired for", esc.key, "- auto-executing", esc.fallbackRuling);
+      const resolver = chainResolvers.get(esc.contractAddress);
+      if (resolver) {
+        try {
+          const txHash = await resolver(esc.fallbackRuling);
+          console.log("[ESCALATION] Auto-fallback executed:", txHash);
+          appendDecision({
+            timestamp: new Date().toISOString(),
+            contractAddress: esc.contractAddress,
+            chainName: esc.chainName,
+            escrowType: esc.escrowType,
+            resolution: "auto_fallback_48h",
+            ruling: esc.fallbackRuling,
+            txHash,
+          });
+          EscalationManager.resolve(esc.key);
+          if (DISCORD_WEBHOOK) {
+            await fetch(DISCORD_WEBHOOK, {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ content: "Auto-fallback executed - 48h window expired." })
+            }).catch(() => {});
+          }
+          await notifyParties(esc.contractAddress, "dispute_resolved", {
+            amount: esc.amount, symbol: esc.nativeSymbol,
+            ruling: esc.fallbackRuling, chainId: esc.chainId,
+          }, [esc.depositor, esc.beneficiary]).catch(() => {});
+        } catch (err) {
+          console.error("[ESCALATION] Auto-fallback failed for", esc.key, ":", err.message);
+        }
+      } else {
+        console.error("[ESCALATION] No resolver found for", esc.contractAddress, "- cannot auto-execute");
+      }
+    }
+  }
+}
 
 // Escalation timer: 5-min checks for reminders + 48h auto-fallback
 setInterval(
