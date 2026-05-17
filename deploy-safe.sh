@@ -1,56 +1,64 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+
+# EscrowHubs Deploy Script — builds ON SERVER, not locally.
+# Usage: ./deploy-safe.sh          (assumes code already pushed to origin/main)
+#        ./deploy-safe.sh --push   (commit & push local changes, then deploy)
+
+REMOTE="blockdag-oracle"
+REPO_DIR="/root/blockdag-escrow"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-echo "🔨 Building and deploying all 4 frontends safely..."
 
-# ── BlockDAG (main) ──
-echo ""
-echo "=== BlockDAG ==="
-cd "$SCRIPT_DIR/frontend"
-pnpm build
-rsync -az --delete \
-  --exclude='.next/cache' \
-  .next/ blockdag-oracle:/root/blockdag-escrow/frontend/.next/
-ssh blockdag-oracle "pm2 restart frontend"
+# ── Optional: push local changes ──
+if [[ "${1:-}" == "--push" ]]; then
+  echo "🚀 Pushing local changes..."
+  cd "$SCRIPT_DIR"
+  git add -A
+  git diff --cached --quiet || git commit -m "deploy: $(date -u +%Y-%m-%d_%H:%M:%S)"
+  git push origin main
+fi
 
-# ── Base ──
-echo ""
-echo "=== Base ==="
-cd "$SCRIPT_DIR/frontend-base"
-pnpm build
-rsync -az --delete \
-  --exclude='.next/cache' \
-  .next/ blockdag-oracle:/root/blockdag-escrow/frontend-base/.next/
-rsync -az package.json blockdag-oracle:/root/blockdag-escrow/frontend-base/
-rsync -az --delete public/ blockdag-oracle:/root/blockdag-escrow/frontend-base/public/
-ssh blockdag-oracle "pm2 restart frontend-base"
+# ── Remote build & restart ──
+echo "🖥️  Building all frontends on server..."
 
-# ── Polygon ──
-echo ""
-echo "=== Polygon ==="
-cd "$SCRIPT_DIR/frontend-polygon"
-pnpm build
-rsync -az --delete \
-  --exclude='.next/cache' \
-  .next/ blockdag-oracle:/root/blockdag-escrow/frontend-polygon/.next/
-rsync -az package.json blockdag-oracle:/root/blockdag-escrow/frontend-polygon/
-rsync -az --delete public/ blockdag-oracle:/root/blockdag-escrow/frontend-polygon/public/
-ssh blockdag-oracle "pm2 restart frontend-polygon"
+ssh "$REMOTE" bash -s <<'REMOTESCRIPT'
+  set -euo pipefail
+  cd /root/blockdag-escrow
 
-# ── Celo ──
-echo ""
-echo "=== Celo ==="
-cd "$SCRIPT_DIR/frontend-celo"
-pnpm build
-rsync -az --delete \
-  --exclude='.next/cache' \
-  --exclude='node_modules' \
-  --exclude='.git' \
-  .next/ blockdag-oracle:/root/blockdag-escrow/frontend-celo/.next/
-rsync -az package.json blockdag-oracle:/root/blockdag-escrow/frontend-celo/
-rsync -az --delete public/ blockdag-oracle:/root/blockdag-escrow/frontend-celo/public/
-ssh blockdag-oracle "pm2 restart frontend-celo"
+  echo "⬇️  Pulling latest..."
+  git merge --no-edit origin/main || true
+
+  # Helper: build a frontend and restart its PM2 process
+  build_and_restart() {
+    local dir=$1
+    local name=$2
+    echo ""
+    echo "=== Building $name ==="
+    cd "/root/blockdag-escrow/$dir"
+    # Use the direct next binary (PM2-safe)
+    pnpm build
+    echo "✅ $name built"
+  }
+
+  build_and_restart "frontend"         "frontend (blockdag)"
+  build_and_restart "frontend-base"    "frontend-base"
+  build_and_restart "frontend-bsc"     "frontend-bsc"
+  build_and_restart "frontend-polygon" "frontend-polygon"
+  build_and_restart "frontend-celo"    "frontend-celo"
+  build_and_restart "frontend-naijalancers" "frontend-naijalancers"
+
+  echo ""
+  echo "🔄 Restarting all PM2 processes..."
+  pm2 restart ecosystem.config.js
+  pm2 restart ecosystem-polygon.config.js
+  pm2 restart ecosystem-celo.config.js
+  pm2 restart ecosystem-naijalancers.config.js
+
+  echo ""
+  echo "📊 PM2 status:"
+  pm2 list
+REMOTESCRIPT
 
 echo ""
-echo "✅ All 4 frontends deployed safely."
+echo "✅ Deploy complete."
