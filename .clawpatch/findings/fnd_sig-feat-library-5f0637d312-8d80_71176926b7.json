@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-5f0637d312-8d80_71176926b7",
+  "featureId": "feat_library_5f0637d312",
+  "title": "Notification preferences can be modified for any wallet without ownership proof",
+  "category": "security",
+  "severity": "high",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 60,
+      "endLine": 66,
+      "symbol": "NotificationModal",
+      "quote": "fetch(`/api/notifications/preferences?wallet=${wallet}`)"
+    },
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 102,
+      "endLine": 109,
+      "symbol": "handleSave",
+      "quote": "body: JSON.stringify({\n          wallet,\n          telegramChatId:  prefs.telegramChatId,\n          telegramEnabled: prefs.telegramEnabled,\n        })"
+    },
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 173,
+      "endLine": 174,
+      "symbol": "NotificationModal",
+      "quote": "href={`https://t.me/${TELEGRAM_BOT}?start=${wallet}`}"
+    }
+  ],
+  "reasoning": "The frontend API contract identifies the target account only by a client-supplied wallet address. A connected wallet address in wagmi is not server authentication, and these requests include no nonce, signature, session token, or SIWE-style proof. If the API accepts this contract, any caller can fetch or overwrite notification preferences for another address and potentially link their Telegram chat to another wallet's escrow events.",
+  "reproduction": "Send POST /api/notifications/preferences with an arbitrary victim wallet address and attacker-controlled telegramChatId/telegramEnabled values; the frontend contract supplies no cryptographic proof the requester controls that wallet.",
+  "recommendation": "Require wallet ownership proof before reading or writing preferences, for example a signed nonce/SIWE flow bound to the wallet and server session, or include and verify a fresh signature on each preference mutation. Do not rely on a wallet address supplied in the request body or query string as authorization.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature declares no linked tests, and the included component tests do not exercise API authorization semantics.",
+  "suggestedRegressionTest": "Add an API/integration test that attempts to read or update preferences for a wallet without a valid signature/session and expects 401/403, plus a success case with a verified signature for the same wallet.",
+  "minimumFixScope": "Notification preference read/write contract and the Telegram wallet-link flow.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-5f0637d312_8d80029c0e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:20:21.047Z",
+  "updatedAt": "2026-05-17T17:20:21.047Z"
+}

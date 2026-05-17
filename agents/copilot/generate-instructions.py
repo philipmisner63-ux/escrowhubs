@@ -14,7 +14,7 @@ Usage:
   ./agents/copilot/generate-instructions.py
 
 What it does:
-  1. Reads identity.json, identity.md, memory.md, inbox.md, outbox.md
+  1. Reads identity.json, identity.md, memory.md, session-notes.md, inbox.md, outbox.md
   2. Parses [ACP:to=<agent>] tags from outbox.md → routes to target inboxes
   3. Compiles into a single copilot-instructions.md
   4. Updates last_seen.json
@@ -107,8 +107,7 @@ def compile_instructions() -> str:
     last_seen = read_json(FILES["last_seen"])
 
     # Session notes — shared log all agents write to, merged so Copilot wakes current
-    session_notes_path = Path(__file__).resolve().parent / "session-notes.md"
-    session_notes = read_file(session_notes_path) if session_notes_path.exists() else "_(No session notes yet)_"
+    session_notes = read_file(FILES["session_notes"])
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
@@ -156,7 +155,9 @@ def compile_instructions() -> str:
 
 ---
 
-## 4. Messages Waiting (Inbox)
+## 4. ⚠️ ACTION REQUIRED — Messages In Your Inbox
+
+These are UNPROCESSED messages sent to you. You must read and respond to each one. Do not treat these as background context — they are active requests waiting for your response.
 
 {inbox}
 
@@ -168,7 +169,7 @@ def compile_instructions() -> str:
 
 ---
 
-## 5. How to Respond
+## 6. How to Respond
 
 - If you have questions or need clarification, ask directly.
 - If you generate code, verify file paths exist in the repo before suggesting imports.
@@ -176,7 +177,7 @@ def compile_instructions() -> str:
 - If a task is blocked on external input (e.g., "waiting for Awwal"), say so.
 - After completing work, summarize key decisions and file changes for the human to capture.
 
-## 6. Outbound ACP Protocol
+## 7. Outbound ACP Protocol
 
 To send a message to another agent, format your output like this:
 ```
@@ -188,7 +189,7 @@ Your message here...
 The gateway will parse this and append it to the target agent's inbox.
 Supported targets: claw, hermes, philip (any agent with /agents/<id>/inbox.md).
 
-## 7. Session End Protocol
+## 8. Session End Protocol
 
 When this session ends, the human (Philip) or another agent (Claw/Hermes) will:
 1. Capture key outputs into `/agents/copilot/outbox.md`
@@ -239,7 +240,7 @@ def main():
     print(f"\n✓ Copilot instructions generated: {OUTPUT_FILE}")
     print(f"  Lines: {lines}")
     print(f"  Characters: {chars}")
-    print(f"  Sources: identity.json, identity.md, memory.md, inbox.md, outbox.md")
+    print(f"  Sources: identity.json, identity.md, memory.md, session-notes.md, inbox.md, outbox.md")
     print()
     print("Next steps:")
     print("  1. Open VS Code → Copilot Chat")

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-330ec5235e-125a76_24efde3ed6",
+  "featureId": "feat_route_330ec5235e",
+  "title": "Preferences can be read or overwritten for any wallet without proof of ownership",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 34,
+      "endLine": 37,
+      "symbol": "GET",
+      "quote": "export async function GET(req: NextRequest) {\n  const wallet = req.nextUrl.searchParams.get(\"wallet\")?.toLowerCase();\n  if (!wallet) return NextResponse.json({ error: \"wallet required\" }, { status: 400 });\n  return NextResponse.json(loadAll()[wallet] ?? null);"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 40,
+      "endLine": 53,
+      "symbol": "POST",
+      "quote": "export async function POST(req: NextRequest) {\n  try {\n    const body: Partial<NotificationPrefs> = await req.json();\n    if (!body.wallet) return NextResponse.json({ error: \"wallet required\" }, { status: 400 });\n    const key = body.wallet.toLowerCase();\n    const all = loadAll();\n    all[key] = {\n      wallet:          key,\n      telegramChatId:  body.telegramChatId  ?? all[key]?.telegramChatId  ?? null,\n      telegramEnabled: body.telegramEnabled ?? all[key]?.telegramEnabled ?? {},\n      updatedAt:       new Date().toISOString(),\n    };\n    saveAll(all);\n    return NextResponse.json({ success: true });"
+    }
+  ],
+  "reasoning": "The route trusts a caller-supplied wallet string as the only selector. Any client can GET another wallet's notification preferences, including telegramChatId, and can POST the same wallet value to change that user's telegramChatId or event settings. Wallet addresses are public identifiers, so they are not sufficient authorization for sensitive preference reads or writes.",
+  "reproduction": "Call GET /api/notifications/preferences?wallet=<victimWallet> to retrieve the victim's saved preferences, or POST {\"wallet\":\"<victimWallet>\",\"telegramChatId\":\"attacker\",\"telegramEnabled\":{\"funds_released\":false}} to overwrite them.",
+  "recommendation": "Require authentication or wallet ownership proof before reading or writing preferences, such as a session bound to the wallet or a signed nonce challenge. Only allow the authenticated wallet to access its own record, and avoid returning sensitive fields unless needed.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included for this route, and the provided files do not show any authorization expectations being exercised.",
+  "suggestedRegressionTest": "Add route tests that verify unauthenticated requests are rejected and that an authenticated wallet cannot read or update another wallet's preferences.",
+  "minimumFixScope": "Add an authorization check to both GET and POST and bind the wallet key to the authenticated identity rather than trusting request input.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-330ec5235e_125a76761e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:06.874Z",
+  "updatedAt": "2026-05-17T17:28:06.874Z"
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-5d48a9c24b-a4a8a8_c620336fed",
+  "featureId": "feat_route_5d48a9c24b",
+  "title": "Escrow title is required but discarded on submit",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 41,
+      "endLine": 41,
+      "symbol": "CreateEscrowPage",
+      "quote": "const [form, setForm] = useState({ title: \"\", beneficiary: \"\", amount: \"\" });"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 77,
+      "endLine": 77,
+      "symbol": "handleSubmit",
+      "quote": "args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, referrer],"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 94,
+      "endLine": 94,
+      "symbol": "handleSubmit",
+      "quote": "args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, referrer],"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 199,
+      "endLine": 199,
+      "symbol": "CreateEscrowPage",
+      "quote": "<Field label={t(\"titleLabel\")} value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder={t(\"titlePlaceholder\")} />"
+    }
+  ],
+  "reasoning": "The page collects a required title into form.title, but neither createSimpleEscrow nor createMilestoneEscrow receives it, and this route does not otherwise persist it before navigating to the created escrow. A user-entered required field is therefore lost as soon as the transaction is submitted.",
+  "reproduction": "Fill in a title, deploy either simple or milestone escrow, and inspect the submitted contract args or destination route state. The title is not included anywhere in the submit path.",
+  "recommendation": "Either persist the title through the intended metadata/storage path before navigation, include it in the relevant contract/API call if supported, or remove the field/required constraint if titles are not supported.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests exercise form submission payloads or verify that all required user inputs are persisted.",
+  "suggestedRegressionTest": "Submit the create form with a unique title and assert the expected persistence mechanism receives that title for both simple and milestone escrow flows.",
+  "minimumFixScope": "Define the intended title persistence contract and update frontend/src/app/[locale]/create/page.tsx submit handling accordingly.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-5d48a9c24b_a4a8a88796",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:38.747Z",
+  "updatedAt": "2026-05-17T17:28:38.747Z"
+}

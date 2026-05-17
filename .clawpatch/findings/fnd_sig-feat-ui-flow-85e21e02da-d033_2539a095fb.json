@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-85e21e02da-d033_2539a095fb",
+  "featureId": "feat_ui-flow_85e21e02da",
+  "title": "Generic global CSS selectors can collide outside the component",
+  "category": "maintainability",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/animated-background.tsx",
+      "startLine": 4,
+      "endLine": 25,
+      "symbol": "AnimatedBackground",
+      "quote": "<style>{`\n        @keyframes drift1 {\n...\n        .orb1 { animation: drift1 40s ease-in-out infinite; will-change: transform; }\n        .orb2 { animation: drift2 35s ease-in-out infinite; will-change: transform; }\n        .orb3 { animation: drift3 30s ease-in-out infinite; will-change: transform; }"
+    }
+  ],
+  "reasoning": "The component injects global class selectors and keyframe names with very generic names (`orb1`, `drift1`, etc.). Any unrelated element or stylesheet using the same names can unexpectedly inherit these animations or override this component's animation definitions, making behavior depend on mount/order of global CSS.",
+  "reproduction": null,
+  "recommendation": "Use scoped CSS module classes, more specific component-prefixed names, or inline `animationName` values generated for this component to avoid global namespace collisions.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests exercise coexistence with other stylesheets or multiple components that might define matching class/keyframe names.",
+  "suggestedRegressionTest": "Add a render/style test with another `.orb1` rule or component-specific class names to verify the animated background does not affect unrelated elements.",
+  "minimumFixScope": "Rename/scope selectors and keyframes in `frontend/src/components/animated-background.tsx`.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-85e21e02da_d033b35efb",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:05.297Z",
+  "updatedAt": "2026-05-17T18:28:05.297Z"
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_ui-flow_317467923b",
+  "title": "React component language-picker-mobile",
+  "summary": "React component implemented by frontend/src/components/language-picker-mobile.tsx.",
+  "kind": "ui-flow",
+  "source": "react-component",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/src/components/language-picker-mobile.tsx",
+      "symbol": "language-picker-mobile",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/components/language-picker-mobile.tsx",
+      "reason": "component implementation"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "component",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-ui-flow-317467923b-e48d_cda65ccc7d",
+    "fnd_sig-feat-ui-flow-317467923b-192a_5f7f2e2c9e"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T174710-134d79",
+      "kind": "review",
+      "summary": "2 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:48:01.120Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:48:01.120Z"
+}

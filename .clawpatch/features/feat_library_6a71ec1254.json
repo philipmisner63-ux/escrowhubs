@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_6a71ec1254",
+  "title": "Node source frontend/src/app/[locale]/learn",
+  "summary": "Node/TypeScript source group frontend/src/app/[locale]/learn with 11 files.",
+  "kind": "library",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend/src/app/[locale]/learn",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/[locale]/learn/escrow-flow/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/faq/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/global-flow/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/how-it-works/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/layout.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/mock-data.ts",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/mock-escrow/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/network-sim/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/onboarding/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/role-view/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/learn"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-6a71ec1254-582b_9e6cc9ea91"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T171856-bf55ad",
+      "kind": "review",
+      "summary": "1 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:19:14.245Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:19:14.245Z"
+}

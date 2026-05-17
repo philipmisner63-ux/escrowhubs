@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_b9410a1d9a",
+  "title": "Node package frontend",
+  "summary": "Node package manifest at frontend/package.json.",
+  "kind": "library",
+  "source": "node-package",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/README.md",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "reason": "project context"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "package",
+    "project:frontend",
+    "project-root:frontend",
+    "workspace"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-b9410a1d9a-53b3_96f54a6dc5"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T172538-69ab9f",
+      "kind": "review",
+      "summary": "1 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:25:53.162Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:25:53.162Z"
+}

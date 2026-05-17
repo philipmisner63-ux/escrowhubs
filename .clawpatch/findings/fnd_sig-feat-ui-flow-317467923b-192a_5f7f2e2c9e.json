@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-317467923b-192a_5f7f2e2c9e",
+  "featureId": "feat_ui-flow_317467923b",
+  "title": "Mobile language sheet is not exposed as a modal dialog",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/language-picker-mobile.tsx",
+      "startLine": 36,
+      "endLine": 40,
+      "symbol": "LanguagePickerMobile",
+      "quote": "{open && (\n        <div\n          className=\"fixed inset-0 z-50 flex flex-col\"\n          style={{ background: \"rgba(5,5,16,0.97)\" }}\n        >"
+    },
+    {
+      "path": "frontend/src/components/language-picker-mobile.tsx",
+      "startLine": 43,
+      "endLine": 51,
+      "symbol": "LanguagePickerMobile",
+      "quote": "<h2 className=\"text-base font-semibold text-white\">{t(\"language\")}</h2>\n            <button\n              type=\"button\"\n              aria-label={t(\"close\")}\n              onClick={() => setOpen(false)}"
+    }
+  ],
+  "reasoning": "When open, the sheet visually behaves as a modal overlay, but the overlay container has no role=\"dialog\", aria-modal=\"true\", labelled-by relationship, Escape handling, focus placement, or focus containment. Keyboard and assistive-technology users may not be told that a modal opened and can still navigate the page context inconsistently behind the overlay.",
+  "reproduction": "Open the language picker with a keyboard or screen reader and inspect the accessibility tree/focus behavior; the full-screen sheet is just a generic div rather than a modal dialog with managed focus.",
+  "recommendation": "Mark the sheet as a modal dialog, label it from the heading, move focus into it on open, return focus to the trigger on close, handle Escape, and prevent interaction with background content while it is open. Prefer an existing dialog primitive if the app already uses one.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature declares no linked tests, and there is no accessibility regression test covering keyboard focus or modal semantics for the mobile language sheet.",
+  "suggestedRegressionTest": "Add an accessibility-focused test that opens the picker, asserts a labelled modal dialog is present, verifies Escape closes it, and checks focus returns to the trigger.",
+  "minimumFixScope": "Update the open-state overlay markup and focus/keyboard behavior in frontend/src/components/language-picker-mobile.tsx.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-317467923b_192ad01156",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:48:01.119Z",
+  "updatedAt": "2026-05-17T17:48:01.119Z"
+}

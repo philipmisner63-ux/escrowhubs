@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-dd71021079-d183d2_5fbbc3a0b4",
+  "featureId": "feat_route_dd71021079",
+  "title": "Unauthenticated route can spend the server Pinata credential and forge evidence metadata",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 3,
+      "endLine": 8,
+      "symbol": "PINATA_JWT",
+      "quote": "const PINATA_JWT = process.env.PINATA_JWT ?? \"\";\nconst PINATA_GATEWAY = process.env.NEXT_PUBLIC_PINATA_GATEWAY ?? \"https://gateway.pinata.cloud\";\n\nexport async function POST(req: NextRequest) {\n  if (!PINATA_JWT) {"
+    },
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 12,
+      "endLine": 16,
+      "symbol": "POST",
+      "quote": "const formData = await req.formData();\n    const file = formData.get(\"file\") as File | null;\n    const text = formData.get(\"text\") as string | null;\n    const escrowAddress = formData.get(\"escrowAddress\") as string | null;\n    const submitter = formData.get(\"submitter\") as string | null;"
+    },
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 51,
+      "endLine": 54,
+      "symbol": "POST",
+      "quote": "const fileRes = await fetch(\"https://api.pinata.cloud/pinning/pinFileToIPFS\", {\n        method: \"POST\",\n        headers: { Authorization: `Bearer ${PINATA_JWT}` },\n        body: fileFormData,"
+    },
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 80,
+      "endLine": 85,
+      "symbol": "POST",
+      "quote": "body: JSON.stringify({\n        pinataContent: evidenceJson,\n        pinataMetadata: {\n          name: `evidence-${escrowAddress}-${Date.now()}`,\n          keyvalues: { escrowAddress: escrowAddress ?? \"\", submitter: submitter ?? \"\", type: \"evidence\" },"
+    }
+  ],
+  "reasoning": "The public API route accepts arbitrary form fields, performs no authentication, signature check, escrow membership check, CSRF/rate limiting, or ownership validation, then uses the server-side Pinata JWT to pin caller-supplied files and metadata. Any internet client that can reach the route can consume the project's Pinata quota and publish evidence under arbitrary escrowAddress and submitter values.",
+  "reproduction": "Send a multipart POST to /api/upload-evidence with any allowed file, escrowAddress set to another escrow, and submitter set to an arbitrary wallet address. The handler will pin it using PINATA_JWT without verifying the caller.",
+  "recommendation": "Require an authenticated session or wallet signature tied to submitter, verify the submitter is authorized for the escrow before pinning, and add rate limiting or abuse controls before invoking Pinata.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided, and there are no assertions for rejected anonymous, unauthorized, or mismatched submitter requests.",
+  "suggestedRegressionTest": "Add tests that anonymous requests and requests with a submitter not authorized for escrowAddress are rejected before any Pinata fetch is made.",
+  "minimumFixScope": "Add authorization and abuse checks in frontend/src/app/api/upload-evidence/route.ts before reading or uploading the file to Pinata.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-dd71021079_d183d2818a",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:39.313Z",
+  "updatedAt": "2026-05-17T17:47:39.313Z"
+}

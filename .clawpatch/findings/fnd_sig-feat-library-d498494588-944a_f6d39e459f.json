@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-d498494588-944a_f6d39e459f",
+  "featureId": "feat_library_d498494588",
+  "title": "Fee input accepts negative arbiter fees before submitting a uint256 contract call",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 158,
+      "endLine": 159,
+      "symbol": "handleSetFees",
+      "quote": "if (!arbiterFee || isNaN(parseFloat(arbiterFee))) { setTxError(\"Invalid AI arbiter fee\"); return; }"
+    },
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 164,
+      "endLine": 164,
+      "symbol": "handleSetFees",
+      "quote": "args: [bps, parseEther(arbiterFee)],"
+    },
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 281,
+      "endLine": 281,
+      "symbol": "AdminPage",
+      "quote": "min={0}"
+    }
+  ],
+  "reasoning": "The validation only checks that arbiterFee parses as a number. Browser min={0} is not a reliable validation boundary because the state can still contain typed or programmatic negative values, and parseEther is then passed to a uint256 ABI argument. This can surface as a confusing wallet/encoding error instead of the page's own validation message.",
+  "reproduction": "Enter a negative AI Arbiter Fee value such as -1, then click Save Fee Config; the local validation passes and the transaction path attempts to encode a negative value for a uint256 argument.",
+  "recommendation": "Validate the parsed arbiter fee is finite and greater than or equal to zero before calling parseEther, and reject malformed decimal strings consistently.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for fee form validation or transaction argument construction.",
+  "suggestedRegressionTest": "Add a form validation test that sets feeBps to a valid value and arbiterFee to -1, clicks Save Fee Config, and asserts writeContractAsync is not called and a validation error is shown.",
+  "minimumFixScope": "Tighten arbiterFee validation in handleSetFees within frontend/src/app/[locale]/admin/page.tsx.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-d498494588_944a8488e9",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172538-69ab9f",
+  "createdAt": "2026-05-17T17:26:09.383Z",
+  "updatedAt": "2026-05-17T17:26:09.383Z"
+}

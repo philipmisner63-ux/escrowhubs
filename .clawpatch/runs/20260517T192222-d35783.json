@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "runId": "20260517T192222-d35783",
+  "command": "review",
+  "args": [
+    "review"
+  ],
+  "rootPath": "/home/philip/projects/blockdag-escrow",
+  "headSha": "08d8342eeee543259a5e132b76853072f53f0bd3",
+  "startedAt": "2026-05-17T19:22:22.384Z",
+  "finishedAt": "2026-05-17T19:22:44.463Z",
+  "status": "completed",
+  "claimedFeatureIds": [
+    "feat_ui-flow_cc5caf6215"
+  ],
+  "findingIds": [
+    "fnd_sig-feat-ui-flow-cc5caf6215-b2d2_45b1aa9d74",
+    "fnd_sig-feat-ui-flow-cc5caf6215-f2d4_5c71bfc014"
+  ],
+  "patchAttemptIds": [],
+  "errors": []
+}

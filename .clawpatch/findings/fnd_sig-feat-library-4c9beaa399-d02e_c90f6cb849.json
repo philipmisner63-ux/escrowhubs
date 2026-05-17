@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-4c9beaa399-d02e_c90f6cb849",
+  "featureId": "feat_library_4c9beaa399",
+  "title": "Environment-provided contract addresses are accepted without runtime validation",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/lib/contracts/addresses.ts",
+      "startLine": 11,
+      "endLine": 13,
+      "symbol": "CONTRACT_ADDRESSES",
+      "quote": "factory:     (process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? \"0x14e03bbd4a3123e4bdb5b6704c0ccc208bbfaa7a\") as Address,"
+    }
+  ],
+  "reasoning": "The helpers promise viem Address values, but the environment values are only type-cast. A non-empty typo such as NEXT_PUBLIC_FACTORY_ADDRESS=foo or an incorrectly sized 0x string bypasses the fallback and is returned as an Address. That pushes a deployment configuration error into later contract calls, where failures are harder to diagnose and may affect all callers for that chain.",
+  "reproduction": "Set NEXT_PUBLIC_FACTORY_ADDRESS=foo, build/run the frontend, and call getFactoryAddress(1404). It returns foo typed as Address instead of rejecting the invalid configuration or falling back.",
+  "recommendation": "Validate each configured address at module initialization or in getContractAddresses using viem's isAddress, and throw a clear configuration error naming the invalid variable and chain id. Consider treating empty strings as unset if that matches deployment expectations.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this source group, and there is no visible coverage for malformed NEXT_PUBLIC_* address values.",
+  "suggestedRegressionTest": "Add a unit test that loads the address module with an invalid NEXT_PUBLIC_FACTORY_ADDRESS and asserts that getFactoryAddress(1404) throws a clear configuration error rather than returning the invalid string.",
+  "minimumFixScope": "frontend/src/lib/contracts/addresses.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-4c9beaa399_d02e4a0eee",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:13.069Z",
+  "updatedAt": "2026-05-17T17:04:13.069Z"
+}

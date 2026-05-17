@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_ui-flow_42c1b1cf95",
+  "title": "React component glow-button",
+  "summary": "React component implemented by frontend/src/components/ui/glow-button.tsx.",
+  "kind": "ui-flow",
+  "source": "react-component",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/src/components/ui/glow-button.tsx",
+      "symbol": "glow-button",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/components/ui/glow-button.tsx",
+      "reason": "component implementation"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "react",
+    "component",
+    "web"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-ui-flow-42c1b1cf95-24bb_962d56a893"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T182735-942d1e",
+      "kind": "review",
+      "summary": "1 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T18:27:53.667Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T18:27:53.667Z"
+}

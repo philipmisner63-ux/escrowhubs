@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-5f0637d312-78d0_2788d2428f",
+  "featureId": "feat_library_5f0637d312",
+  "title": "BDAG locked stat loses fractional precision during animation",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 51,
+      "endLine": 56,
+      "symbol": "useCountUp",
+      "quote": "setValue(Math.round(eased * target));"
+    },
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 95,
+      "endLine": 103,
+      "symbol": "StatCard",
+      "quote": "suffix === \" BDAG\"\n    ? animated >= 1000\n      ? `${(animated / 1000).toFixed(1)}K`\n      : animated.toFixed(animated < 10 ? 2 : 0)"
+    },
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 164,
+      "endLine": 166,
+      "symbol": "fetchStats",
+      "quote": "const bdagLocked = balanceResult.status === \"fulfilled\"\n        ? parseFloat(formatEther(balanceResult.value as bigint))"
+    },
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 210,
+      "endLine": 213,
+      "symbol": "LiveStats",
+      "quote": "<StatCard\n        label={t(\"bdagLocked\")}\n        value={stats?.bdagLocked ?? 0}\n        suffix=\" BDAG\""
+    }
+  ],
+  "reasoning": "useCountUp rounds every animated value to an integer, but bdagLocked is parsed from ether as a fractional number and StatCard later tries to render decimals for BDAG values under 10. Any locked balance below 0.5 BDAG displays as 0.00, and values like 1.23 display as 1.00 after animation completes.",
+  "reproduction": "Provide stats.bdagLocked = 0.25 or 1.23 and scroll the card into view; the displayed value settles at 0.00 BDAG or 1.00 BDAG instead of the actual fractional amount.",
+  "recommendation": "Preserve decimals for fractional stats. For example, let useCountUp return a floating value, or add a mode/formatter so count-style integer stats round while BDAG balances animate and display with decimal precision.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature declares no linked tests, and there is no rendering test for fractional BDAG balances.",
+  "suggestedRegressionTest": "Render StatCard/LiveStats with bdagLocked values below 1 and between 1 and 10, complete the animation with fake timers or mocked requestAnimationFrame, and assert the displayed BDAG amount preserves the expected decimals.",
+  "minimumFixScope": "LiveStats useCountUp and BDAG formatting path in StatCard.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-5f0637d312_78d02acc58",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:20:21.047Z",
+  "updatedAt": "2026-05-17T17:20:21.047Z"
+}

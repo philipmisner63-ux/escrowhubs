@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_29ab4f731a",
+  "title": "frontend route /:locale/escrow/:id",
+  "summary": "Web route implemented by frontend/src/app/[locale]/escrow/[id]/page.tsx in project frontend.",
+  "kind": "route",
+  "source": "next-app-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "symbol": null,
+      "route": "/:locale/escrow/:id",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "reason": "entrypoint"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "frontend/README.md",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "reason": "project context"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "next",
+    "web",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-route-29ab4f731a-e51f03_92a8e72382",
+    "fnd_sig-feat-route-29ab4f731a-e99b34_cee1faddb5"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T172730-c89fe4",
+      "kind": "review",
+      "summary": "2 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:29:02.745Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:29:02.745Z"
+}

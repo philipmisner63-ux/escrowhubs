@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-cc5caf6215-b2d2_45b1aa9d74",
+  "featureId": "feat_ui-flow_cc5caf6215",
+  "title": "Referral links are hardcoded to the production host",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/referral-panel.tsx",
+      "startLine": 11,
+      "endLine": 11,
+      "symbol": "APP_URL",
+      "quote": "const APP_URL = \"https://app.escrowhubs.io\";"
+    },
+    {
+      "path": "frontend/src/components/referral-panel.tsx",
+      "startLine": 30,
+      "endLine": 30,
+      "symbol": "ReferralPanel",
+      "quote": "const referralLink = wallet ? `${APP_URL}/?ref=${wallet}` : \"\";"
+    }
+  ],
+  "reasoning": "The referral URL ignores the actual deployed origin and any environment-specific configuration. In local, preview, staging, white-label, or future domain deployments, connected users will copy a production app.escrowhubs.io link instead of the current application URL, which can misroute referrals and make non-production verification misleading.",
+  "reproduction": "Run the frontend on any non-production host, connect a wallet, open the referral panel, and observe that the generated link still points to https://app.escrowhubs.io/?ref=... rather than the current origin.",
+  "recommendation": "Build the base URL from a public environment variable with a current-origin fallback on the client, or otherwise use the canonical configured app URL per deployment environment.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided for this component, and there is no test asserting referral-link generation under different deployment origins or environment configuration.",
+  "suggestedRegressionTest": "Render ReferralPanel with a mocked connected wallet and configured app origin, then assert the displayed/copied referral URL uses that configured origin and wallet address.",
+  "minimumFixScope": "Replace the hardcoded APP_URL usage in referral-panel.tsx with deployment-aware URL construction and cover it with a focused component/unit test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-cc5caf6215_b2d24be0a9",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T192222-d35783",
+  "createdAt": "2026-05-17T19:22:44.462Z",
+  "updatedAt": "2026-05-17T19:22:44.462Z"
+}

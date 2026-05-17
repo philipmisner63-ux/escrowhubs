@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-6a71ec1254-582b_9e6cc9ea91",
+  "featureId": "feat_library_6a71ec1254",
+  "title": "Learn mock data cannot compile because an imported binding is missing or unused",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/learn/mock-data.ts",
+      "startLine": 2,
+      "endLine": 2,
+      "symbol": null,
+      "quote": "import { DEFAULT_CHAIN_ID, getRpcUrl } from \"@/lib/chains\";"
+    }
+  ],
+  "reasoning": "The file imports getRpcUrl but never references it. In a Next/TypeScript frontend this can fail CI when noUnusedLocals or eslint no-unused-vars is enabled, and frontend/package.json exposes an eslint script. If @/lib/chains does not export getRpcUrl, this is an unconditional build failure even without unused-local checking. The imported value is not needed for any displayed learn content.",
+  "reproduction": null,
+  "recommendation": "Remove getRpcUrl from the import, leaving only DEFAULT_CHAIN_ID.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and there is no included lint/typecheck evidence exercising the learn source group.",
+  "suggestedRegressionTest": "Run the frontend lint or TypeScript/Next build in CI for the learn route files.",
+  "minimumFixScope": "frontend/src/app/[locale]/learn/mock-data.ts import list",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-6a71ec1254_582bc0ea9b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:14.245Z",
+  "updatedAt": "2026-05-17T17:19:14.245Z"
+}

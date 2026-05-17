@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-330ec5235e-12f609_3b3ad5ca62",
+  "featureId": "feat_route_330ec5235e",
+  "title": "Corrupt or unreadable storage is treated as empty and can overwrite all saved preferences",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 22,
+      "endLine": 28,
+      "symbol": "loadAll",
+      "quote": "function loadAll(): Record<string, NotificationPrefs> {\n  try {\n    if (!fs.existsSync(PREFS_FILE)) return {};\n    const raw = fs.readFileSync(PREFS_FILE, \"utf-8\").trim();\n    return raw ? JSON.parse(raw) : {};\n  } catch { return {}; }\n}"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 45,
+      "endLine": 52,
+      "symbol": "POST",
+      "quote": "const all = loadAll();\n    all[key] = {\n      wallet:          key,\n      telegramChatId:  body.telegramChatId  ?? all[key]?.telegramChatId  ?? null,\n      telegramEnabled: body.telegramEnabled ?? all[key]?.telegramEnabled ?? {},\n      updatedAt:       new Date().toISOString(),\n    };\n    saveAll(all);"
+    }
+  ],
+  "reasoning": "loadAll swallows every read and JSON parse error and returns an empty object. A subsequent POST then saves that empty-derived object back to notifications.json, replacing all previously saved preferences with just the current request's record. This converts transient filesystem errors, partial writes, or malformed JSON into permanent data loss.",
+  "reproduction": "Put invalid JSON in notifications.json or make a read fail transiently, then POST a valid preference. The handler will call loadAll(), receive {}, and save a new file containing only the posted wallet.",
+  "recommendation": "Do not treat parse/read failures as an empty preference set. Return an error, preserve the existing file, log actionable details, and write via a temporary file plus atomic rename to reduce partial-file corruption.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included, and there is no evidence of tests covering malformed notifications.json or read failure handling.",
+  "suggestedRegressionTest": "Add a test with malformed notifications.json that asserts POST returns an error and does not replace the existing file contents.",
+  "minimumFixScope": "Change loadAll to surface storage errors to POST/GET and prevent saveAll from running after a failed load.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-330ec5235e_12f6091018",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:06.874Z",
+  "updatedAt": "2026-05-17T17:28:06.874Z"
+}

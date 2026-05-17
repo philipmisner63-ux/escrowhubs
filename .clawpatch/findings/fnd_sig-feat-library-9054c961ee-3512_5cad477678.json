@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-9054c961ee-3512_5cad477678",
+  "featureId": "feat_library_9054c961ee",
+  "title": "Observer wallets can submit AI-arbiter evidence as the seller",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 166,
+      "endLine": 168,
+      "symbol": "SimpleEscrowView",
+      "quote": "{stateNum === SimpleEscrowState.DISPUTED &&\n        data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase() && (\n        <EvidencePanel escrowAddress={address} isBuyer={!!wallet && data.depositor?.toLowerCase() === wallet.toLowerCase()} />"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 459,
+      "endLine": 502,
+      "symbol": "EvidencePanel",
+      "quote": "const role = isBuyer ? \"buyer\" : \"seller\";\n...\nrole,\n...\nfunctionName: \"submitEvidence\",\nargs: [escrowAddress, uri],"
+    }
+  ],
+  "reasoning": "The evidence panel is shown for any disputed simple escrow whose arbiter is the configured AI arbiter, without checking that the connected wallet is the depositor or beneficiary. The only role signal passed to the panel is whether the wallet equals the depositor; every other case, including an unrelated observer wallet, is encoded into the submitted payload as \"seller\" and sent to submitEvidence. This lets non-participants poison or confuse the arbitration record from the UI.",
+  "reproduction": "Open an AI-arbiter disputed simple escrow while connected with an address that is neither depositor nor beneficiary. The page renders the AI Arbiter statement form, treats the wallet as seller, and submits that seller-tagged payload to submitEvidence.",
+  "recommendation": "Gate EvidencePanel rendering to escrow participants only, e.g. depositor gets buyer and beneficiary gets seller, while observers see a read-only message. Also derive the submitted role from explicit wallet-vs-party checks rather than treating all non-depositors as sellers.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature declares no linked tests, and the current code has no route/component test covering observer access to the disputed AI-arbiter form.",
+  "suggestedRegressionTest": "Render SimpleEscrowView for a disputed AI-arbiter escrow with an unrelated connected wallet and assert that the EvidencePanel form and submit button are not present; separately assert depositor and beneficiary wallets get buyer and seller roles respectively.",
+  "minimumFixScope": "frontend/src/app/[locale]/escrow/[id]/page.tsx participant-role derivation and EvidencePanel render condition.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-9054c961ee_3512f333e8",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:20:30.999Z",
+  "updatedAt": "2026-05-17T17:20:30.999Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-42c1b1cf95-24bb_962d56a893",
+  "featureId": "feat_ui-flow_42c1b1cf95",
+  "title": "onClick prop rejects standard button event handlers",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/glow-button.tsx",
+      "startLine": 6,
+      "endLine": 6,
+      "symbol": "GlowButtonProps.onClick",
+      "quote": "onClick?: () => void;"
+    },
+    {
+      "path": "frontend/src/components/ui/glow-button.tsx",
+      "startLine": 29,
+      "endLine": 29,
+      "symbol": "GlowButton",
+      "quote": "onClick={onClick}"
+    }
+  ],
+  "reasoning": "The wrapper exposes a button onClick prop, but types it as a zero-argument callback instead of React's button click handler type. Consumers cannot pass normal handlers that need the MouseEvent, such as handlers that inspect currentTarget or call preventDefault, even though the implementation forwards the callback directly to a native button.",
+  "reproduction": "In a TypeScript consumer, render <GlowButton onClick={(event) => event.currentTarget.blur()}>Save</GlowButton>. The handler is a standard button click handler, but it is not assignable to the declared () => void prop type under strict function type checking.",
+  "recommendation": "Type onClick as React.MouseEventHandler<HTMLButtonElement>, or extend React.ButtonHTMLAttributes<HTMLButtonElement> and override only the props that need custom behavior.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were provided for this component, and there is no type-level usage test covering event-aware click handlers.",
+  "suggestedRegressionTest": "Add a type-checking component fixture that passes a MouseEventHandler<HTMLButtonElement> to GlowButton.onClick and verifies it compiles.",
+  "minimumFixScope": "Update GlowButtonProps.onClick typing in frontend/src/components/ui/glow-button.tsx.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-42c1b1cf95_24bb6d4c03",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:27:53.667Z",
+  "updatedAt": "2026-05-17T18:27:53.667Z"
+}

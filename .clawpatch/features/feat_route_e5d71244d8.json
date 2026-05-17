@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_e5d71244d8",
+  "title": "frontend route /api/support",
+  "summary": "Web route implemented by frontend/src/app/api/support/route.ts in project frontend.",
+  "kind": "route",
+  "source": "next-app-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "symbol": null,
+      "route": "/api/support",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "reason": "entrypoint"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "frontend/README.md",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "reason": "project context"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "next",
+    "web",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-route-e5d71244d8-bcf403_7caf1f1362",
+    "fnd_sig-feat-route-e5d71244d8-408535_c242a929f4",
+    "fnd_sig-feat-route-e5d71244d8-edd6a7_ad6ad1efb0"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T174710-134d79",
+      "kind": "review",
+      "summary": "3 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:47:39.870Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:47:39.870Z"
+}

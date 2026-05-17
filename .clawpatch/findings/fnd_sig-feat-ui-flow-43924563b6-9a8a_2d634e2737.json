@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-43924563b6-9a8a_2d634e2737",
+  "featureId": "feat_ui-flow_43924563b6",
+  "title": "Pulse animation styles are injected once per badge instance",
+  "category": "performance",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/status-badge.tsx",
+      "startLine": 50,
+      "endLine": 56,
+      "symbol": "StatusBadge",
+      "quote": "<style>{`\\n        @keyframes pulse-dot {\\n          0%, 100% { transform: scale(1); opacity: 1; }\\n          50%       { transform: scale(1.4); opacity: 0.6; }\\n        }\\n      `}</style>"
+    }
+  ],
+  "reasoning": "Every rendered StatusBadge emits a duplicate <style> tag defining the same global @keyframes rule. In status-heavy views such as tables or histories, this unnecessarily grows the DOM and repeats global CSS declarations for identical behavior. Because the rule is global and static, it should be declared once in shared CSS or represented with a Tailwind/global animation utility.",
+  "reproduction": null,
+  "recommendation": "Move the pulse-dot keyframes and animation declaration to a global stylesheet or Tailwind animation utility, then apply a class to the dot instead of rendering a <style> element per component instance.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and DOM-size/style-injection behavior is not exercised by the provided files.",
+  "suggestedRegressionTest": "Render multiple StatusBadge instances with pulsing statuses and assert the component output does not include per-instance <style> tags while the dot still receives the pulse animation class.",
+  "minimumFixScope": "Update frontend/src/components/ui/status-badge.tsx and the shared CSS/Tailwind animation location used by the frontend.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-43924563b6_9a8a9954de",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:27:54.063Z",
+  "updatedAt": "2026-05-17T18:27:54.063Z"
+}

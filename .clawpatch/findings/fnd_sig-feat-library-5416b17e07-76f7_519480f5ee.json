@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-5416b17e07-76f7_519480f5ee",
+  "featureId": "feat_library_5416b17e07",
+  "title": "Form labels are not associated with their controls",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/marketplace/page.tsx",
+      "startLine": 76,
+      "endLine": 84,
+      "symbol": "MarketplacePage",
+      "quote": "<label className=\"text-xs font-medium uppercase tracking-widest text-slate-500\">What are you selling?</label>\n            <textarea"
+    },
+    {
+      "path": "frontend/src/app/[locale]/marketplace/page.tsx",
+      "startLine": 90,
+      "endLine": 98,
+      "symbol": "MarketplacePage",
+      "quote": "<label className=\"text-xs font-medium uppercase tracking-widest text-slate-500\">Buyer Email or Phone</label>\n            <input"
+    },
+    {
+      "path": "frontend/src/app/[locale]/marketplace/page.tsx",
+      "startLine": 104,
+      "endLine": 112,
+      "symbol": "MarketplacePage",
+      "quote": "<label className=\"text-xs font-medium uppercase tracking-widest text-slate-500\">Amount (BDAG)</label>\n            <input"
+    },
+    {
+      "path": "frontend/src/app/[locale]/marketplace/page.tsx",
+      "startLine": 117,
+      "endLine": 118,
+      "symbol": "MarketplacePage",
+      "quote": "<label className=\"text-xs font-medium uppercase tracking-widest text-slate-500\">Dispute Resolution</label>\n            <div className=\"grid grid-cols-2 gap-3\">"
+    }
+  ],
+  "reasoning": "The visible labels are sibling elements without htmlFor/id links and do not wrap their associated textarea, inputs, or arbitration button group. Assistive technologies cannot reliably derive the accessible name from these labels, and clicking the label text will not focus or activate the intended control. This affects every primary form field in the marketplace create-escrow flow.",
+  "reproduction": "Open the marketplace page and click the 'Amount (BDAG)' label; focus does not move to the amount input. Inspecting the accessibility tree will show the input does not receive its name from that label.",
+  "recommendation": "Add stable ids to each textarea/input and matching htmlFor attributes on labels. For the two-button dispute selector, use a fieldset/legend or radiogroup semantics with accessible labels and selected state.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for this feature, and there is no accessibility test asserting form controls have accessible names or label activation behavior.",
+  "suggestedRegressionTest": "Add an accessibility-focused render test that queries the description, buyer contact, amount, and dispute resolution controls by accessible label/name.",
+  "minimumFixScope": "frontend/src/app/[locale]/marketplace/page.tsx",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-5416b17e07_76f793074d",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:07.724Z",
+  "updatedAt": "2026-05-17T17:04:07.724Z"
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-973a9a3073-4238_c838d75985",
+  "featureId": "feat_library_973a9a3073",
+  "title": "Read-modify-write JSON persistence can lose concurrent updates",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 15,
+      "endLine": 26,
+      "symbol": "appendLog",
+      "quote": "let records: object[] = [];\n    if (fs.existsSync(LOG_FILE)) {\n      const raw = fs.readFileSync(LOG_FILE, \"utf-8\").trim();\n      if (raw) records = JSON.parse(raw);\n    }\n    records.push(entry);\n    fs.writeFileSync(LOG_FILE, JSON.stringify(records, null, 2), \"utf-8\");"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 24,
+      "endLine": 26,
+      "symbol": "saveAll",
+      "quote": "function saveAll(data: Record<string, NotificationPrefs>) {\n  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), \"utf-8\");\n}"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 37,
+      "endLine": 46,
+      "symbol": "POST",
+      "quote": "const all = loadAll();\n    all[key] = {\n      wallet:          key,\n      telegramChatId:  body.telegramChatId  ?? all[key]?.telegramChatId  ?? null,\n      telegramEnabled: body.telegramEnabled ?? all[key]?.telegramEnabled ?? {},\n      updatedAt:       new Date().toISOString(),\n    };\n    saveAll(all);"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 22,
+      "endLine": 24,
+      "symbol": "saveAll",
+      "quote": "function saveAll(data: Record<string, object>) {\n  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), \"utf-8\");\n}"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 62,
+      "endLine": 66,
+      "symbol": "POST",
+      "quote": "const all = loadAll() as Record<string, { telegramChatId?: string; wallet?: string; [k: string]: unknown }>;\n        const existing = all[wallet] ?? {};\n        all[wallet] = { ...existing, wallet, telegramChatId: String(chatId) };\n        saveAll(all);"
+    }
+  ],
+  "reasoning": "These routes persist shared state by reading the whole JSON file, mutating it in memory, and writing the whole file back without a lock, compare-and-swap, append-only write, or shared storage layer. Concurrent requests can both read the same old content and the later write overwrites the earlier update. The risk is worse for notifications because two different endpoints write the same notifications.json file, so a preference update and Telegram link can race and drop one another.",
+  "reproduction": "Issue two concurrent POST requests that update different wallets in notifications/preferences, or one preferences POST and one telegram-webhook /start update. If both read the file before either write completes, the second writer persists only its own mutation and discards the first.",
+  "recommendation": "Move this state to an atomic datastore, or at minimum serialize file mutations with a process-wide lock and write via a temp file followed by rename. For feedback, prefer append-only newline-delimited JSON or a datastore-backed queue.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided, and single-request route tests would not exercise concurrent read/write interleavings.",
+  "suggestedRegressionTest": "Add a concurrency test that fires multiple simultaneous preference and webhook updates against a temp notifications file and asserts all updates survive.",
+  "minimumFixScope": "Shared persistence helpers for feedback.json and notifications.json, including both notification route writers",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-973a9a3073_4238366bbd",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:27.591Z",
+  "updatedAt": "2026-05-17T17:19:27.591Z"
+}

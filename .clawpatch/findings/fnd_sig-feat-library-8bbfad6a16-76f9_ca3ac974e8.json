@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8bbfad6a16-76f9_ca3ac974e8",
+  "featureId": "feat_library_8bbfad6a16",
+  "title": "Contract type detection treats transient read failures as simple escrows",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/lib/hooks/useContractType.ts",
+      "startLine": 10,
+      "endLine": 17,
+      "symbol": "useContractType",
+      "quote": "const { data, isLoading, isError } = useReadContract({\n    address,\n    abi: MILESTONE_ESCROW_ABI,\n    functionName: \"milestoneCount\",\n    chainId: resolvedChainId,\n    query: { enabled: !!address, retry: false },\n  });"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useContractType.ts",
+      "startLine": 19,
+      "endLine": 22,
+      "symbol": "useContractType",
+      "quote": "if (!address || isLoading) return \"unknown\";\n  if (isError) return \"simple\";\n  if (data !== undefined) return \"milestone\";"
+    }
+  ],
+  "reasoning": "The hook intentionally probes milestoneCount to identify milestone contracts, but it collapses every read error into \"simple\". That includes transport/RPC failures, wrong-chain reads, rate limits, and malformed or non-escrow addresses, not only ABI mismatch against a simple escrow. With retry disabled, even a single transient failure makes the UI treat the address as a simple escrow and can route subsequent reads/writes through SIMPLE_ESCROW_ABI against the wrong contract type.",
+  "reproduction": "Mock useReadContract to return { data: undefined, isLoading: false, isError: true } for a known milestone escrow address due to an RPC failure. useContractType(address) returns \"simple\" instead of preserving \"unknown\" or surfacing an indeterminate state.",
+  "recommendation": "Only classify as simple when the error is known to mean the milestoneCount function is absent or reverted in the expected way. For generic read errors, return \"unknown\" or expose the error so the caller can show an indeterminate/error state. Consider retrying transient failures.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided for this source group, and nothing in the included files exercises read-error classification paths.",
+  "suggestedRegressionTest": "Add a hook test that stubs useReadContract for a milestone address with a generic RPC/network error and asserts the result is not \"simple\". Add a separate ABI-mismatch case if simple classification is still desired for that specific failure mode.",
+  "minimumFixScope": "frontend/src/lib/hooks/useContractType.ts plus a focused hook test/mocking setup.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8bbfad6a16_76f9909bb8",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:29.079Z",
+  "updatedAt": "2026-05-17T17:19:29.079Z"
+}

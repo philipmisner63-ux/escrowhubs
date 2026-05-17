@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-d498494588-e7ef_fc504d98b1",
+  "featureId": "feat_library_d498494588",
+  "title": "Admin escalation data is fetched before the owner check is applied",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 97,
+      "endLine": 103,
+      "symbol": "loadEscalations",
+      "quote": "const res = await fetch(\"/api/admin/escalations\");"
+    },
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 193,
+      "endLine": 193,
+      "symbol": "AdminPage",
+      "quote": "useEffect(() => { loadEscalations(); }, []);"
+    },
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 201,
+      "endLine": 217,
+      "symbol": "AdminPage",
+      "quote": "{!isOwner && ("
+    }
+  ],
+  "reasoning": "The page calls the admin escalations endpoint on mount for every visitor, before rendering the owner-only panel. If the endpoint returns escalation records without independently authenticating the caller, a non-owner can still trigger retrieval of depositor, beneficiary, escrow address, dispute reasoning, and scoring data even though the UI later displays Access Denied. The frontend should not initiate privileged data loads until the connected wallet is authorized, and the API must enforce the same authorization server-side.",
+  "reproduction": "Open the admin route while disconnected or connected with a non-owner wallet and observe that the browser still requests /api/admin/escalations on initial render.",
+  "recommendation": "Gate loadEscalations behind isOwner, clear escalation state when isOwner becomes false, and ensure /api/admin/escalations performs server-side authorization rather than relying on the client.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this feature, and there is no test asserting that non-owner visitors do not request or receive admin escalation data.",
+  "suggestedRegressionTest": "Add a component or browser test that renders the admin page as disconnected and as a non-owner wallet, mocks fetch, and asserts /api/admin/escalations is not called until isOwner is true.",
+  "minimumFixScope": "Update frontend/src/app/[locale]/admin/page.tsx to conditionally load escalations only for authorized owners; server API authorization should be verified in the corresponding route as part of the full fix.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-d498494588_e7ef20a5ba",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172538-69ab9f",
+  "createdAt": "2026-05-17T17:26:09.383Z",
+  "updatedAt": "2026-05-17T17:26:09.383Z"
+}

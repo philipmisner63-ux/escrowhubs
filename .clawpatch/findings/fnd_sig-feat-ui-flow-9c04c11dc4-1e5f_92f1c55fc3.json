@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-9c04c11dc4-1e5f_92f1c55fc3",
+  "featureId": "feat_ui-flow_9c04c11dc4",
+  "title": "Separator sizing classes never match Base UI orientation attributes",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/separator.tsx",
+      "startLine": 15,
+      "endLine": 17,
+      "symbol": "Separator",
+      "quote": "orientation={orientation}\n      className={cn(\n        \"shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch\","
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 12,
+      "endLine": 12,
+      "symbol": null,
+      "quote": "\"@base-ui/react\": \"^1.3.0\","
+    }
+  ],
+  "reasoning": "The wrapper uses Tailwind variants for data-horizontal and data-vertical attributes, but the Base UI separator API exposes orientation through data-orientation. As a result, the horizontal and vertical dimension utilities do not apply; the default separator renders with only shrink-0 and bg-border, so it can collapse to no visible size.",
+  "reproduction": "Render <Separator /> or <Separator orientation=\"vertical\" /> and inspect the generated element/classes. The element receives an orientation prop, but the CSS selectors in the class string target data-horizontal/data-vertical instead of data-orientation values, so the height/width utilities are inactive.",
+  "recommendation": "Change the variants to target the actual orientation attribute, for example data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch, or use the Base UI state className callback to branch on orientation.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for this component, and there is no snapshot or DOM-style assertion covering the classes applied for horizontal and vertical separators.",
+  "suggestedRegressionTest": "Add a component test that renders horizontal and vertical separators and asserts that the generated className includes selectors for data-[orientation=horizontal] and data-[orientation=vertical], or verifies the rendered element has nonzero dimensions under the app's Tailwind output.",
+  "minimumFixScope": "Update frontend/src/components/ui/separator.tsx className variants and add a focused separator rendering/style test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-9c04c11dc4_1e5f2a2701",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:29.128Z",
+  "updatedAt": "2026-05-17T18:28:29.128Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-9c68dcb22b-ff23_61dada2633",
+  "featureId": "feat_ui-flow_9c68dcb22b",
+  "title": "Orientation styles never match the rendered data attribute",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/tabs.tsx",
+      "startLine": 15,
+      "endLine": 20,
+      "symbol": "Tabs",
+      "quote": "data-orientation={orientation}\n      className={cn(\n        \"group/tabs flex gap-2 data-horizontal:flex-col\","
+    },
+    {
+      "path": "frontend/src/components/ui/tabs.tsx",
+      "startLine": 28,
+      "endLine": 28,
+      "symbol": "tabsListVariants",
+      "quote": "group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col"
+    },
+    {
+      "path": "frontend/src/components/ui/tabs.tsx",
+      "startLine": 58,
+      "endLine": 58,
+      "symbol": "TabsTrigger",
+      "quote": "group-data-horizontal/tabs:after:inset-x-0 ... group-data-vertical/tabs:after:inset-y-0"
+    }
+  ],
+  "reasoning": "The component renders data-orientation=\"horizontal\" or \"vertical\", but its Tailwind variants look for boolean attributes such as data-horizontal and group-data-vertical. Those selectors do not match data-orientation values, so the intended horizontal flex-column layout, vertical list layout, trigger width/justification, and active indicator positioning are not applied. A default horizontal tabs instance will render the tab list and panel in a row instead of stacking list above content.",
+  "reproduction": "Render <Tabs><TabsList>...</TabsList><TabsContent>...</TabsContent></Tabs>. The root receives data-orientation=\"horizontal\" but not data-horizontal, so data-horizontal:flex-col does not activate and the root remains flex-row.",
+  "recommendation": "Use value selectors that match the emitted attribute, such as data-[orientation=horizontal]:flex-col and group-data-[orientation=vertical]/tabs:flex-col, or render matching data-horizontal/data-vertical attributes consistently.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests or visual regression coverage were provided for the tabs component layout or orientation variants.",
+  "suggestedRegressionTest": "Add a component/render test or visual snapshot covering default horizontal tabs and vertical tabs, asserting the generated classes/selectors apply to the rendered orientation attributes.",
+  "minimumFixScope": "Update orientation-dependent Tailwind variants in frontend/src/components/ui/tabs.tsx to match the actual data attribute contract.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-9c68dcb22b_ff23812d47",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:16.278Z",
+  "updatedAt": "2026-05-17T18:28:16.278Z"
+}

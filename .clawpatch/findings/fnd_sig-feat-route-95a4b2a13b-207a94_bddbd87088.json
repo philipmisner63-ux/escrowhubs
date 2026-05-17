@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-95a4b2a13b-207a94_bddbd87088",
+  "featureId": "feat_route_95a4b2a13b",
+  "title": "Audit contact text drops localized suffix after the email address",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/security/page.tsx",
+      "startLine": 188,
+      "endLine": 193,
+      "symbol": "SecurityPage",
+      "quote": "{t(\"au3\").split(\"security@escrowhubs.io\")[0]}\n                <a href=\"mailto:security@escrowhubs.io\" className=\"text-cyan-400 hover:underline\">\n                  security@escrowhubs.io\n                </a>"
+    },
+    {
+      "path": "frontend/src/messages/zh.json",
+      "startLine": 268,
+      "endLine": 268,
+      "symbol": null,
+      "quote": "\"au3\": \"如果您发现漏洞，请通过 security@escrowhubs.io 联系我们\","
+    },
+    {
+      "path": "frontend/src/messages/ko.json",
+      "startLine": 268,
+      "endLine": 268,
+      "symbol": null,
+      "quote": "\"au3\": \"취약점을 발견하면 security@escrowhubs.io로 문의하세요\","
+    },
+    {
+      "path": "frontend/src/messages/ja.json",
+      "startLine": 268,
+      "endLine": 268,
+      "symbol": null,
+      "quote": "\"au3\": \"脆弱性を発見した場合はsecurity@escrowhubs.ioにご連絡ください\","
+    }
+  ],
+  "reasoning": "The page renders only the substring before security@escrowhubs.io and then the mailto link. It never renders the substring after the address, so locales whose grammar places required words or particles after the email lose that text. For example zh loses \" 联系我们\", ko loses \"로 문의하세요\", and ja loses \"にご連絡ください\".",
+  "reproduction": "Visit /zh/security, /ko/security, or /ja/security and inspect the audit contact sentence. The sentence stops at the linked email instead of including the translated suffix present in the message file.",
+  "recommendation": "Render both sides of the split, or use next-intl rich text interpolation for the email link so each locale controls the full sentence order and surrounding grammar.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were provided for this route or for locale rendering of the audit contact sentence.",
+  "suggestedRegressionTest": "Add a render test for at least one locale with text after the email, asserting that the suffix appears after the mailto link.",
+  "minimumFixScope": "Update frontend/src/app/[locale]/security/page.tsx to preserve the post-email substring or convert au3 to a rich translation with an email placeholder.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-95a4b2a13b_207a94c1a6",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:40.633Z",
+  "updatedAt": "2026-05-17T17:28:40.633Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-330ec5235e-540195_b543519fa4",
+  "featureId": "feat_route_330ec5235e",
+  "title": "File-backed preferences are not durable in typical Next production deployments",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 2,
+      "endLine": 5,
+      "symbol": null,
+      "quote": "import fs from \"fs\";\nimport path from \"path\";\n\nconst PREFS_FILE = path.join(process.cwd(), \"notifications.json\");"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 30,
+      "endLine": 31,
+      "symbol": "saveAll",
+      "quote": "function saveAll(data: Record<string, NotificationPrefs>) {\n  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), \"utf-8\");"
+    },
+    {
+      "path": "frontend/README.md",
+      "startLine": 24,
+      "endLine": 26,
+      "symbol": null,
+      "quote": "## Deploy on Vercel\n\nThe easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js."
+    }
+  ],
+  "reasoning": "The API stores user preferences by writing notifications.json under process.cwd(). In common Next production environments such as serverless or horizontally scaled deployments, local filesystem writes are ephemeral, instance-local, or disallowed, so preferences can disappear after redeploys/restarts or diverge across instances. The README's deployment guidance points users toward this class of deployment.",
+  "reproduction": null,
+  "recommendation": "Move notification preferences to durable shared storage such as a database, KV store, or another persistence service configured for the deployment environment. If local filesystem storage is only for development, gate it clearly and fail closed in production.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included, and the provided project context does not show deployment-mode tests or persistence tests across process restarts/instances.",
+  "suggestedRegressionTest": "Add an integration test around the selected persistent store, or at least a production configuration test that fails if the route is configured to use process-local file storage.",
+  "minimumFixScope": "Replace process.cwd() JSON-file persistence for this route with a production-safe storage adapter or explicitly disable the route outside local development.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-330ec5235e_54019515e0",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:06.874Z",
+  "updatedAt": "2026-05-17T17:28:06.874Z"
+}

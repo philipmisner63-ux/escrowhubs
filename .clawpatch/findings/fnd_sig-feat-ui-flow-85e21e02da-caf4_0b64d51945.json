@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-85e21e02da-caf4_0b64d51945",
+  "featureId": "feat_ui-flow_85e21e02da",
+  "title": "Continuous background animation ignores reduced-motion preferences",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/animated-background.tsx",
+      "startLine": 23,
+      "endLine": 25,
+      "symbol": "AnimatedBackground",
+      "quote": ".orb1 { animation: drift1 40s ease-in-out infinite; will-change: transform; }\n        .orb2 { animation: drift2 35s ease-in-out infinite; will-change: transform; }\n        .orb3 { animation: drift3 30s ease-in-out infinite; will-change: transform; }"
+    }
+  ],
+  "reasoning": "The component always starts three infinite animations and does not include a `prefers-reduced-motion: reduce` override. Users who have requested reduced motion will still receive large drifting background movement, which is a correctness/accessibility issue for this UI component.",
+  "reproduction": null,
+  "recommendation": "Add a `@media (prefers-reduced-motion: reduce)` rule that disables or greatly simplifies the orb animations.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for this feature, and the component has no coverage asserting reduced-motion CSS behavior.",
+  "suggestedRegressionTest": "Add a component/CSS regression test or snapshot that verifies the rendered style contains a `prefers-reduced-motion: reduce` rule disabling `.orb1`, `.orb2`, and `.orb3` animations.",
+  "minimumFixScope": "Update `frontend/src/components/animated-background.tsx` CSS only.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-85e21e02da_caf434c4b1",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:05.297Z",
+  "updatedAt": "2026-05-17T18:28:05.297Z"
+}

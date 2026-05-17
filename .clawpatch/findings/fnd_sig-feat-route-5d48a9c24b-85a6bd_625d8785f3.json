@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-5d48a9c24b-85a6bd_625d8785f3",
+  "featureId": "feat_route_5d48a9c24b",
+  "title": "Success is shown before the transaction is confirmed",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 101,
+      "endLine": 103,
+      "symbol": "handleSubmit",
+      "quote": "addToast({ type: \"success\", message: t(\"submitted\"), txHash });"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 125,
+      "endLine": 129,
+      "symbol": "handleSubmit",
+      "quote": "// Timed out — tx is probably still pending on-chain. Don't show success."
+    }
+  ],
+  "reasoning": "The route emits a success toast immediately after wallet submission, before waiting for the receipt or verifying that an escrow address can be parsed. If receipt polling times out, only the pending toast is removed and an error toast is added, so the user can see both success and failure for the same deployment. The inline timeout comment states the intended behavior is not to show success in that case.",
+  "reproduction": "Submit an escrow and have waitForTransactionReceipt time out or fail after writeContractAsync returns a hash. The UI first shows the submitted success toast, then adds the confirmation-timeout error toast without removing the success toast.",
+  "recommendation": "Delay the success toast and confetti until after a successful receipt with a parsed escrow address, or keep the early toast semantically neutral such as transaction submitted and replace/remove it on timeout or parse failure.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this route, and there is no coverage of the receipt timeout branch or toast replacement behavior.",
+  "suggestedRegressionTest": "Mock writeContractAsync to resolve a tx hash and waitForTransactionReceipt to reject on timeout, then assert no success toast/confetti remains and the timeout error is shown.",
+  "minimumFixScope": "Update handleSubmit toast sequencing and timeout cleanup in frontend/src/app/[locale]/create/page.tsx.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-5d48a9c24b_85a6bd1c90",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:38.747Z",
+  "updatedAt": "2026-05-17T17:28:38.747Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-8275369d64-485e78_f6059f0e3e",
+  "featureId": "feat_route_8275369d64",
+  "title": "Unreadable or malformed notifications.json is silently overwritten on the next valid link",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 15,
+      "endLine": 21,
+      "symbol": "loadAll",
+      "quote": "function loadAll(): Record<string, object> {\n  try {\n    if (!fs.existsSync(PREFS_FILE)) return {};\n    const raw = fs.readFileSync(PREFS_FILE, \"utf-8\").trim();\n    return raw ? JSON.parse(raw) : {};\n  } catch { return {}; }\n}"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 52,
+      "endLine": 56,
+      "symbol": "POST",
+      "quote": "const all = loadAll() as Record<string, { telegramChatId?: string; wallet?: string; [k: string]: unknown }>;\n        const existing = all[wallet] ?? {};\n        all[wallet] = { ...existing, wallet, telegramChatId: String(chatId) };\n        saveAll(all);"
+    }
+  ],
+  "reasoning": "loadAll collapses every read or JSON parse failure into an empty object. The POST handler then writes that object back with only the newly linked wallet, permanently discarding all previously stored mappings if the file is temporarily unreadable or contains malformed JSON.",
+  "reproduction": "Create notifications.json with invalid JSON or make it temporarily unreadable, then send a valid /start wallet update; saveAll writes a new JSON file containing only the new wallet entry.",
+  "recommendation": "Distinguish missing file from read/parse errors. For parse or read failures, log the error and refuse to update persistence, returning a retryable server error or a Telegram-safe 200 without overwriting existing data.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for malformed persistence state or write behavior after load failures.",
+  "suggestedRegressionTest": "Add a test that seeds notifications.json with invalid JSON, posts a valid /start update, and asserts the file is not replaced with a one-entry object.",
+  "minimumFixScope": "Change loadAll to throw or return an explicit error for read/parse failures, and make POST skip saveAll when existing data cannot be loaded safely.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-8275369d64_485e782a07",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:24.878Z",
+  "updatedAt": "2026-05-17T17:28:24.878Z"
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8fe69daa9d-586b_96d83952ff",
+  "featureId": "feat_library_8fe69daa9d",
+  "title": "AI arbiter can be submitted when the selected chain has no arbiter address",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 61,
+      "endLine": 63,
+      "symbol": "handleSubmit",
+      "quote": "const resolvedArbiter = useAIArbiter\n        ? getArbiterAddress(currentChainId)\n        : (process.env.NEXT_PUBLIC_HUMAN_ARBITER_ADDRESS ?? \"0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA\") as `0x${string}`;"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 77,
+      "endLine": 77,
+      "symbol": "handleSubmit",
+      "quote": "args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, referrer],"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 94,
+      "endLine": 94,
+      "symbol": "handleSubmit",
+      "quote": "args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, referrer],"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 245,
+      "endLine": 249,
+      "symbol": "CreateEscrowPage",
+      "quote": "{getArbiterAddress(chainId) ? (\n                        <p className=\"font-mono text-violet-400/50 break-all\">{getArbiterAddress(chainId)}</p>\n                      ) : (\n                        <p className=\"text-yellow-400/70\">{t(\"aiArbiterNotDeployed\")}</p>\n                      )}"
+    }
+  ],
+  "reasoning": "The render path explicitly handles a missing AI arbiter address, but the submit path still allows AI mode and passes the missing value into the contract args. That turns a known unavailable configuration into a wallet/contract failure after the pending state starts instead of blocking submission with a clear error.",
+  "reproduction": null,
+  "recommendation": "Before calling writeContractAsync, require a non-empty AI arbiter address when useAIArbiter is true. Disable the AI option or submit button for unsupported chains and show the existing not-deployed message as the actionable error.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests exercise AI arbiter selection on a chain where getArbiterAddress returns no address.",
+  "suggestedRegressionTest": "Mock getArbiterAddress to return undefined, select AI arbiter, submit the form, and assert writeContractAsync is not called and a clear error is shown.",
+  "minimumFixScope": "Add a guard in handleSubmit and align the AI arbiter selector/submit disabled state with that guard.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8fe69daa9d_586b194a77",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:54.285Z",
+  "updatedAt": "2026-05-17T17:19:54.285Z"
+}

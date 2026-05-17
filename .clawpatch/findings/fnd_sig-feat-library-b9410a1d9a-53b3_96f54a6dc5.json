@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-b9410a1d9a-53b3_96f54a6dc5",
+  "featureId": "feat_library_b9410a1d9a",
+  "title": "Frontend package exposes no automated validation entrypoint",
+  "category": "test-gap",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "test-gap",
+  "evidence": [
+    {
+      "path": "frontend/package.json",
+      "startLine": 6,
+      "endLine": 11,
+      "symbol": "scripts",
+      "quote": "\"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"lint\": \"eslint\"\n  }"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "startLine": 3,
+      "endLine": 22,
+      "symbol": "compilerOptions",
+      "quote": "\"strict\": true,\n    \"noEmit\": true"
+    }
+  ],
+  "reasoning": "The frontend has a strict TypeScript configuration but the package manifest only exposes dev, build, start, and lint scripts. There is no test script and no explicit typecheck script, so workspace or CI tooling cannot run a fast, dedicated correctness check for this package without overloading `next build`. That makes regressions easier to merge and makes the package contract weaker for automated release gates.",
+  "reproduction": null,
+  "recommendation": "Add package scripts for at least `typecheck` using `tsc --noEmit` and `test` using the project's chosen test runner, then wire those scripts into the workspace or CI checks.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature metadata lists no linked tests, and the manifest itself does not define a test command.",
+  "suggestedRegressionTest": "Add a CI/package validation check that runs `pnpm --dir frontend typecheck` and `pnpm --dir frontend test` and fails if either script is missing or failing.",
+  "minimumFixScope": "frontend/package.json",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-b9410a1d9a_53b31411ec",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172538-69ab9f",
+  "createdAt": "2026-05-17T17:25:53.161Z",
+  "updatedAt": "2026-05-17T17:25:53.161Z"
+}

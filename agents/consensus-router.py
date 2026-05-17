@@ -76,7 +76,10 @@ def parse_outbox_entries(text: str) -> list[dict]:
         ts = header.group(1).strip()
         to = header.group(2).strip()
         content = re.sub(r"^###\s*\[.*?\].*?\n", "", raw, count=1, flags=re.MULTILINE).strip()
-        bid_match = re.search(r"(?:broadcast_id|BROADCAST[-\s]*?[#-]?)([-?\w+])", content, re.IGNORECASE)
+        # Truncate at first horizontal-rule separator (entry sections are separated by ---)
+        if "\n---\n" in content:
+            content = content.split("\n---\n")[0].strip()
+        bid_match = re.search(r"broadcast_id\s*[:#]\s*([A-Z0-9\-]+)", content, re.IGNORECASE)
         entries.append({
             "timestamp": ts,
             "to": to,
@@ -85,6 +88,32 @@ def parse_outbox_entries(text: str) -> list[dict]:
             "hash": hashlib.sha256(content.encode()).hexdigest()[:16],
         })
     return entries
+
+
+def is_template_entry(content: str) -> bool:
+    """Return True if this entry looks like a template/boilerplate."""
+    content_stripped = content.strip()
+
+    # Empty or extremely short
+    if len(content_stripped) < 30:
+        return True
+
+    # Template placeholder patterns — must appear at beginning of the content.
+    lines = content_stripped.splitlines()
+    if lines:
+        first = lines[0].strip()
+        template_starts = [
+            "(No sessions captured yet",
+            "(No entries",
+            "[Summary of what",
+            "[Key decisions or",
+            "[Key insights or",
+        ]
+        for ts in template_starts:
+            if first.startswith(ts):
+                return True
+
+    return False
 
 
 def route_entries(entries: list[dict], agents: list[str], seen: dict) -> int:
@@ -96,16 +125,18 @@ def route_entries(entries: list[dict], agents: list[str], seen: dict) -> int:
         if content_hash in seen:
             continue
 
-        source_agent = None
-        for a in agents:
-            if a in entry["to"]:
-                source_agent = a
-                break
+        source_agent = entry.get("source_agent")
         if not source_agent:
+            continue
+        
+        if is_template_entry(entry["content"]):
             continue
 
         for target in agents:
             if target == source_agent:
+                continue
+            # Copilot doesn't read files; skip routing to her
+            if target == "copilot":
                 continue
 
             inbox_path = AGENTS_DIR / target / "inbox.md"
@@ -150,18 +181,26 @@ def compile_consensus_thread(agents: list[str]):
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     lines.append(f"*Compiled: {now}*\n")
 
+    has_real_entries = False
     for agent in agents:
         outbox = AGENTS_DIR / agent / "outbox.md"
         text = read_file(outbox)
         entries = parse_outbox_entries(text)
-        if not entries:
+        # Filter templates
+        real_entries = [e for e in entries if not is_template_entry(e["content"])]
+        if not real_entries:
             continue
+        has_real_entries = True
         lines.append(f"## {agent.capitalize()}")
-        for e in entries:
+        for e in real_entries:
             lines.append(f"### {e['timestamp']}")
             lines.append(e["content"])
             lines.append("")
         lines.append("---\n")
+
+    if not has_real_entries:
+        lines.append("_(No real consensus entries yet — agents have not written to their outboxes.)_")
+        lines.append("")
 
     thread_path.write_text("\n".join(lines), encoding="utf-8")
     return thread_path
@@ -202,8 +241,12 @@ def main():
     routed = route_entries(all_entries, agents, seen)
     write_json(SEEN_FILE, seen)
 
+    # Re-compile the shared thread after routing
+    thread = compile_consensus_thread(agents)
+
     print(f"✓ Routed {routed} entries")
     print(f"✓ Seen state saved: {SEEN_FILE}")
+    print(f"✓ Thread compiled: {thread}")
     print("Agents will see each other's answers in their inbox.md on next wake.")
 
 

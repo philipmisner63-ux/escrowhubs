@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-20ddb5e562-abbe_ec91051a70",
+  "featureId": "feat_ui-flow_20ddb5e562",
+  "title": "Anchor hover variants are malformed, so linked badges do not get the intended hover styles",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/badge.tsx",
+      "startLine": 12,
+      "endLine": 18,
+      "symbol": "badgeVariants",
+      "quote": "default: \"bg-primary text-primary-foreground [a]:hover:bg-primary/80\""
+    }
+  ],
+  "reasoning": "The badge variants use Tailwind arbitrary variants like `[a]:hover:bg-primary/80`, but the component supports rendering as another element via `render`, and these classes appear intended to style the badge when it is rendered as an anchor. Tailwind arbitrary selectors for the element itself need an `&` placeholder, for example `[a&]:hover:bg-primary/80`; `[a]` instead describes a selector/attribute-style variant that does not target the badge element as an anchor. As a result, anchor-rendered badges can keep base colors on hover instead of the variant-specific hover feedback.",
+  "reproduction": "Render `<Badge render={<a href=\"#\" />}>Link</Badge>` and inspect the generated hover selector/classes; the intended anchor self-selector is absent, so the default/secondary/destructive/outline anchor hover styles do not apply to the anchor badge itself.",
+  "recommendation": "Change the anchor-specific variants from `[a]:hover:...` to a self-selector form such as `[a&]:hover:...` for each affected variant, matching the render-as-anchor behavior.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were linked for this component, and there is no visual or class-generation coverage asserting anchor-rendered badge hover behavior.",
+  "suggestedRegressionTest": "Add a component/unit snapshot or DOM class assertion for `Badge` rendered as an anchor, covering at least `default` and `outline`, and assert the generated class list contains the corrected `[a&]:hover:*` variants.",
+  "minimumFixScope": "Update `frontend/src/components/ui/badge.tsx` variant class strings for the anchor-specific hover selectors.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-20ddb5e562_abbe5d4fed",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:49.401Z",
+  "updatedAt": "2026-05-17T17:47:49.401Z"
+}

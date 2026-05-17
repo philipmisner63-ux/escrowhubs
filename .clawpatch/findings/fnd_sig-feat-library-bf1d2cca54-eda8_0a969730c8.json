@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-bf1d2cca54-eda8_0a969730c8",
+  "featureId": "feat_library_bf1d2cca54",
+  "title": "Root app layout omits required html and body tags",
+  "category": "build-release",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/layout.tsx",
+      "startLine": 1,
+      "endLine": 3,
+      "symbol": "RootLayout",
+      "quote": "export default function RootLayout({ children }: { children: React.ReactNode }) {\n  return children;\n}"
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 5,
+      "endLine": 8,
+      "symbol": "scripts.build",
+      "quote": "\"build\": \"next build\""
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 24,
+      "endLine": 24,
+      "symbol": "dependencies.next",
+      "quote": "\"next\": \"16.2.1\""
+    }
+  ],
+  "reasoning": "In the Next App Router, the root layout is the document shell and must render the required <html> and <body> tags. This RootLayout returns children directly, so the application can fail Next's build/runtime validation for missing root layout tags even if a nested locale layout exists. Because this is the top-level app layout and the project ships with a Next build script, it is a release-blocking hazard.",
+  "reproduction": "Run `pnpm --dir frontend build`; Next should validate the root app layout and report missing required html/body tags.",
+  "recommendation": "Update `frontend/src/app/layout.tsx` so RootLayout returns an `<html>` element containing a `<body>{children}</body>`. Keep locale-specific providers or attributes in the nested locale layout only if Next still has a valid document shell at the root.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and the project metadata does not list an existing test or typecheck command. A build smoke test would catch this structural App Router requirement.",
+  "suggestedRegressionTest": "Add a CI build smoke check for `pnpm --dir frontend build`, or at minimum a focused test/static check that the root app layout renders html and body tags.",
+  "minimumFixScope": "Change `frontend/src/app/layout.tsx` to provide the required root document tags.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-bf1d2cca54_eda80e8373",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172538-69ab9f",
+  "createdAt": "2026-05-17T17:25:59.968Z",
+  "updatedAt": "2026-05-17T17:25:59.968Z"
+}

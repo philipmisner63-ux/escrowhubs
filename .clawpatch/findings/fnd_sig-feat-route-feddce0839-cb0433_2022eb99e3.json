@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-feddce0839-cb0433_2022eb99e3",
+  "featureId": "feat_route_feddce0839",
+  "title": "Feedback log persistence is not deployment-safe",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 5,
+      "endLine": 6,
+      "symbol": null,
+      "quote": "const DISCORD_WEBHOOK = process.env.FEEDBACK_DISCORD_WEBHOOK ?? \"\";\nconst LOG_FILE        = path.join(process.cwd(), \"feedback.json\");"
+    },
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 10,
+      "endLine": 22,
+      "symbol": "appendLog",
+      "quote": "function appendLog(entry: object) {\n  try {\n    let records: object[] = [];\n    if (fs.existsSync(LOG_FILE)) {\n      const raw = fs.readFileSync(LOG_FILE, \"utf-8\").trim();\n      if (raw) records = JSON.parse(raw);\n    }\n    records.push(entry);\n    fs.writeFileSync(LOG_FILE, JSON.stringify(records, null, 2), \"utf-8\");\n  } catch (err) {\n    console.error(\"feedback log write failed:\", err);\n  }"
+    },
+    {
+      "path": "frontend/README.md",
+      "startLine": 24,
+      "endLine": 29,
+      "symbol": null,
+      "quote": "## Deploy on Vercel\n\nThe easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.\n\nCheck out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details."
+    }
+  ],
+  "reasoning": "The route treats process.cwd()/feedback.json as durable storage and suppresses write failures. That is fragile for production Next deployments where app filesystems may be read-only, ephemeral, or split across instances. In those environments feedback can appear accepted while the local log is missing or partial, especially when FEEDBACK_DISCORD_WEBHOOK is not configured.",
+  "reproduction": "Deploy the app in an environment where the application directory is read-only or instances do not share a filesystem, then POST feedback with no webhook configured. The route still returns success even though the local persistence path cannot reliably retain the submission.",
+  "recommendation": "Use an external durable store for feedback, or explicitly make local file logging development-only and return a failure when no durable sink is available. Do not swallow persistence errors for the only configured storage path.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for production-like filesystem behavior or for the case where the webhook is absent and file persistence fails.",
+  "suggestedRegressionTest": "Mock fs.writeFileSync to throw with FEEDBACK_DISCORD_WEBHOOK unset and assert the route does not return a misleading success response.",
+  "minimumFixScope": "Move feedback persistence to a deployment-safe store or gate local file logging to development while reporting storage failures correctly.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-feddce0839_cb0433997b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:44.944Z",
+  "updatedAt": "2026-05-17T17:47:44.944Z"
+}

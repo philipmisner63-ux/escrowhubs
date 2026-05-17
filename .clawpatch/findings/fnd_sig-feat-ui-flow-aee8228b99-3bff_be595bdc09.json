@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-aee8228b99-3bff_be595bdc09",
+  "featureId": "feat_ui-flow_aee8228b99",
+  "title": "Dynamically disabling SSR for the provider can suppress SSR output for all wrapped children",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/providers-client.tsx",
+      "startLine": 6,
+      "endLine": 7,
+      "symbol": null,
+      "quote": "This prevents wagmi / WalletConnect / idb-keyval from being evaluated\n * during SSR/SSG"
+    },
+    {
+      "path": "frontend/src/components/providers-client.tsx",
+      "startLine": 10,
+      "endLine": 13,
+      "symbol": "ProvidersInner",
+      "quote": "const ProvidersInner = dynamic(\n  () => import(\"@/components/providers\").then(m => m.Providers),\n  { ssr: false }\n);"
+    },
+    {
+      "path": "frontend/src/components/providers-client.tsx",
+      "startLine": 15,
+      "endLine": 17,
+      "symbol": "ProvidersClient",
+      "quote": "export function ProvidersClient({ children }: { children: React.ReactNode }) {\n  return <ProvidersInner>{children}</ProvidersInner>;\n}"
+    }
+  ],
+  "reasoning": "The component disables SSR for the entire dynamically imported Providers component and passes the page subtree as that dynamic component's children. In Next, an ssr:false dynamic component is not rendered during SSR/SSG, so if ProvidersClient is used as an app/root wrapper, the wrapped children can be omitted from the server-rendered HTML and only appear after client hydration. That is a correctness and release risk for first paint, SEO, static output, and no-JS behavior. The stated goal is only to avoid evaluating wallet/idb code during SSR, but this implementation can move the entire child UI behind a client-only boundary.",
+  "reproduction": null,
+  "recommendation": "Keep the children SSR-renderable and isolate only browser-only wallet/provider initialization behind a client-only boundary. For example, make Providers itself safe to import on the server by moving idb/WalletConnect access into effects or nested client-only components, or render a server-safe passthrough shell that returns children during SSR and mounts the wallet providers on the client without hiding the subtree.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included for SSR/SSG output or hydration behavior of ProvidersClient.",
+  "suggestedRegressionTest": "Add a Next render/build test for a page wrapped by ProvidersClient that asserts representative child content exists in the server-rendered HTML/static output before client hydration.",
+  "minimumFixScope": "frontend/src/components/providers-client.tsx and, if needed, the imported providers implementation to split server-safe rendering from browser-only wallet initialization.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-aee8228b99_3bffcd7dff",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:20.386Z",
+  "updatedAt": "2026-05-17T18:28:20.386Z"
+}

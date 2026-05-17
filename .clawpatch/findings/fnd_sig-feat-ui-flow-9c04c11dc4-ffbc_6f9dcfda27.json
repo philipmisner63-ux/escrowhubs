@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-9c04c11dc4-ffbc_6f9dcfda27",
+  "featureId": "feat_ui-flow_9c04c11dc4",
+  "title": "Wrapper advertises Base UI className callback support but drops callback classes",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/separator.tsx",
+      "startLine": 7,
+      "endLine": 18,
+      "symbol": "Separator",
+      "quote": "function Separator({\n  className,\n  orientation = \"horizontal\",\n  ...props\n}: SeparatorPrimitive.Props) {\n  return (\n    <SeparatorPrimitive\n      data-slot=\"separator\"\n      orientation={orientation}\n      className={cn(\n        \"shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch\",\n        className"
+    }
+  ],
+  "reasoning": "The component is typed as the full Base UI SeparatorPrimitive.Props surface, where className can be a state callback. Passing className through cn treats it as a static class value, so a valid caller-provided className function will not be invoked by the primitive and its returned classes will be lost. This makes the wrapper's TypeScript contract broader than its runtime behavior.",
+  "reproduction": "Call <Separator className={({ orientation }) => orientation === \"vertical\" ? \"my-vertical\" : \"my-horizontal\"} />. The wrapper consumes that function in cn instead of forwarding a function to SeparatorPrimitive, so the state-dependent class is not applied.",
+  "recommendation": "Either narrow the wrapper prop type so className only accepts static class values, or preserve Base UI's callback form by passing a className function to SeparatorPrimitive that combines the base classes with the caller callback result.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for this component, and there is no test exercising the callback form inherited from SeparatorPrimitive.Props.",
+  "suggestedRegressionTest": "Add a test that passes a className callback and verifies the rendered separator includes the callback's returned class for the current orientation.",
+  "minimumFixScope": "Adjust frontend/src/components/ui/separator.tsx prop typing or className forwarding logic, plus a focused callback className regression test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-9c04c11dc4_ffbce5af89",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:29.128Z",
+  "updatedAt": "2026-05-17T18:28:29.128Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-e5d71244d8-bcf403_7caf1f1362",
+  "featureId": "feat_route_e5d71244d8",
+  "title": "Discord delivery failures are reported as successful",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "startLine": 45,
+      "endLine": 51,
+      "symbol": "POST",
+      "quote": "await fetch(DISCORD_WEBHOOK, {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ content: lines }),\n    });\n\n    return NextResponse.json({ success: true });"
+    }
+  ],
+  "reasoning": "The route does not inspect the webhook response before returning success. fetch resolves for HTTP error statuses, so Discord-side rejections such as 400, 401/403, 429, or 5xx are surfaced to the client as {success:true}. Users will believe a support report was submitted even when it was dropped by the downstream service.",
+  "reproduction": "Configure SUPPORT_DISCORD_WEBHOOK to an endpoint that returns HTTP 429 or 500, POST any valid JSON body to /api/support, and observe that the API still responds 200 with {\"success\":true}.",
+  "recommendation": "Capture the fetch response, check response.ok, log the status/body as appropriate, and return a non-2xx or retryable error response when Discord rejects the message.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests exercise the support route or simulate non-2xx webhook responses.",
+  "suggestedRegressionTest": "Mock global fetch to resolve with { ok: false, status: 429 } and assert POST returns a failure status/body instead of success:true.",
+  "minimumFixScope": "frontend/src/app/api/support/route.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-e5d71244d8_bcf403f895",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:39.869Z",
+  "updatedAt": "2026-05-17T17:47:39.869Z"
+}

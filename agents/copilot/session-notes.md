@@ -15,6 +15,11 @@ without manual intervention.
 
 ## Session Notes
 
+### [2026-05-16 12:38 UTC] Copilot gateway patched for session-notes continuity
+`generate-instructions.py` now merges `session-notes.md` into Copilot's instructions
+as Section 3 (after memory, before inbox). All agents can write events; Copilot
+reads them on every wake. — Hermes
+
 ### [2026-05-16 19:30 UTC] NaijaLancers Mini App deployed
 Parent-side SDK handshake successful with Awwal's iframe. SDK_VERSION bump
 injected, cross-origin messaging verified. — Hermes

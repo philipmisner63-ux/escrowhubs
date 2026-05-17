@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-5f0637d312-0d04_20745718ba",
+  "featureId": "feat_library_5f0637d312",
+  "title": "Stale preference fetches can overwrite the currently connected wallet's modal state",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 58,
+      "endLine": 71,
+      "symbol": "NotificationModal",
+      "quote": "useEffect(() => {\n    if (!open || !wallet) return;\n    fetch(`/api/notifications/preferences?wallet=${wallet}`)\n      .then(r => r.json())\n      .then(data => {\n        if (data) {\n          setPrefs({"
+    },
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 102,
+      "endLine": 109,
+      "symbol": "handleSave",
+      "quote": "body: JSON.stringify({\n          wallet,\n          telegramChatId:  prefs.telegramChatId,\n          telegramEnabled: prefs.telegramEnabled,\n        })"
+    }
+  ],
+  "reasoning": "The load effect starts an async fetch for the current wallet but never aborts it or checks that the wallet is still the same before calling setPrefs. If the user switches accounts while the modal is open, a slower response for the previous wallet can populate prefs after the component has moved on to the new wallet. Saving then posts the new wallet address with the previous wallet's preferences.",
+  "reproduction": "Open the modal on wallet A, switch to wallet B before A's preferences request resolves, let A's response arrive last, then click Save. The POST uses wallet B from current state but prefs from wallet A.",
+  "recommendation": "Use an AbortController or an effect-local stale flag, and before setPrefs verify that the response still belongs to the wallet that initiated the request. Consider resetting prefs to defaults immediately when wallet changes.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature declares no linked tests, and there is no async account-switch coverage for the modal.",
+  "suggestedRegressionTest": "Mock two preference requests with controlled resolution order, switch the mocked wagmi address between them, and assert that the late response for the old address does not change the rendered preferences or saved payload for the new address.",
+  "minimumFixScope": "NotificationModal preference loading effect and wallet-change state handling.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-5f0637d312_0d0440df1f",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:20:21.047Z",
+  "updatedAt": "2026-05-17T17:20:21.047Z"
+}

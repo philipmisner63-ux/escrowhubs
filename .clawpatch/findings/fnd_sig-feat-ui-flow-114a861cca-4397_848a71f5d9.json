@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-114a861cca-4397_848a71f5d9",
+  "featureId": "feat_ui-flow_114a861cca",
+  "title": "Copy confirmation can clear too early after repeated clicks",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/address-display.tsx",
+      "startLine": 32,
+      "endLine": 33,
+      "symbol": "copy",
+      "quote": "setCopied(true);\n    setTimeout(() => setCopied(false), 2000);"
+    }
+  ],
+  "reasoning": "Every successful copy schedules an independent timeout, but the component does not keep or clear the previous timeout. If the user clicks copy again before the earlier timeout fires, the earlier timeout can set copied back to false shortly after the later copy, so the confirmation may disappear well before 2 seconds have elapsed for the latest action.",
+  "reproduction": "Click the copy button, wait about 1.9 seconds, then click it again. The first timeout fires about 0.1 seconds later and hides the \"Copied!\" state even though the second copy just completed.",
+  "recommendation": "Store the timeout id in a ref and clear any existing timeout before scheduling a new one. Also clear the timeout on unmount.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for this component or for repeated copy interactions.",
+  "suggestedRegressionTest": "Use fake timers with a React component test: click copy, advance timers to just before 2 seconds, click copy again, advance slightly past the first timeout, and assert the copied state is still visible until 2 seconds after the second click.",
+  "minimumFixScope": "Update frontend/src/components/ui/address-display.tsx to manage the copied reset timer with a ref and cleanup effect.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-114a861cca_43979593b9",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:28.590Z",
+  "updatedAt": "2026-05-17T17:47:28.590Z"
+}

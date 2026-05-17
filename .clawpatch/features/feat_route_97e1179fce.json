@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_97e1179fce",
+  "title": "frontend route /:locale/learn/mock-escrow",
+  "summary": "Web route implemented by frontend/src/app/[locale]/learn/mock-escrow/page.tsx in project frontend.",
+  "kind": "route",
+  "source": "next-app-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "frontend/src/app/[locale]/learn/mock-escrow/page.tsx",
+      "symbol": null,
+      "route": "/:locale/learn/mock-escrow",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/[locale]/learn/mock-escrow/page.tsx",
+      "reason": "entrypoint"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "frontend/README.md",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "reason": "project context"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "next",
+    "web",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "reviewed",
+  "lock": null,
+  "findingIds": [],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T172730-c89fe4",
+      "kind": "review",
+      "summary": "0 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:28:21.074Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:28:21.074Z"
+}

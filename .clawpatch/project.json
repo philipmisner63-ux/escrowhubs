@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "projectId": "prj_git-github-com-philipmisner63-ux_a38d6d246c",
+  "name": "escrowhubs",
+  "rootPath": "/home/philip/projects/blockdag-escrow",
+  "git": {
+    "remoteUrl": "git@github.com:philipmisner63-ux/escrowhubs.git",
+    "defaultBranch": "main",
+    "currentBranch": "main",
+    "headSha": "1144e6645af1564744914d6b0fc097c9fb59da42"
+  },
+  "detected": {
+    "languages": [
+      "javascript"
+    ],
+    "frameworks": [],
+    "packageManagers": [
+      "pnpm"
+    ],
+    "commands": {
+      "typecheck": null,
+      "lint": null,
+      "format": null,
+      "test": null
+    }
+  },
+  "createdAt": "2026-05-17T17:01:51.608Z",
+  "updatedAt": "2026-05-17T17:01:51.608Z"
+}

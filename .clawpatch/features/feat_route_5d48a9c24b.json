@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_route_5d48a9c24b",
+  "title": "frontend route /:locale/create",
+  "summary": "Web route implemented by frontend/src/app/[locale]/create/page.tsx in project frontend.",
+  "kind": "route",
+  "source": "next-app-route",
+  "confidence": "high",
+  "entrypoints": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "symbol": null,
+      "route": "/:locale/create",
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "reason": "entrypoint"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    },
+    {
+      "path": "frontend/README.md",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "reason": "package context"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "reason": "project context"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "next",
+    "web",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [
+    "user-input",
+    "network",
+    "serialization"
+  ],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-route-5d48a9c24b-85a6bd_625d8785f3",
+    "fnd_sig-feat-route-5d48a9c24b-a4a8a8_c620336fed",
+    "fnd_sig-feat-route-5d48a9c24b-f81112_7203353e29"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T172730-c89fe4",
+      "kind": "review",
+      "summary": "3 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:28:38.748Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:28:38.748Z"
+}

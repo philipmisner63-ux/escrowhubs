@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-a3c1dafd9c-d5f4e4_c9e917908f",
+  "featureId": "feat_route_a3c1dafd9c",
+  "title": "Protocol fee input silently truncates non-integer values",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 157,
+      "endLine": 159,
+      "symbol": "handleSetFees",
+      "quote": "const bps = parseInt(feeBps);\n    if (isNaN(bps) || bps < 0 || bps > 500) { setTxError(\"Protocol fee must be 0–500 bps (0–5%)\"); return; }"
+    }
+  ],
+  "reasoning": "The admin form labels the field as basis points, which are integer units, but the handler uses parseInt on the raw text. Values such as \"1.9\" are accepted and sent as 1 bps instead of being rejected, and strings like \"1e2\" can be interpreted as 1 rather than 100. This can save a fee configuration materially different from what the admin entered.",
+  "reproduction": "Open the admin route as the owner, enter 1.9 in Protocol Fee, enter a valid arbiter fee, and submit. The client passes validation and calls setFees with 1 bps.",
+  "recommendation": "Validate feeBps as a whole decimal integer string before conversion, for example with /^[0-9]+$/ and Number.isSafeInteger, then enforce 0 <= bps <= 500. Consider setting step={1} on the input as a UI hint, but do not rely on it for validation.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this route, and no included test exercises the fee form validation path.",
+  "suggestedRegressionTest": "Add a component or unit test for handleSetFees/form submission that verifies decimal, exponent, empty, negative, and >500 protocol fee inputs are rejected, while integer values in range call writeContractAsync with the exact bps number.",
+  "minimumFixScope": "Update validation in frontend/src/app/[locale]/admin/page.tsx for the Protocol Fee input and submit handler.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-a3c1dafd9c_d5f4e4df82",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:29.680Z",
+  "updatedAt": "2026-05-17T17:47:29.680Z"
+}

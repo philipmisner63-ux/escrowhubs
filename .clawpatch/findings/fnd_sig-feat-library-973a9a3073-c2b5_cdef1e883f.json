@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-973a9a3073-c2b5_cdef1e883f",
+  "featureId": "feat_library_973a9a3073",
+  "title": "Text-only evidence uploads are rejected despite the endpoint accepting text or file input",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 15,
+      "endLine": 17,
+      "symbol": "POST",
+      "quote": "if (!text && !file) {\n      return NextResponse.json({ error: \"No file or text provided\" }, { status: 400 });\n    }"
+    },
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 20,
+      "endLine": 23,
+      "symbol": "POST",
+      "quote": "if (!file || file.size > MAX_SIZE) {\n      return NextResponse.json({ error: \"File too large or missing\" }, { status: 413 });\n    }"
+    }
+  ],
+  "reasoning": "The first validation branch allows either text or a file, but the later size check makes a file mandatory. A request with only text passes the \"No file or text provided\" check and is then rejected with 413, so users cannot submit text-only evidence even though the endpoint models text as an alternative evidence source and stores it in the pinned JSON.",
+  "reproduction": "POST multipart form data with only text, escrowAddress, and submitter fields and no file. The route returns 413 \"File too large or missing\" instead of pinning evidence JSON containing the text.",
+  "recommendation": "Only run file size and MIME checks when a file is present. For text-only submissions, skip the file upload step and pin the evidence JSON directly.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for this feature, and there is no evidence of a multipart text-only route test.",
+  "suggestedRegressionTest": "Add a route test that posts multipart form data with text but no file, mocks Pinata JSON pinning, and asserts a successful response with uri/cid/gatewayUrl.",
+  "minimumFixScope": "frontend/src/app/api/upload-evidence/route.ts POST validation and file handling branches",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-973a9a3073_c2b59c84af",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:27.591Z",
+  "updatedAt": "2026-05-17T17:19:27.591Z"
+}

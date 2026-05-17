@@ -35,8 +35,6 @@ export async function POST(req: NextRequest) {
     if (!valid) {
       return NextResponse.json({ error: "invalid signature" }, { status: 401 });
     }
-      return NextResponse.json({ error: "No file or text provided" }, { status: 400 });
-    }
 
     // Build evidence JSON to pin
     const evidenceJson: Record<string, unknown> = {

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-9c68dcb22b-c15a_26bdd4ecd7",
+  "featureId": "feat_ui-flow_9c68dcb22b",
+  "title": "Tabs orientation prop is swallowed before reaching the Base UI primitive",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/tabs.tsx",
+      "startLine": 8,
+      "endLine": 18,
+      "symbol": "Tabs",
+      "quote": "function Tabs({\n  className,\n  orientation = \"horizontal\",\n  ...props\n}: TabsPrimitive.Root.Props) {\n  return (\n    <TabsPrimitive.Root\n      data-slot=\"tabs\"\n      data-orientation={orientation}"
+    }
+  ],
+  "reasoning": "Tabs accepts the Base UI root props type, including orientation, but destructures orientation and only uses it for a data attribute. The remaining props spread no longer contains orientation, so Base UI cannot switch keyboard/navigation semantics for vertical tabs even though callers can pass orientation=\"vertical\". This creates an API contract mismatch between the wrapper's type and the behavior of the wrapped primitive.",
+  "reproduction": "Render <Tabs orientation=\"vertical\"> with triggers. The DOM advertises data-orientation=\"vertical\", but the underlying TabsPrimitive.Root is never passed orientation=\"vertical\", so primitive behavior remains at its default.",
+  "recommendation": "Pass orientation={orientation} to TabsPrimitive.Root in addition to any data attribute needed for styling.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for wrapper prop forwarding or vertical keyboard behavior.",
+  "suggestedRegressionTest": "Add a test rendering <Tabs orientation=\"vertical\"> and assert the primitive receives vertical orientation semantics, ideally through expected keyboard navigation behavior rather than implementation details.",
+  "minimumFixScope": "Forward the orientation prop from Tabs to TabsPrimitive.Root.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-9c68dcb22b_c15a9158e9",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:16.278Z",
+  "updatedAt": "2026-05-17T18:28:16.278Z"
+}

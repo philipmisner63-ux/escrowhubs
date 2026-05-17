@@ -59,6 +59,14 @@ HEADER
   cat "$MEMORY" >> "$OUTFILE"
   echo -e "\n\n---\n" >> "$OUTFILE"
 
+  # Session notes — ecosystem event log shared by all agents
+  local SESSION_NOTES="$AGENTS_DIR/copilot/session-notes.md"
+  if [ -f "$SESSION_NOTES" ]; then
+    echo "## Session Notes (Ecosystem Events)" >> "$OUTFILE"
+    cat "$SESSION_NOTES" >> "$OUTFILE"
+    echo -e "\n\n---\n" >> "$OUTFILE"
+  fi
+
   echo "## Inbox" >> "$OUTFILE"
   cat "$INBOX" >> "$OUTFILE"
 

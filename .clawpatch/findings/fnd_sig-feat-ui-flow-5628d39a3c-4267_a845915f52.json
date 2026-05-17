@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-5628d39a3c-4267_a845915f52",
+  "featureId": "feat_ui-flow_5628d39a3c",
+  "title": "Nonzero small amounts can render as 0",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/amount-display.tsx",
+      "startLine": 24,
+      "endLine": 26,
+      "symbol": "AmountDisplay",
+      "quote": "typeof amount === \"bigint\"\n      ? parseFloat(formatEther(amount)).toLocaleString(undefined, { maximumFractionDigits: 4 })\n      : amount;"
+    }
+  ],
+  "reasoning": "For bigint inputs, the component converts the exact decimal string from formatEther into a JavaScript number and formats it with at most 4 fractional digits. Any nonzero value below 0.00005 BDAG, such as 1n wei formatted as 0.000000000000000001, is displayed as \"0\". In an escrow UI this can misrepresent a nonzero on-chain amount as zero.",
+  "reproduction": "Render <AmountDisplay amount={1n} />; the displayed amount is \"0 BDAG\" even though the input is nonzero.",
+  "recommendation": "Keep bigint formatting in string/decimal space and handle nonzero values below the display precision explicitly, for example by rendering \"<0.0001\" or by preserving enough significant digits for tiny values.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were provided for this component, and there is no evidence of edge-case coverage for tiny nonzero bigint amounts.",
+  "suggestedRegressionTest": "Add a component test that renders amount={1n} and asserts the UI does not display the numeric value as exactly \"0\".",
+  "minimumFixScope": "Update bigint formatting in frontend/src/components/ui/amount-display.tsx and add a focused test for tiny nonzero bigint values.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-5628d39a3c_4267d16810",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:27:53.867Z",
+  "updatedAt": "2026-05-17T18:27:53.867Z"
+}

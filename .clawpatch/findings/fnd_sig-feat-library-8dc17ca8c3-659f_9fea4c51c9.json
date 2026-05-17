@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8dc17ca8c3-659f_9fea4c51c9",
+  "featureId": "feat_library_8dc17ca8c3",
+  "title": "Bigint amount formatting loses precision through Number conversion",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/amount-display.tsx",
+      "startLine": 26,
+      "endLine": 28,
+      "symbol": "AmountDisplay",
+      "quote": "typeof amount === \"bigint\"\n      ? parseFloat(formatEther(amount)).toLocaleString(undefined, { maximumFractionDigits: 4 })\n      : amount;"
+    }
+  ],
+  "reasoning": "`formatEther` returns a decimal string, but `parseFloat` converts it to a JavaScript Number before display. For escrow/token values above Number's safe integer precision, the rendered amount can show rounded or otherwise incorrect digits, which is a concrete financial-display correctness issue even though the original bigint was exact.",
+  "reproduction": "Render `AmountDisplay` with a bigint whose ether value has more than 15-16 significant digits, such as `12345678901234567890123456789000000000000000000n`, and compare the UI string to the exact `formatEther` output rounded/truncated to the intended display precision.",
+  "recommendation": "Format the decimal string without converting the whole value to Number. Split the `formatEther` result into integer/fractional parts, group the integer part as a string, and trim/round the fractional part to the desired precision.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this source group, and there is no coverage for large bigint display values or precision preservation.",
+  "suggestedRegressionTest": "Add a component/unit test that renders a large bigint amount above `Number.MAX_SAFE_INTEGER` and asserts the displayed integer digits match the exact formatted ether string.",
+  "minimumFixScope": "Update `AmountDisplay` bigint formatting and add focused coverage for large bigint values.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8dc17ca8c3_659f3ae6d1",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:18.763Z",
+  "updatedAt": "2026-05-17T17:19:18.763Z"
+}

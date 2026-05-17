@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-3bb2513de9-8bcd3a_be6611448e",
+  "featureId": "feat_route_3bb2513de9",
+  "title": "Global CSP permits inline scripts and eval on this route",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "symbol": "CSP",
+      "quote": "\"script-src 'self' 'unsafe-inline' 'unsafe-eval'\""
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 41,
+      "endLine": 43,
+      "symbol": "headers",
+      "quote": "return [{ source: \"/(.*)\", headers: securityHeaders }];"
+    }
+  ],
+  "reasoning": "The configured security headers apply to every route, including /:locale/learn/global-flow. Allowing both 'unsafe-inline' and 'unsafe-eval' in script-src materially weakens the CSP because any XSS introduced in this client-rendered page or shared layout can execute inline script or eval-like payloads instead of being blocked by policy.",
+  "reproduction": null,
+  "recommendation": "Remove 'unsafe-inline' and 'unsafe-eval' from the production CSP script-src. If inline bootstrapping is required, use nonces or hashes and keep any development-only relaxations gated outside production.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this route, and there is no security-header assertion covering the effective CSP for the page.",
+  "suggestedRegressionTest": "Add a route/header test that requests /en/learn/global-flow and asserts the Content-Security-Policy script-src does not contain 'unsafe-inline' or 'unsafe-eval' in production configuration.",
+  "minimumFixScope": "frontend/next.config.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-3bb2513de9_8bcd3a2dc7",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:27:48.940Z",
+  "updatedAt": "2026-05-17T17:27:48.940Z"
+}

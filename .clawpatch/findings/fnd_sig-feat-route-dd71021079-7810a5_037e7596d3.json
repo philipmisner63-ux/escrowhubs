@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-dd71021079-7810a5_037e7596d3",
+  "featureId": "feat_route_dd71021079",
+  "title": "Text-only evidence submissions are rejected after being accepted by validation",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "startLine": 18,
+      "endLine": 25,
+      "symbol": "POST",
+      "quote": "if (!text && !file) {\n      return NextResponse.json({ error: \"No file or text provided\" }, { status: 400 });\n    }\n\n    const MAX_SIZE = 50 * 1024 * 1024; // 50MB\n    const ALLOWED_TYPES = [\"image/jpeg\", \"image/png\", \"image/gif\", \"image/webp\", \"application/pdf\"];\n    if (!file || file.size > MAX_SIZE) {"
+    }
+  ],
+  "reasoning": "The first guard defines the intended contract as accepting either text or a file, and the evidence JSON stores trimmed text. However, the size guard rejects every request without a file with status 413, so a valid text-only evidence submission can never be pinned.",
+  "reproduction": "POST multipart form data with only text=example. The request passes the no-content check, then returns 413 because file is null.",
+  "recommendation": "Only run file size and MIME validation when a file is present, or change the initial contract and error message if files are mandatory.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for this route, and there is no test asserting text-only evidence behavior.",
+  "suggestedRegressionTest": "Add a route handler test that posts FormData containing text but no file and asserts it pins JSON without attempting pinFileToIPFS.",
+  "minimumFixScope": "Update frontend/src/app/api/upload-evidence/route.ts validation around the file checks.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-dd71021079_7810a50c6a",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:39.313Z",
+  "updatedAt": "2026-05-17T17:47:39.313Z"
+}

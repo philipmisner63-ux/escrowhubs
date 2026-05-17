@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-28636e4cb2-e5b9_d2478997c8",
+  "featureId": "feat_ui-flow_28636e4cb2",
+  "title": "showTagline is ignored when animation is disabled",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/components/BrandLogo.tsx",
+      "startLine": 5,
+      "endLine": 5,
+      "symbol": "BrandLogoProps",
+      "quote": "showTagline?: boolean;"
+    },
+    {
+      "path": "frontend/src/components/BrandLogo.tsx",
+      "startLine": 13,
+      "endLine": 13,
+      "symbol": "BrandLogo",
+      "quote": "showTagline = true,"
+    },
+    {
+      "path": "frontend/src/components/BrandLogo.tsx",
+      "startLine": 39,
+      "endLine": 39,
+      "symbol": "BrandLogo",
+      "quote": "{showTagline && animated && ("
+    }
+  ],
+  "reasoning": "The component exposes showTagline as its own prop and defaults it to true, but the render condition also requires animated to be true. A caller that intentionally disables animation for reduced motion or a static placement cannot still show the tagline, even with showTagline={true}. This makes the showTagline prop only partially effective and couples content visibility to animation state.",
+  "reproduction": "Render <BrandLogo animated={false} showTagline={true} /> and observe that the tagline is omitted.",
+  "recommendation": "Render the tagline based on showTagline alone, and gate only animation-specific styling on animated if needed.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided for this component, and there is no assertion covering the interaction between animated and showTagline.",
+  "suggestedRegressionTest": "Add a component test that renders BrandLogo with animated={false} and showTagline={true}, then asserts the tagline text is present while animation-only halo effects are absent.",
+  "minimumFixScope": "Update the conditional around the tagline in frontend/src/components/BrandLogo.tsx and add a focused render test for the prop combination.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-28636e4cb2_e5b9ba4cc0",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:52.115Z",
+  "updatedAt": "2026-05-17T17:47:52.115Z"
+}

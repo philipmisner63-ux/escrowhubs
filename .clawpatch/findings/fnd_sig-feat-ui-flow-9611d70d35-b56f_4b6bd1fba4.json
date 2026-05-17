@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-9611d70d35-b56f_4b6bd1fba4",
+  "featureId": "feat_ui-flow_9611d70d35",
+  "title": "Submit button can be reactivated during an in-flight request",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/feedback-modal.tsx",
+      "startLine": 64,
+      "endLine": 67,
+      "symbol": "handleSubmit",
+      "quote": "async function handleSubmit(e: React.FormEvent) {\n    e.preventDefault();\n    if (!title.trim() || !description.trim()) return;\n    setSubmitting(true);"
+    },
+    {
+      "path": "frontend/src/components/feedback-modal.tsx",
+      "startLine": 224,
+      "endLine": 224,
+      "symbol": "FeedbackModal",
+      "quote": "disabled={!title.trim() || !description.trim()}"
+    }
+  ],
+  "reasoning": "The form sets submitting=true but neither handleSubmit guards against an existing submission nor the submit button disables while submitting. If GlowButton's loading prop does not also prevent clicks or if the user submits via Enter before React commits the state change, multiple POST requests to /api/feedback can be sent for the same feedback item. This is a correctness issue for a network-backed form because duplicate feedback records/toasts can be produced from one user action.",
+  "reproduction": "Open the modal with valid title and description, trigger submit twice quickly such as double-clicking the submit control or pressing Enter repeatedly while the first /api/feedback request is pending. Multiple POST requests can be issued because the disabled condition remains based only on field emptiness.",
+  "recommendation": "Disable the submit control while submitting and add an early return in handleSubmit when submitting is already true, ideally with a ref or state guard that is checked before starting the fetch.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and there is no coverage asserting that only one /api/feedback POST can be in flight per form submission.",
+  "suggestedRegressionTest": "Add a component test that renders the modal, fills required fields, makes /api/feedback hang, fires two submit events, and asserts fetch is called exactly once and the button is disabled while submitting.",
+  "minimumFixScope": "Update frontend/src/components/feedback-modal.tsx to include submitting in the submit guard and disabled state.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-9611d70d35_b56f215b3e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:05.290Z",
+  "updatedAt": "2026-05-17T18:28:05.290Z"
+}

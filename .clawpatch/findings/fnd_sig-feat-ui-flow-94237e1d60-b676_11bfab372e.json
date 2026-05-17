@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-94237e1d60-b676_11bfab372e",
+  "featureId": "feat_ui-flow_94237e1d60",
+  "title": "Preference load can overwrite the active wallet's settings",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 58,
+      "endLine": 71,
+      "symbol": "NotificationModal",
+      "quote": "fetch(`/api/notifications/preferences?wallet=${wallet}`)\n      .then(r => r.json())\n      .then(data => {\n        if (data) {\n          setPrefs({"
+    }
+  ],
+  "reasoning": "The preferences request is keyed by the current wallet, but the effect does not abort the request or verify that the response still belongs to the currently connected wallet before calling setPrefs. If the user changes wallets or reopens the modal while a previous request is still in flight, an older response can populate the form for the new wallet. A subsequent save would then POST stale preferences under the currently connected wallet.",
+  "reproduction": "Open the modal with wallet A connected and delay the GET /api/notifications/preferences response. Switch to wallet B before wallet A's request completes. When the delayed wallet A response resolves, the modal state is overwritten with wallet A's preferences while wallet B is active; pressing Save sends those preferences for wallet B.",
+  "recommendation": "Track request ownership with an AbortController or local request token/current wallet check, and only call setPrefs when the response corresponds to the latest open wallet. Also reset prefs to defaults when the wallet changes before loading the new wallet's saved state.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for wallet switching, slow preference loads, or stale network responses.",
+  "suggestedRegressionTest": "Mock useAccount and fetch so wallet A's preferences resolve after switching to wallet B, then assert the component ignores the stale wallet A response and does not save wallet A preferences for wallet B.",
+  "minimumFixScope": "Update the preference-loading useEffect in frontend/src/components/notification-modal.tsx to guard stale responses and reset state on wallet changes.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-94237e1d60_b676e16426",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:17.301Z",
+  "updatedAt": "2026-05-17T18:28:17.301Z"
+}

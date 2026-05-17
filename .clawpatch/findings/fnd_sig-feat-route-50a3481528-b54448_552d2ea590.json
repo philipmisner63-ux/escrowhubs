@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-50a3481528-b54448_552d2ea590",
+  "featureId": "feat_route_50a3481528",
+  "title": "Global CSP permits inline scripts and eval on the onboarding route",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 7,
+      "endLine": 7,
+      "symbol": null,
+      "quote": "\"script-src 'self' 'unsafe-inline' 'unsafe-eval'\""
+    }
+  ],
+  "reasoning": "The security headers applied to every route allow both inline scripts and eval-like code execution. Because this route is a client-rendered page and the header applies globally, any XSS bug anywhere on the route or in shared client dependencies would not be meaningfully constrained by the CSP. This is a concrete defense-in-depth gap for a wallet/escrow frontend where injected script can read page state and initiate malicious wallet interactions.",
+  "reproduction": null,
+  "recommendation": "Remove 'unsafe-eval' from production CSP and replace 'unsafe-inline' with nonces or hashes for any required inline scripts. If a development-only policy is needed, branch CSP by environment so production uses the stricter policy.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this route, and there is no header/security assertion covering the CSP emitted for /:locale/learn/onboarding.",
+  "suggestedRegressionTest": "Add an integration or config test that requests /en/learn/onboarding and asserts the Content-Security-Policy script-src directive does not include 'unsafe-eval' or unrestricted 'unsafe-inline' in production mode.",
+  "minimumFixScope": "frontend/next.config.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-50a3481528_b54448af33",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:00.228Z",
+  "updatedAt": "2026-05-17T17:28:00.228Z"
+}

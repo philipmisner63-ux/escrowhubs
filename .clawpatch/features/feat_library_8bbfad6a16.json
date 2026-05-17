@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_8bbfad6a16",
+  "title": "Node source frontend/src/lib/hooks",
+  "summary": "Node/TypeScript source group frontend/src/lib/hooks with 8 files.",
+  "kind": "library",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend/src/lib/hooks",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/lib/hooks/useChainConfig.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useContractType.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useEscrowEvents.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useEscrowFactory.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useMilestoneEscrow.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useReferrer.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useSimpleEscrow.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useWalletTimeout.ts",
+      "reason": "source group frontend/src/lib/hooks"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-8bbfad6a16-76f9_ca3ac974e8",
+    "fnd_sig-feat-library-8bbfad6a16-e7eb_69dab86dab",
+    "fnd_sig-feat-library-8bbfad6a16-5f49_8e3d0ca23c"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T171856-bf55ad",
+      "kind": "review",
+      "summary": "3 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:19:29.080Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:19:29.080Z"
+}

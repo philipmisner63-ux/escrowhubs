@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-e5d71244d8-408535_c242a929f4",
+  "featureId": "feat_route_e5d71244d8",
+  "title": "Unauthenticated support endpoint can be abused to spam the Discord webhook",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "startLine": 5,
+      "endLine": 21,
+      "symbol": "POST",
+      "quote": "export async function POST(req: NextRequest) {\n  try {\n    const body = await req.json();\n\n    const {\n      issueType,\n      description,\n      wallet,\n      escrowId,\n      route,\n      browser,\n      timestamp,\n      chainId,\n      connectionStatus,\n      contractState,\n      lastTxHash,\n    } = body;"
+    },
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "startLine": 45,
+      "endLine": 49,
+      "symbol": "POST",
+      "quote": "await fetch(DISCORD_WEBHOOK, {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ content: lines }),\n    });"
+    }
+  ],
+  "reasoning": "The public POST route accepts arbitrary request bodies and forwards them to the configured Discord webhook without authentication, origin checks, CAPTCHA, rate limiting, or any other abuse control. Anyone who can reach the deployed app can repeatedly trigger Discord messages, causing channel spam, webhook rate limiting, and possible loss of legitimate support reports.",
+  "reproduction": "From any unauthenticated client, repeatedly POST JSON to /api/support and observe that each request attempts to send a Discord webhook message.",
+  "recommendation": "Add an abuse-control layer appropriate for the app, such as per-IP/user rate limiting, CSRF/origin validation for browser submissions, CAPTCHA or wallet/session binding, and server-side request size limits.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests cover unauthenticated access, repeated submissions, or rate-limit behavior for this route.",
+  "suggestedRegressionTest": "Add route tests that verify unauthenticated or over-limit requests are rejected before fetch is called, and that allowed requests still forward one webhook message.",
+  "minimumFixScope": "frontend/src/app/api/support/route.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-e5d71244d8_40853529c3",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:39.869Z",
+  "updatedAt": "2026-05-17T17:47:39.869Z"
+}

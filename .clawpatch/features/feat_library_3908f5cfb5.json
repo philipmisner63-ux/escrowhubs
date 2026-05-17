@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_3908f5cfb5",
+  "title": "Node source frontend/src/lib",
+  "summary": "Node/TypeScript source group frontend/src/lib with 12 files.",
+  "kind": "library",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend/src/lib",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/lib/chainRegistry.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/confetti.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/contracts.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/gasConfig.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/generateReceipt.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/localStorage.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/metadata.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/mock-data.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/strings.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/trustScore.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/utils.ts",
+      "reason": "source group frontend/src/lib"
+    },
+    {
+      "path": "frontend/src/lib/wagmi.ts",
+      "reason": "source group frontend/src/lib"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-3908f5cfb5-c3bc_14c6260edf"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T170346-113981",
+      "kind": "review",
+      "summary": "1 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:04:06.726Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:04:06.726Z"
+}

@@ -29,4 +29,16 @@ if echo "$STAGED_FILES" | grep -q "agents/broadcast.md"; then
     echo "[pre-commit] ✓ Broadcast fanned out to agent inboxes"
 fi
 
+# 3. Check if any outbox.md changed → compile consensus thread
+if echo "$STAGED_FILES" | grep -q "outbox.md"; then
+    echo "[pre-commit] Outbox entries changed — compiling consensus thread..."
+    python3 agents/consensus/compile-thread.py
+    if [ $? -ne 0 ]; then
+        echo "[pre-commit] ❌ Consensus compilation failed. Aborting commit."
+        exit 1
+    fi
+    git add agents/consensus/current.md
+    echo "[pre-commit] ✓ Consensus thread compiled and staged"
+fi
+
 exit 0

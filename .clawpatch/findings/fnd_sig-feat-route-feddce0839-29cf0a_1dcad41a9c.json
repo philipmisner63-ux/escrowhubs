@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-feddce0839-29cf0a_1dcad41a9c",
+  "featureId": "feat_route_feddce0839",
+  "title": "Discord forwarding allows user-controlled mass mentions",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 25,
+      "endLine": 29,
+      "symbol": "POST",
+      "quote": "const body = await req.json();\n    const { category, title, description, wallet, timestamp } = body;"
+    },
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 43,
+      "endLine": 57,
+      "symbol": "POST",
+      "quote": "const content = [\n        `## ${emoji} Feedback: ${entry.title}`,\n        `**Category:** ${entry.category.replace(/([A-Z])/g, \" $1\").trim()}`,\n        `**Wallet:** ${walletLine}`,\n        `**Time:** ${entry.timestamp}`,\n        ``,\n        entry.description,\n      ].join(\"\\n\");\n\n      await fetch(DISCORD_WEBHOOK, {\n        method: \"POST\",\n        headers: { \"Content-Type\": \"application/json\" },\n        body: JSON.stringify({ content }),\n      });"
+    }
+  ],
+  "reasoning": "The webhook message is assembled from user-controlled title, description, category, wallet, and timestamp. Discord interprets mentions in content, so a public feedback route can be used to send @everyone, @here, or role/user mentions into the configured Discord channel.",
+  "reproduction": "POST a feedback body with title or description containing @everyone or a role mention. The route forwards that string as Discord webhook content.",
+  "recommendation": "Disable mention parsing by including allowed_mentions with an empty parse array in the webhook payload, and consider escaping or normalizing markdown-sensitive fields before composing the message.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed, and there is no assertion on the webhook payload shape or mention suppression behavior.",
+  "suggestedRegressionTest": "Mock fetch, POST feedback containing @everyone and <@&123>, and assert the Discord payload includes allowed_mentions: { parse: [] }.",
+  "minimumFixScope": "Change the Discord webhook JSON body to include mention suppression and sanitize or escape user-controlled display fields.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-feddce0839_29cf0afa7f",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:44.944Z",
+  "updatedAt": "2026-05-17T17:47:44.944Z"
+}

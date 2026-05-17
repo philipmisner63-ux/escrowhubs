@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-8275369d64-630ecb_527975b3e0",
+  "featureId": "feat_route_8275369d64",
+  "title": "Telegram links are persisted to local JSON, which can be lost across production restarts or instances",
+  "category": "data-loss",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 13,
+      "endLine": 13,
+      "symbol": "PREFS_FILE",
+      "quote": "const PREFS_FILE = path.join(process.cwd(), \"notifications.json\");"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 22,
+      "endLine": 24,
+      "symbol": "saveAll",
+      "quote": "function saveAll(data: Record<string, object>) {\n  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), \"utf-8\");\n}"
+    },
+    {
+      "path": "frontend/README.md",
+      "startLine": 27,
+      "endLine": 30,
+      "symbol": null,
+      "quote": "## Deploy on Vercel\n\nThe easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js."
+    }
+  ],
+  "reasoning": "The webhook stores durable notification preferences in notifications.json under process.cwd(). For a Next.js deployment, especially the documented Vercel path, route handlers can run on ephemeral or horizontally scaled server instances, so writes to local disk are not a durable shared data store. A user can successfully link Telegram and then lose that link after a restart, redeploy, instance change, or execution on another instance.",
+  "reproduction": "Deploy with multiple runtime instances or redeploy after linking a wallet; the file written by one running instance is not guaranteed to exist for the later oracle or route invocation.",
+  "recommendation": "Move notification preferences to a durable shared store such as the project database, KV, object storage with atomic writes, or another persistent backend used by the oracle. Treat local JSON only as a development fixture.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included, and there is no deployment/runtime test that verifies links survive restarts or multi-instance execution.",
+  "suggestedRegressionTest": "Add an integration test around the persistence abstraction that stores a wallet/chat link, constructs a fresh handler/service instance, and verifies the link is still available from the durable store.",
+  "minimumFixScope": "Replace direct fs persistence in this route with a durable persistence adapter and update any consumers that read notifications.json.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-8275369d64_630ecb46ad",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:24.878Z",
+  "updatedAt": "2026-05-17T17:28:24.878Z"
+}

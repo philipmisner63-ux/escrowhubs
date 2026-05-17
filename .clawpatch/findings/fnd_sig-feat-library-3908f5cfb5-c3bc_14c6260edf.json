@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-3908f5cfb5-c3bc_14c6260edf",
+  "featureId": "feat_library_3908f5cfb5",
+  "title": "Receipt subtracts the platform fee from an amount documented as already net",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/lib/generateReceipt.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "symbol": "ReceiptData.amount",
+      "quote": "amount: bigint;       // net escrow amount (wei)"
+    },
+    {
+      "path": "frontend/src/lib/generateReceipt.ts",
+      "startLine": 154,
+      "endLine": 159,
+      "symbol": "generateReceipt",
+      "quote": "const protocolFee = data.amount * 50n / 10000n;\n  const netAmount = data.amount - protocolFee;\n  row(\"Escrow Amount\", fmt(data.amount));\n  row(\"Platform Fee (0.5%)\", fmt(protocolFee));"
+    }
+  ],
+  "reasoning": "The public input contract says `amount` is the net escrow amount in wei, but the receipt generator computes a new 0.5% fee from that value and displays `data.amount - protocolFee` as the net amount to seller. For callers that follow the interface, receipts understate the seller amount and report a synthetic fee that was already excluded. This is financial-output corruption in the generated PDF, even if no on-chain state is changed.",
+  "reproduction": null,
+  "recommendation": "Clarify the data contract and use one representation consistently. Either rename/document `amount` as gross escrow amount and require callers to pass gross, or treat it as net and do not subtract the platform fee again. If both values are needed, add explicit `grossAmount` and `protocolFee` fields.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for receipt generation or for the `ReceiptData` amount contract.",
+  "suggestedRegressionTest": "Add a receipt-generation unit test with `amount = 1000n` documented as net and assert the rendered financial rows do not calculate `995n` as the seller amount, or update the interface to gross and assert the gross/fee/net rows match the chosen contract.",
+  "minimumFixScope": "frontend/src/lib/generateReceipt.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-3908f5cfb5_c3bc8d0311",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:06.725Z",
+  "updatedAt": "2026-05-17T17:04:06.725Z"
+}

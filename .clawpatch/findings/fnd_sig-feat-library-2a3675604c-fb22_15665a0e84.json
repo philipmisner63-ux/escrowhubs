@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-2a3675604c-fb22_15665a0e84",
+  "featureId": "feat_library_2a3675604c",
+  "title": "Footer support action can open the wrong fixed modal",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/footer.tsx",
+      "startLine": 111,
+      "endLine": 116,
+      "symbol": "Footer",
+      "quote": "const allBtns = document.querySelectorAll<HTMLButtonElement>(\"button[aria-label]\");\nfor (const b of allBtns) {\n  if (b.className.includes(\"fixed\")) { b.click(); break; }\n}"
+    },
+    {
+      "path": "frontend/src/components/SupportButton.tsx",
+      "startLine": 15,
+      "endLine": 19,
+      "symbol": "SupportButton",
+      "quote": "<button\n  onClick={() => setOpen(true)}\n  aria-label={t(\"button\")}\n  className=\"fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-black/80 px-4 py-2.5 text-xs font-medium text-slate-300 shadow-lg hover:border-cyan-400/30 hover:text-cyan-400 transition-all duration-200\""
+    },
+    {
+      "path": "frontend/src/components/feedback-button.tsx",
+      "startLine": 12,
+      "endLine": 17,
+      "symbol": "FeedbackButton",
+      "quote": "<button\n  onClick={() => setOpen(true)}\n  aria-label={t(\"button\")}\n  className=\"fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full border border-white/10"
+    }
+  ],
+  "reasoning": "The footer's Support link does not target the support component directly. It clicks the first button in the document that has an aria-label and a className containing fixed. Both the support and feedback floating buttons match that predicate, so DOM order determines whether the Support footer link opens support or feedback. This is a user-visible correctness bug and will be brittle as more fixed aria-label buttons are added.",
+  "reproduction": "Render a page with both FeedbackButton and SupportButton where FeedbackButton appears earlier in DOM order, then click Footer -> Support. The feedback modal opens instead of the support modal.",
+  "recommendation": "Replace the DOM query/click coupling with explicit state or a shared support-modal controller/context. At minimum, dispatch a named custom event or query a stable data attribute unique to the support button, not all fixed aria-label buttons.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for footer interactions or coexistence of the floating support and feedback buttons.",
+  "suggestedRegressionTest": "Render Footer with both floating buttons present, click the localized Support footer item, and assert that SupportModal opens while FeedbackModal remains closed.",
+  "minimumFixScope": "frontend/src/components/footer.tsx and the component or shared state that owns SupportModal opening.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-2a3675604c_fb22c1e8de",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:19.941Z",
+  "updatedAt": "2026-05-17T17:04:19.941Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-2a3675604c-6eec_f27045d9aa",
+  "featureId": "feat_library_2a3675604c",
+  "title": "Unsupported-chain overlay leaves underlying controls keyboard-accessible",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/chain-guard.tsx",
+      "startLine": 64,
+      "endLine": 67,
+      "symbol": "ChainGuard",
+      "quote": "<div className=\"pointer-events-none opacity-40 select-none\" aria-hidden=\"true\">\n  {children}\n</div>"
+    }
+  ],
+  "reasoning": "When the wallet is connected to an unsupported chain, ChainGuard visually dims the protected page and blocks pointer events, but it still renders the original focusable controls. `aria-hidden` only hides the subtree from assistive technology; it does not remove links, buttons, or form fields from sequential keyboard focus. A keyboard user can tab into and activate protected page actions while the UI indicates the page is blocked for an unsupported network.",
+  "reproduction": "Connect on an unsupported chain, load a page wrapped by ChainGuard that contains a button or link, press Tab until focus reaches an underlying control, then press Enter or Space. The underlying control can still be activated despite the unsupported-chain state.",
+  "recommendation": "Use the `inert` attribute on the dimmed content, conditionally render a non-interactive placeholder instead of children, or recursively disable known actionable descendants while unsupported. Keep the warning and switch buttons outside the inert region.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for keyboard navigation or unsupported-chain behavior.",
+  "suggestedRegressionTest": "Render ChainGuard with a connected unsupported chain and a child button, simulate keyboard tab/activation, and assert the child action is not invoked while the chain-switch buttons remain usable.",
+  "minimumFixScope": "frontend/src/components/chain-guard.tsx",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-2a3675604c_6eec5f5d2e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:19.942Z",
+  "updatedAt": "2026-05-17T17:04:19.942Z"
+}

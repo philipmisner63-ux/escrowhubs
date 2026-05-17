@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-96e402a484-48ff_476ea21120",
+  "featureId": "feat_ui-flow_96e402a484",
+  "title": "Receipt download flow has no regression coverage",
+  "category": "test-gap",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "test-gap",
+  "evidence": [
+    {
+      "path": "frontend/src/components/download-receipt.tsx",
+      "startLine": 15,
+      "endLine": 23,
+      "symbol": "DownloadReceipt.download",
+      "quote": "async function download() {\n    setLoading(true);\n    try {\n      const { generateReceipt } = await import(\"@/lib/generateReceipt\");\n      await generateReceipt(data);\n    } catch (e) {\n      console.error(\"Receipt generation failed:\", e);\n    } finally {\n      setLoading(false);"
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 5,
+      "endLine": 10,
+      "symbol": null,
+      "quote": "\"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"lint\": \"eslint\"\n  }"
+    }
+  ],
+  "reasoning": "The component owns the async receipt generation flow, including loading state, dynamic import, disabled behavior, and failure handling, but the package exposes no test script and the feature lists no linked tests. A regression could remove the disabled/loading behavior or break invocation of generateReceipt without being caught before release.",
+  "reproduction": null,
+  "recommendation": "Add focused component tests that mock @/lib/generateReceipt and next-intl, click both size variants, assert the loading/disabled state while pending, assert generateReceipt receives the provided data, and assert the button recovers after rejection.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and frontend/package.json does not define a test command.",
+  "suggestedRegressionTest": "Render DownloadReceipt with representative ReceiptData, mock generateReceipt as a controllable promise, click the button, verify it disables and shows the generating state, resolve or reject the promise, and verify the button returns to the idle label.",
+  "minimumFixScope": "Add a frontend test setup and one component test file covering DownloadReceipt's success and failure paths.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-96e402a484_48ff826d59",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:09.826Z",
+  "updatedAt": "2026-05-17T18:28:09.826Z"
+}

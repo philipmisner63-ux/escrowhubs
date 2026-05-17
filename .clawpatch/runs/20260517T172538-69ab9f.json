@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "runId": "20260517T172538-69ab9f",
+  "command": "review",
+  "args": [
+    "review",
+    "--limit",
+    "10"
+  ],
+  "rootPath": "/home/philip/projects/blockdag-escrow",
+  "headSha": "64efd42dc31b91341b7bb34dbb8b014e90eb2642",
+  "startedAt": "2026-05-17T17:25:38.097Z",
+  "finishedAt": "2026-05-17T17:26:27.847Z",
+  "status": "completed",
+  "claimedFeatureIds": [
+    "feat_library_a43ddd8782",
+    "feat_library_ad5bce6759",
+    "feat_library_b9410a1d9a",
+    "feat_library_bf1d2cca54",
+    "feat_library_c30719e668",
+    "feat_library_cbfd18e4d5",
+    "feat_library_d498494588",
+    "feat_library_f2c946a5eb",
+    "feat_release_36a60cc78c",
+    "feat_release_3fe3353c48"
+  ],
+  "findingIds": [
+    "fnd_sig-feat-library-b9410a1d9a-53b3_96f54a6dc5",
+    "fnd_sig-feat-library-bf1d2cca54-eda8_0a969730c8",
+    "fnd_sig-feat-library-d498494588-e7ef_fc504d98b1",
+    "fnd_sig-feat-library-d498494588-b404_d535b874aa",
+    "fnd_sig-feat-library-d498494588-944a_f6d39e459f",
+    "fnd_sig-feat-library-cbfd18e4d5-b26b_a06006c03e"
+  ],
+  "patchAttemptIds": [],
+  "errors": []
+}

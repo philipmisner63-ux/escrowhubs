@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-d498494588-b404_d535b874aa",
+  "featureId": "feat_library_d498494588",
+  "title": "Owner authorization is hardcoded instead of using the contract owner read from chain",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 11,
+      "endLine": 11,
+      "symbol": "OWNER_ADDRESS",
+      "quote": "const OWNER_ADDRESS = \"0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA\";"
+    },
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 118,
+      "endLine": 118,
+      "symbol": "AdminPage",
+      "quote": "const isOwner = isConnected && wallet?.toLowerCase() === OWNER_ADDRESS.toLowerCase();"
+    },
+    {
+      "path": "frontend/src/app/[locale]/admin/page.tsx",
+      "startLine": 136,
+      "endLine": 136,
+      "symbol": "AdminPage",
+      "quote": "const owner           = (data?.[4]?.result as `0x${string}` | undefined);"
+    }
+  ],
+  "reasoning": "The page reads owner() from the active factory contract but ignores it for access control, comparing the connected wallet against a baked-in address instead. If ownership is transferred, deployments use different owners per chain, or the configured factory address changes, the actual contract owner will be locked out of the UI while the old hardcoded address still sees admin controls and escalation review UI. That violates the contract API's source of truth for ownership.",
+  "reproduction": "Use a factory whose owner() is not 0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA, connect as the returned owner, and the page still renders Access Denied because isOwner compares against the hardcoded constant.",
+  "recommendation": "Derive isOwner from the owner value returned by owner() for the selected factory and chain, handling the loading state until the read completes. Remove or restrict the hardcoded address to a fallback only if there is a documented, tested reason.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for owner gating, and there is no test case where the contract owner differs from the hardcoded address.",
+  "suggestedRegressionTest": "Mock useReadContracts so owner() returns a test wallet address, render with that wallet connected, and assert the admin content is visible; render with a different wallet and assert Access Denied.",
+  "minimumFixScope": "Change isOwner calculation in frontend/src/app/[locale]/admin/page.tsx to compare wallet with the owner read from the contract.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-d498494588_b4047e29dd",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172538-69ab9f",
+  "createdAt": "2026-05-17T17:26:09.383Z",
+  "updatedAt": "2026-05-17T17:26:09.383Z"
+}

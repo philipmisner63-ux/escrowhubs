@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8fe69daa9d-5242_19753109ec",
+  "featureId": "feat_library_8fe69daa9d",
+  "title": "Required escrow title is silently discarded",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 41,
+      "endLine": 41,
+      "symbol": "CreateEscrowPage",
+      "quote": "const [form, setForm] = useState({ title: \"\", beneficiary: \"\", amount: \"\" });"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 199,
+      "endLine": 199,
+      "symbol": "CreateEscrowPage",
+      "quote": "<Field label={t(\"titleLabel\")} value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder={t(\"titlePlaceholder\")} />"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 73,
+      "endLine": 80,
+      "symbol": "handleSubmit",
+      "quote": "args: [form.beneficiary as `0x${string}`, resolvedArbiter, 0, useAIArbiter, referrer],"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 90,
+      "endLine": 97,
+      "symbol": "handleSubmit",
+      "quote": "args: [form.beneficiary as `0x${string}`, resolvedArbiter, descriptions, amounts, 0, useAIArbiter, referrer],"
+    }
+  ],
+  "reasoning": "The page requires users to enter a title and stores it in form.title, but neither escrow creation branch includes that value in the contract call or persists it elsewhere in the owned files. A user can successfully create an escrow after entering a title, but that title is lost immediately after submission.",
+  "reproduction": null,
+  "recommendation": "Either remove the title field if escrows do not support titles, or persist it through the intended storage path before/after the transaction and associate it with the created escrow address.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for this feature, and there is no assertion that title input affects the submitted escrow payload or stored escrow metadata.",
+  "suggestedRegressionTest": "Submit both simple and milestone create forms with a non-empty title and assert the title is persisted or deliberately absent from the UI contract if titles are unsupported.",
+  "minimumFixScope": "Update the create submit flow and any expected persistence/API integration for escrow metadata, or remove the required title field and translations from this page.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8fe69daa9d_52427b7c40",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:54.285Z",
+  "updatedAt": "2026-05-17T17:19:54.285Z"
+}

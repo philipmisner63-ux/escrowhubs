@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-feddce0839-0f67b7_bfa7be6b23",
+  "featureId": "feat_route_feddce0839",
+  "title": "Concurrent feedback submissions can overwrite each other in the JSON log",
+  "category": "data-loss",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 10,
+      "endLine": 20,
+      "symbol": "appendLog",
+      "quote": "function appendLog(entry: object) {\n  try {\n    let records: object[] = [];\n    if (fs.existsSync(LOG_FILE)) {\n      const raw = fs.readFileSync(LOG_FILE, \"utf-8\").trim();\n      if (raw) records = JSON.parse(raw);\n    }\n    records.push(entry);\n    fs.writeFileSync(LOG_FILE, JSON.stringify(records, null, 2), \"utf-8\");"
+    },
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 38,
+      "endLine": 38,
+      "symbol": "POST",
+      "quote": "appendLog(entry);"
+    }
+  ],
+  "reasoning": "The route appends by reading the whole file, mutating an in-memory array, then rewriting the whole file without locking or an atomic append. Two overlapping POST requests can both read the same old contents, push different entries, and the later write will discard the earlier request's feedback.",
+  "reproduction": "Send two POST /api/feedback requests at the same time against an existing feedback.json. If both read before either writes, the final file contains only one of the two new entries.",
+  "recommendation": "Use a durable datastore or an append-only write path with proper synchronization. If local files remain acceptable for development, write newline-delimited JSON with atomic append semantics or guard read-modify-write with a process-wide lock, while noting this still does not solve multi-instance deployments.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for this feature, and concurrency requires overlapping requests rather than a single happy-path POST.",
+  "suggestedRegressionTest": "Exercise two concurrent POST calls with a mocked or temporary log file and assert both entries are preserved.",
+  "minimumFixScope": "Replace appendLog's read-modify-write persistence with a concurrency-safe storage path for feedback entries.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-feddce0839_0f67b7b070",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:44.944Z",
+  "updatedAt": "2026-05-17T17:47:44.944Z"
+}

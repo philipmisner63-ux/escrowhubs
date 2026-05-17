@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8fe69daa9d-a430_8c68664684",
+  "featureId": "feat_library_8fe69daa9d",
+  "title": "Escrow address extraction accepts the first factory log with any second topic",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 112,
+      "endLine": 116,
+      "symbol": "handleSubmit",
+      "quote": "for (const log of receipt.logs) {\n          if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics[1]) {\n            const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;\n            if (/^0x[0-9a-fA-F]{40}$/.test(addr)) { contractAddress = addr; break; }\n          }\n        }"
+    }
+  ],
+  "reasoning": "The parser does not check the event signature or decode the expected factory event. Any earlier factory log with an indexed address-like second topic can be treated as the escrow address, causing navigation to the wrong escrow page even though the transaction receipt is valid.",
+  "reproduction": null,
+  "recommendation": "Decode the specific escrow-created event from ESCROW_FACTORY_ABI with viem decodeEventLog, verify the event name/signature, and use the named escrow address argument rather than slicing topics generically.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests provide receipts with multiple factory logs or an unrelated indexed address before the escrow-created event.",
+  "suggestedRegressionTest": "Feed the receipt parsing path a receipt containing an unrelated factory event before the actual escrow-created event and assert it routes to the address decoded from the expected event only.",
+  "minimumFixScope": "Replace the topic-slicing loop with ABI-based event decoding for the expected factory creation event.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8fe69daa9d_a430e1625f",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:54.285Z",
+  "updatedAt": "2026-05-17T17:19:54.285Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-5e46b4036f-c41a3e_2c3ab9961b",
+  "featureId": "feat_route_5e46b4036f",
+  "title": "Locale route renders hard-coded English content",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/learn/faq/page.tsx",
+      "startLine": 13,
+      "endLine": 14,
+      "symbol": "FAQPage",
+      "quote": "<h1 className=\"text-2xl font-bold text-white\">Frequently Asked Questions</h1>\n        <p className=\"mt-1 text-slate-400 text-sm\">Everything you need to know about EscrowHubs on BlockDAG.</p>"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/faq/page.tsx",
+      "startLine": 18,
+      "endLine": 18,
+      "symbol": "FAQPage",
+      "quote": "{FAQ_ITEMS.map((item, i) => ("
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 5,
+      "endLine": 5,
+      "symbol": "withNextIntl",
+      "quote": "const withNextIntl = createNextIntlPlugin(\"./src/i18n/request.ts\");"
+    }
+  ],
+  "reasoning": "The page lives under the locale segment and the app is configured with next-intl, but this route does not read the locale or use translations for either the page chrome or the FAQ data. As a result, non-English locale URLs such as /es/learn/faq will still render English strings, which breaks the locale route contract for user-visible content.",
+  "reproduction": "Open two locale variants, for example /en/learn/faq and /es/learn/faq. The heading, description, and FAQ entries are rendered from the same hard-coded English strings/data instead of locale-specific messages.",
+  "recommendation": "Move the FAQ heading, description, and FAQ item copy into next-intl messages and render them through the locale-aware translation API used elsewhere in the frontend.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and the route has no coverage asserting that different locale paths render localized FAQ content.",
+  "suggestedRegressionTest": "Add a route-level rendering test that loads at least two supported locales and asserts the FAQ heading and one FAQ answer come from the locale-specific message catalog.",
+  "minimumFixScope": "Update frontend/src/app/[locale]/learn/faq/page.tsx and the relevant message/mock-data source so FAQ content is resolved per locale.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-5e46b4036f_c41a3ee428",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:06.282Z",
+  "updatedAt": "2026-05-17T17:28:06.282Z"
+}

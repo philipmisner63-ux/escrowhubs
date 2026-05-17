@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-9054c961ee-fdc8_4c3df71661",
+  "featureId": "feat_library_9054c961ee",
+  "title": "Milestone action buttons allow duplicate transaction submissions",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 250,
+      "endLine": 264,
+      "symbol": "MilestoneEscrowView.doWrite",
+      "quote": "async function doWrite(fn: () => Promise<`0x${string}`>, label: string) {\n    const pid = addToast({ type: \"pending\", message: `${label}…` });\n    try {\n      const hash = await fn();\n...\n      for (let i = 0; i < 20; i++) {"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 334,
+      "endLine": 350,
+      "symbol": "MilestoneEscrowView",
+      "quote": "{role === \"depositor\" && ms.state === MilestoneState.PENDING && (\n...\n<GlowButton variant=\"secondary\" className=\"h-7 px-3 text-xs\" onClick={() => doWrite(() => writes.releaseMilestone(address, BigInt(i)), `Release M${i+1}`)}>\n...\n<GlowButton variant=\"danger\" className=\"h-7 px-3 text-xs\" onClick={() => doWrite(() => writes.disputeMilestone(address, BigInt(i)), `Dispute M${i+1}`)}>"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 344,
+      "endLine": 350,
+      "symbol": "MilestoneEscrowView",
+      "quote": "{role === \"arbiter\" && ms.state === MilestoneState.DISPUTED && (\n...\n<GlowButton variant=\"primary\" className=\"h-7 px-3 text-xs\" onClick={() => doWrite(() => writes.resolveRelease(address, BigInt(i)), `Resolve M${i+1}`)}>\n...\n<GlowButton variant=\"secondary\" className=\"h-7 px-3 text-xs\" onClick={() => doWrite(() => writes.resolveRefund(address, BigInt(i)), `Refund M${i+1}`)}>"
+    }
+  ],
+  "reasoning": "The milestone release/dispute/resolve buttons start an asynchronous wallet transaction but do not pass loading or disabled state, and doWrite has no local in-flight guard. A user can click the same milestone action repeatedly before the wallet or chain state updates, causing multiple wallet prompts or duplicate transactions. On-chain, later transactions may revert after the first state transition, still costing the user time and potentially gas.",
+  "reproduction": "Open a funded milestone escrow as the depositor, then rapidly click Release or Dispute for the same pending milestone before the first wallet request completes. Multiple doWrite calls are issued for the same milestone index.",
+  "recommendation": "Add a per-action or per-milestone pending guard and pass loading/disabled to all milestone GlowButtons while a write is in flight. Prefer keying pending state by milestone index and action so unrelated milestones can still be acted on intentionally if desired.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature declares no linked tests, and there is no component test asserting milestone action buttons become disabled while writeContractAsync is pending.",
+  "suggestedRegressionTest": "Mock useMilestoneEscrowWrite so releaseMilestone returns a never-resolving promise, click a milestone Release button twice, and assert the write function is called only once and the button is disabled or loading after the first click.",
+  "minimumFixScope": "frontend/src/app/[locale]/escrow/[id]/page.tsx milestone action button state and MilestoneEscrowView.doWrite in-flight handling.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-9054c961ee_fdc886cf6a",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:20:30.999Z",
+  "updatedAt": "2026-05-17T17:20:30.999Z"
+}

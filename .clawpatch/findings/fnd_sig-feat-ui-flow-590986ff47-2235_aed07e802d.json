@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-590986ff47-2235_aed07e802d",
+  "featureId": "feat_ui-flow_590986ff47",
+  "title": "Unused feesResult can fail lint and hides an incomplete metric fetch",
+  "category": "build-release",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 146,
+      "endLine": 158,
+      "symbol": "LiveStats.fetchStats",
+      "quote": "const [countResult, balanceResult, feesResult] = await Promise.allSettled(["
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 5,
+      "endLine": 10,
+      "symbol": null,
+      "quote": "\"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"lint\": \"eslint\"\n  }"
+    }
+  ],
+  "reasoning": "fetchStats binds feesResult from Promise.allSettled but never reads it. In a project with an ESLint script, this is likely to be reported by the standard unused-variable rule, and it also leaves the accumulatedFees request with no behavioral effect despite the component paying the network cost for it.",
+  "reproduction": "Run pnpm lint in frontend; the unused feesResult binding is expected to be flagged if the standard no-unused-vars rule is enabled by the Next ESLint config.",
+  "recommendation": "Remove the accumulatedFees read if it is not needed, or incorporate feesResult into a displayed/derived statistic. If the request is intentionally reserved for later, avoid binding it until the value is used.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests or lint results were included for this feature, and there is no coverage checking that every fetched on-chain value contributes to rendered stats.",
+  "suggestedRegressionTest": "Add a lint/build check in CI for the frontend package, or add a focused test that verifies all live stats requests feed a rendered value when accumulated fees becomes part of the UI.",
+  "minimumFixScope": "frontend/src/components/live-stats.tsx: remove or use feesResult and its associated accumulatedFees request.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-590986ff47_2235311086",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:10.354Z",
+  "updatedAt": "2026-05-17T18:28:10.354Z"
+}

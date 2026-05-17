@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-1b08e5e111-069c_6b973068e0",
+  "featureId": "feat_ui-flow_1b08e5e111",
+  "title": "Unsupported-chain content remains keyboard-accessible",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/chain-guard.tsx",
+      "startLine": 54,
+      "endLine": 56,
+      "symbol": "ChainGuard",
+      "quote": "<div className=\"pointer-events-none opacity-40 select-none\" aria-hidden=\"true\">\n        {children}\n      </div>"
+    }
+  ],
+  "reasoning": "The guard disables pointer events and hides the dimmed subtree from assistive technology, but it still mounts the original children with all focusable controls intact. CSS pointer-events does not prevent keyboard focus or keyboard activation, so a user can tab into underlying form buttons/transaction controls and trigger flows while the wallet is on an unsupported chain. The aria-hidden attribute also makes this worse for assistive technology because focusable descendants can still receive focus while being hidden from the accessibility tree.",
+  "reproduction": "Connect a wallet on an unsupported chain, render ChainGuard around content containing a button with an onClick handler, then use Tab/Enter instead of the mouse. The underlying button can still be focused and activated despite the unsupported-network prompt.",
+  "recommendation": "When the chain is unsupported, either do not render protected interactive children at all, render an inert placeholder, or apply the HTML inert attribute to the dimmed content in addition to visual styling. If inert support/polyfill is not acceptable, disable or remove focusability for descendants through a controlled wrapper pattern.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for this feature, and the package scripts do not identify an existing test command.",
+  "suggestedRegressionTest": "Add a React Testing Library test that renders ChainGuard with a focusable child while useAccount reports connected and useChainId returns an unsupported chain, then assert the child cannot receive focus or be activated via keyboard.",
+  "minimumFixScope": "Update frontend/src/components/chain-guard.tsx so the unsupported-chain branch prevents keyboard interaction with protected children, and add focused coverage for the unsupported-chain state.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-1b08e5e111_069c58e878",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:44.882Z",
+  "updatedAt": "2026-05-17T17:47:44.882Z"
+}

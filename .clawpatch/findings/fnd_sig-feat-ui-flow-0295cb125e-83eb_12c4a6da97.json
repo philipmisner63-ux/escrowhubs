@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-0295cb125e-83eb_12c4a6da97",
+  "featureId": "feat_ui-flow_0295cb125e",
+  "title": "Uncaught storage errors can crash the client component",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/onboarding-tour.tsx",
+      "startLine": 21,
+      "endLine": 23,
+      "symbol": "OnboardingTour",
+      "quote": "onDestroyed: () => {\n        localStorage.setItem(TOUR_KEY, \"true\");\n      }"
+    },
+    {
+      "path": "frontend/src/components/onboarding-tour.tsx",
+      "startLine": 60,
+      "endLine": 61,
+      "symbol": "OnboardingTour",
+      "quote": "if (localStorage.getItem(TOUR_KEY)) return;"
+    },
+    {
+      "path": "frontend/src/components/onboarding-tour.tsx",
+      "startLine": 74,
+      "endLine": 76,
+      "symbol": "resetAndStartTour",
+      "quote": "localStorage.removeItem(TOUR_KEY);\n    window.location.reload();"
+    }
+  ],
+  "reasoning": "All localStorage calls assume storage is available. In browsers or embedded contexts where storage access is blocked, full, or denied, getItem/setItem/removeItem can throw a DOMException. Because these calls are not guarded, the effect, tour teardown callback, or footer-triggered reset can throw into the client runtime instead of simply skipping persistence.",
+  "reproduction": "Run the app in a browser context where localStorage is disabled or denied, then mount OnboardingTour or trigger resetAndStartTour. The unhandled localStorage exception interrupts the component behavior.",
+  "recommendation": "Wrap localStorage access in a small safe helper that catches DOMException and treats storage as unavailable. The tour can still run without persistence, and reset can still fall back to reload or no-op behavior.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this feature, and no browser-storage failure path is exercised.",
+  "suggestedRegressionTest": "Mock localStorage.getItem/setItem/removeItem to throw and assert that rendering OnboardingTour and calling resetAndStartTour do not throw.",
+  "minimumFixScope": "Add guarded localStorage helpers in frontend/src/components/onboarding-tour.tsx and use them for get, set, and remove operations.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-0295cb125e_83eb7d3c6b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:38.287Z",
+  "updatedAt": "2026-05-17T17:47:38.287Z"
+}

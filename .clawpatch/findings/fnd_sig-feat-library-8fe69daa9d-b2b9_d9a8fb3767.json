@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8fe69daa9d-b2b9_d9a8fb3767",
+  "featureId": "feat_library_8fe69daa9d",
+  "title": "Receipt polling ignores the chain used for the transaction",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 59,
+      "endLine": 80,
+      "symbol": "handleSubmit",
+      "quote": "const currentChainId = chainId;\n      const factoryAddress = getFactoryAddress(currentChainId);\n...\n          chainId: currentChainId,"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "startLine": 106,
+      "endLine": 110,
+      "symbol": "handleSubmit",
+      "quote": "const rpcClient = createPublicClient({\n          chain: blockdagMainnet,\n          transport: http(getRpcUrl(DEFAULT_CHAIN_ID)),\n        });\n        const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });"
+    }
+  ],
+  "reasoning": "The write uses the wallet's currentChainId and the factory address for that chain, but receipt polling always uses blockdagMainnet and DEFAULT_CHAIN_ID. If currentChainId is any supported non-default chain, the transaction can be submitted successfully while the UI waits on the wrong RPC, times out, and sends the user to the dashboard instead of the new escrow.",
+  "reproduction": null,
+  "recommendation": "Create the public client from currentChainId using the same chain/RPC selection as the write path, or enforce/switch the wallet to the single supported default chain before allowing submission.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests cover receipt polling with a non-default chain id or assert that the polling RPC matches the transaction chain.",
+  "suggestedRegressionTest": "Mock useChainId to a non-default supported chain, submit an escrow, and assert createPublicClient/http are called with the RPC for that same chain id.",
+  "minimumFixScope": "Update receipt polling client construction in handleSubmit and add a chain mismatch guard if only one chain is intended.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8fe69daa9d_b2b9f4a6d5",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:54.285Z",
+  "updatedAt": "2026-05-17T17:19:54.285Z"
+}

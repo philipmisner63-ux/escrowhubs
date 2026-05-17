@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-330ec5235e-eb7564_c49f113888",
+  "featureId": "feat_route_330ec5235e",
+  "title": "Concurrent preference updates can silently drop data",
+  "category": "concurrency",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 45,
+      "endLine": 52,
+      "symbol": "POST",
+      "quote": "const all = loadAll();\n    all[key] = {\n      wallet:          key,\n      telegramChatId:  body.telegramChatId  ?? all[key]?.telegramChatId  ?? null,\n      telegramEnabled: body.telegramEnabled ?? all[key]?.telegramEnabled ?? {},\n      updatedAt:       new Date().toISOString(),\n    };\n    saveAll(all);"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "startLine": 30,
+      "endLine": 31,
+      "symbol": "saveAll",
+      "quote": "function saveAll(data: Record<string, NotificationPrefs>) {\n  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), \"utf-8\");"
+    }
+  ],
+  "reasoning": "POST performs an unguarded read-modify-write of a shared JSON file. If two requests load the same file concurrently and then each writes its modified copy, the later write can erase the earlier request's changes, including changes for a different wallet. Synchronous writes only block within one Node process; they do not provide cross-request or cross-process transaction safety.",
+  "reproduction": "Send two POST requests at the same time for different wallets against a deployment with more than one request in flight. Both can read the same original notifications.json; whichever saveAll call runs last writes a copy containing only its own modification.",
+  "recommendation": "Store preferences in a transactional datastore, or at minimum use an atomic update strategy with locking and write-through validation. Avoid whole-file read-modify-write for user preference state in a web route.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included, and there are no concurrency or multi-request persistence tests in the provided evidence.",
+  "suggestedRegressionTest": "Add a test that issues overlapping POST updates for two wallets and asserts both records remain present after both requests complete.",
+  "minimumFixScope": "Replace the file-backed store or wrap load/update/save in a process-safe lock with atomic file replacement and concurrency tests.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-330ec5235e_eb756477cb",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:06.874Z",
+  "updatedAt": "2026-05-17T17:28:06.874Z"
+}

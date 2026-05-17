@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-4127428308-20ae_01aab4e710",
+  "featureId": "feat_ui-flow_4127428308",
+  "title": "Locale switch drops query string and hash",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/language-picker.tsx",
+      "startLine": 10,
+      "endLine": 12,
+      "symbol": "switchLocale",
+      "quote": "const segments = window.location.pathname.split(\"/\").filter(Boolean);\n  segments[0] = next; // first segment is always the locale\n  window.location.href = \"/\" + segments.join(\"/\");"
+    }
+  ],
+  "reasoning": "The redirect is rebuilt from pathname only, so any current search parameters or hash fragment are discarded when changing language. Pages that encode filters, selected records, referral data, wallet flow state, or anchor targets in `?query` or `#hash` will silently lose that state during a language switch.",
+  "reproduction": "Navigate to `/en/search?q=escrow#results`, open the language picker, and select another locale. The browser is sent to `/<locale>/search` instead of preserving `?q=escrow#results`.",
+  "recommendation": "Build the target URL from `window.location.href` or append `window.location.search` and `window.location.hash` when assigning `window.location.href`.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included for this feature, and the component has no regression coverage for preserving URL state across locale changes.",
+  "suggestedRegressionTest": "Add a component/unit test or browser test that starts at a localized URL with both search params and a hash, selects a different locale, and asserts the redirected URL keeps the original query string and fragment.",
+  "minimumFixScope": "Update `switchLocale` in `frontend/src/components/language-picker.tsx` and add focused regression coverage for locale switching URL preservation.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-4127428308_20ae302fa6",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:55.038Z",
+  "updatedAt": "2026-05-17T17:47:55.038Z"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-18058c62ca-940ea2_87ff200940",
+  "featureId": "feat_route_18058c62ca",
+  "title": "Global CSP permits inline scripts and eval on the landing route",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "symbol": "CSP",
+      "quote": "\"script-src 'self' 'unsafe-inline' 'unsafe-eval'\""
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 52,
+      "endLine": 54,
+      "symbol": "headers",
+      "quote": "return [{ source: \"/(.*)\", headers: securityHeaders }];"
+    }
+  ],
+  "reasoning": "The /:locale landing page receives the global headers, including a script-src policy that allows both inline scripts and eval-like execution. That materially weakens the CSP for a public unauthenticated route: any future HTML/script injection on this route or shared layout is much easier to turn into arbitrary script execution, and 'unsafe-eval' also permits string-to-code sinks that CSP would otherwise block. This is not justified by the landing page code shown here, which does not require inline script execution or eval.",
+  "reproduction": "Load /en and inspect the Content-Security-Policy response header; it includes script-src 'self' 'unsafe-inline' 'unsafe-eval'.",
+  "recommendation": "Remove 'unsafe-eval' from production CSP and replace 'unsafe-inline' with nonces or hashes for any required framework/runtime inline scripts. If a dependency requires eval in development, gate the relaxed directive behind a development-only config branch.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this route, and typical component/render tests would not assert response security headers.",
+  "suggestedRegressionTest": "Add a route/header test that requests a localized landing page and asserts the production CSP script-src does not include 'unsafe-inline' or 'unsafe-eval'.",
+  "minimumFixScope": "frontend/next.config.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-18058c62ca_940ea223df",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:27:56.086Z",
+  "updatedAt": "2026-05-17T17:27:56.086Z"
+}

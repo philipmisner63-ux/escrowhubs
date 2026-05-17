@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-b7e32d608c-cd9c_4635a96f70",
+  "featureId": "feat_ui-flow_b7e32d608c",
+  "title": "Component uses React namespace without importing the React type",
+  "category": "build-release",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/glass-card.tsx",
+      "startLine": 3,
+      "endLine": 4,
+      "symbol": "GlassCardProps",
+      "quote": "interface GlassCardProps {\n  children: React.ReactNode;"
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 7,
+      "endLine": 8,
+      "symbol": "scripts",
+      "quote": "\"build\": \"next build\","
+    }
+  ],
+  "reasoning": "The file is a module because it imports cn, but it references the React namespace in the props type without importing React or ReactNode. In TypeScript/Next configurations that do not expose the React UMD namespace inside modules, this fails the production build even though the JSX runtime itself no longer requires a React value import.",
+  "reproduction": null,
+  "recommendation": "Import the type explicitly, for example `import type { ReactNode } from \"react\";`, and change `children` to `ReactNode`.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests or typecheck output are included for this component, and the package manifest only exposes a build script that would catch it during release rather than a focused component-level check.",
+  "suggestedRegressionTest": "Run the frontend TypeScript/Next build in CI for this component path, or add a typecheck script that includes `frontend/src/components/ui/glass-card.tsx`.",
+  "minimumFixScope": "Update `frontend/src/components/ui/glass-card.tsx` to import and use an explicit React node type.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-b7e32d608c_cd9c4277e3",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:16.541Z",
+  "updatedAt": "2026-05-17T18:28:16.541Z"
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-1e5cfe145b-2336_140eefd792",
+  "featureId": "feat_library_1e5cfe145b",
+  "title": "Tabs orientation is used for styling but not passed to Base UI root",
+  "category": "api-contract",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/tabs.tsx",
+      "startLine": 8,
+      "endLine": 22,
+      "symbol": "Tabs",
+      "quote": "function Tabs({\n  className,\n  orientation = \"horizontal\",\n  ...props\n}: TabsPrimitive.Root.Props) {\n  return (\n    <TabsPrimitive.Root\n      data-slot=\"tabs\"\n      data-orientation={orientation}\n      className={cn(\n        \"group/tabs flex gap-2 data-horizontal:flex-col\",\n        className\n      )}\n      {...props}\n    />\n  )\n}"
+    }
+  ],
+  "reasoning": "The component accepts `orientation` from `TabsPrimitive.Root.Props` and writes it to a custom `data-orientation` attribute, but because `orientation` is destructured out of `props`, it is never forwarded to `TabsPrimitive.Root`. Callers using `orientation=\"vertical\"` will get vertical-looking styling while the underlying Base UI tabs root still receives its default orientation, which can break expected keyboard navigation and accessibility semantics.",
+  "reproduction": "Render `<Tabs orientation=\"vertical\">` with multiple triggers, then inspect the underlying Base UI root props/behavior: the primitive is not given `orientation=\"vertical\"` even though the wrapper applies `data-orientation=\"vertical\"`.",
+  "recommendation": "Pass `orientation={orientation}` to `TabsPrimitive.Root` in addition to the styling data attribute.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included for this feature, and the package manifest exposes no test command. A visual-only snapshot would also miss this unless it checks primitive props or keyboard behavior.",
+  "suggestedRegressionTest": "Add a component test that renders `Tabs` with `orientation=\"vertical\"` and verifies vertical keyboard behavior or that the primitive receives the vertical orientation attribute/semantics expected by Base UI.",
+  "minimumFixScope": "Update `frontend/src/components/ui/tabs.tsx` so `TabsPrimitive.Root` receives the destructured `orientation` prop.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-1e5cfe145b_23364a04e6",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:07.580Z",
+  "updatedAt": "2026-05-17T17:04:07.580Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-a10fe4d7b1-1aae92_988a2fedf2",
+  "featureId": "feat_route_a10fe4d7b1",
+  "title": "Localized route renders hard-coded English copy",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/learn/escrow-flow/page.tsx",
+      "startLine": 5,
+      "endLine": 10,
+      "symbol": "steps",
+      "quote": "const steps = [\n  { icon: \"📄\", title: \"Create Escrow\",                 desc: \"Contract is created with roles & terms\" },"
+    },
+    {
+      "path": "frontend/src/app/[locale]/learn/escrow-flow/page.tsx",
+      "startLine": 17,
+      "endLine": 18,
+      "symbol": "EscrowFlowPage",
+      "quote": "<h1 className=\"text-2xl font-bold text-white\">Escrow Flow</h1>\n        <p className=\"mt-1 text-slate-400 text-sm\">Step-by-step animated view of how a single escrow moves from creation to settlement.</p>"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 3,
+      "endLine": 5,
+      "symbol": "withNextIntl",
+      "quote": "import createNextIntlPlugin from \"next-intl/plugin\";\n\nconst withNextIntl = createNextIntlPlugin(\"./src/i18n/request.ts\");"
+    }
+  ],
+  "reasoning": "The page is mounted under the dynamic /:locale segment in a next-intl configured app, but every visible label and description is hard-coded in English. Non-English locale URLs will therefore render English content instead of locale-specific copy, which violates the route's locale contract and makes the page inconsistent with the rest of an internationalized app.",
+  "reproduction": "Open the route with any non-English locale segment, for example /es/learn/escrow-flow, and observe that the heading and all step titles/descriptions remain English.",
+  "recommendation": "Move the heading, intro copy, step titles, and step descriptions into next-intl messages and read them with the app's established translation hook/API for the current locale.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for this feature, and the provided files include no route rendering or locale assertions.",
+  "suggestedRegressionTest": "Add a route/component test that renders EscrowFlowPage within a non-English next-intl provider and asserts that the localized heading and at least one step label come from that locale's messages.",
+  "minimumFixScope": "Update frontend/src/app/[locale]/learn/escrow-flow/page.tsx to consume localized messages, plus the corresponding locale message files and a focused render test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-a10fe4d7b1_1aae929d32",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:23.494Z",
+  "updatedAt": "2026-05-17T17:28:23.494Z"
+}

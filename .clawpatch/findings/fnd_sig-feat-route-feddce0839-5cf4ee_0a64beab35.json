@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-feddce0839-5cf4ee_0a64beab35",
+  "featureId": "feat_route_feddce0839",
+  "title": "Malformed JSON requests are reported as server errors",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 24,
+      "endLine": 32,
+      "symbol": "POST",
+      "quote": "export async function POST(req: NextRequest) {\n  try {\n    const body = await req.json();\n    const { category, title, description, wallet, timestamp } = body;\n\n    if (!title?.trim() || !description?.trim()) {\n      return NextResponse.json({ success: false, error: \"Missing required fields\" }, { status: 400 });\n    }"
+    },
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "startLine": 62,
+      "endLine": 65,
+      "symbol": "POST",
+      "quote": "} catch (err) {\n    console.error(\"Feedback route error:\", err);\n    return NextResponse.json({ success: false }, { status: 500 });\n  }"
+    }
+  ],
+  "reasoning": "req.json() throws for invalid JSON, and the catch block converts every exception into a 500 response. Invalid request bodies are client input errors and should produce a 400 response with a useful error, not be logged and surfaced as an internal server failure.",
+  "reproduction": "POST /api/feedback with Content-Type: application/json and a malformed body such as '{'. The route returns { success: false } with status 500.",
+  "recommendation": "Parse the request body in a narrow try/catch and return a 400 response for JSON syntax or shape errors before entering the internal-error path.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are listed for malformed input or non-happy-path request parsing.",
+  "suggestedRegressionTest": "Send malformed JSON to POST /api/feedback and assert status 400 with an explicit invalid JSON error.",
+  "minimumFixScope": "Split request parsing validation from the broad catch block and map parse failures to 400.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-feddce0839_5cf4eef449",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:44.944Z",
+  "updatedAt": "2026-05-17T17:47:44.944Z"
+}

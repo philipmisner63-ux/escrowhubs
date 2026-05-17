@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8bbfad6a16-e7eb_69dab86dab",
+  "featureId": "feat_library_8bbfad6a16",
+  "title": "Escrow event history is retained across address, chain, and type changes",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/lib/hooks/useEscrowEvents.ts",
+      "startLine": 22,
+      "endLine": 29,
+      "symbol": "useEscrowEvents",
+      "quote": "export function useEscrowEvents(\n  address: Address | undefined,\n  contractType: \"simple\" | \"milestone\" | \"unknown\",\n  chainId?: number,\n) {\n  const activeChainId = useChainId();\n  const resolvedChainId = chainId ?? activeChainId;\n  const [events, setEvents] = useState<EscrowEvent[]>([]);"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useEscrowEvents.ts",
+      "startLine": 31,
+      "endLine": 43,
+      "symbol": "addEvent",
+      "quote": "const addEvent = useCallback((name: string, log: unknown) => {\n    const l = log as { args?: Record<string, unknown>; blockNumber?: bigint | null; transactionHash?: `0x${string}` | null };\n    const ev: EscrowEvent = {\n      name,\n      args: l.args ?? {},\n      blockNumber: l.blockNumber ?? undefined,\n      transactionHash: l.transactionHash ?? undefined,\n      timestamp: Date.now(),\n    };\n    setEvents(prev => [ev, ...prev].slice(0, 50));\n  }, []);"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useEscrowEvents.ts",
+      "startLine": 97,
+      "endLine": 97,
+      "symbol": "useEscrowEvents",
+      "quote": "return { events };"
+    }
+  ],
+  "reasoning": "The events state is scoped to the hook instance, but it is never reset when address, resolvedChainId, or contractType changes. A component that reuses the same hook instance while navigating between escrows or switching networks will show the prior escrow's events together with new events from the next escrow. That can misrepresent deposits, releases, disputes, or refunds as belonging to the currently selected contract.",
+  "reproduction": "Render a component using useEscrowEvents for escrow A and append an event via a watched log. Rerender the same component with escrow B or a different chain. The hook continues returning the old event until enough new events push it out of the 50-item list.",
+  "recommendation": "Clear event history when the identity of the event stream changes, for example with a useEffect that calls setEvents([]) on address, resolvedChainId, and contractType changes.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided, and the included code does not contain a rerender/navigation test for changing the hook inputs.",
+  "suggestedRegressionTest": "Add a hook test that renders useEscrowEvents with one address, injects or simulates a watched event, rerenders with a second address/chain, and asserts events is reset to an empty array.",
+  "minimumFixScope": "frontend/src/lib/hooks/useEscrowEvents.ts and a focused hook rerender test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8bbfad6a16_e7ebc11420",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:29.079Z",
+  "updatedAt": "2026-05-17T17:19:29.079Z"
+}

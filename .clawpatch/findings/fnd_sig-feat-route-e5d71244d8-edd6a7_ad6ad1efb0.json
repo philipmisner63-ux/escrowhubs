@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-e5d71244d8-edd6a7_ad6ad1efb0",
+  "featureId": "feat_route_e5d71244d8",
+  "title": "User-controlled content is sent to Discord without sanitizing mentions or Markdown",
+  "category": "security",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "startLine": 28,
+      "endLine": 43,
+      "symbol": "POST",
+      "quote": "const lines = [\n      `## 🛟 Support Request`,\n      `**Issue:** ${issueType}`,\n      description ? `**Description:** ${description}` : null,\n      ``,\n      `### Metadata`,\n      `- **Wallet:** ${wallet ?? \"not connected\"}`,\n      `- **Chain ID:** ${chainId ?? \"unknown\"}`,\n      `- **Connection:** ${connectionStatus}`,\n      `- **Route:** ${route}`,\n      escrowId ? `- **Escrow ID:** \\`${escrowId}\\`` : null,\n      contractState != null ? `- **Contract State:** ${contractState}` : null,\n      lastTxHash ? `- **Last Tx:** \\`${lastTxHash}\\`` : null,\n      `- **Browser:** ${browser}`,\n      `- **Time:** ${timestamp}`,\n    ].filter(Boolean).join(\"\\n\");"
+    },
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "startLine": 48,
+      "endLine": 48,
+      "symbol": "POST",
+      "quote": "body: JSON.stringify({ content: lines }),"
+    }
+  ],
+  "reasoning": "Fields from the request body are interpolated directly into the Discord message. A submitter can include Discord mention syntax such as @everyone, role/user mentions, or crafted Markdown/backticks in description, issueType, route, browser, and other fields. That allows nuisance notifications and misleading rendered messages in the support channel.",
+  "reproduction": "POST {\"issueType\":\"@everyone\",\"description\":\"```fake block```\",\"browser\":\"@here\"} to /api/support and inspect the rendered Discord webhook content.",
+  "recommendation": "Escape or neutralize Discord mentions and Markdown-sensitive characters for all user-controlled fields, or use Discord webhook allowed_mentions with an empty parse list if supported by the webhook payload.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests validate rendering or sanitization of Discord-bound user input.",
+  "suggestedRegressionTest": "Add a test that submits @everyone/@here and Markdown delimiters, then asserts the webhook payload cannot trigger mentions and renders the content as inert text.",
+  "minimumFixScope": "frontend/src/app/api/support/route.ts",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-e5d71244d8_edd6a73382",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:39.869Z",
+  "updatedAt": "2026-05-17T17:47:39.869Z"
+}

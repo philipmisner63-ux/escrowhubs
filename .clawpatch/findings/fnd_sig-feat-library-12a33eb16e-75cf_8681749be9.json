@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-12a33eb16e-75cf_8681749be9",
+  "featureId": "feat_library_12a33eb16e",
+  "title": "Dashboard shows role-based badges instead of escrow state",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/dashboard/page.tsx",
+      "startLine": 63,
+      "endLine": 73,
+      "symbol": "DashboardPage",
+      "quote": "return {\n        contractAddress,\n        escrowType: arr[1] as number,\n        depositor: arr[2] as `0x${string}`,\n        beneficiary: arr[3] as `0x${string}`,\n        totalAmount: arr[5] as bigint,\n      };"
+    },
+    {
+      "path": "frontend/src/app/[locale]/dashboard/page.tsx",
+      "startLine": 136,
+      "endLine": 136,
+      "symbol": "DashboardPage",
+      "quote": "<StatusBadge status={e.depositor?.toLowerCase() === wallet?.toLowerCase() ? \"active\" : \"pending\"} />"
+    },
+    {
+      "path": "frontend/src/app/[locale]/dashboard/page.tsx",
+      "startLine": 24,
+      "endLine": 30,
+      "symbol": "stateToStatus",
+      "quote": "function stateToStatus(stateNum: number): \"pending\" | \"active\" | \"complete\" | \"disputed\" {"
+    }
+  ],
+  "reasoning": "The factory record is reduced to address/type/parties/amount and the displayed status is derived only from whether the connected wallet is the depositor. That means a completed or disputed escrow can still be shown as active for the depositor and pending for the beneficiary. The unused stateToStatus helper strongly suggests the UI intended to render an escrow lifecycle state, but that state is never read from the contract result.",
+  "reproduction": "Open the dashboard with a wallet that is the depositor on an escrow whose contract/factory state is complete or disputed. The card badge still renders active because the badge condition only checks depositor address equality.",
+  "recommendation": "Include the escrow state field from the factory result or fetch each escrow's state, convert it with stateToStatus, and pass that value to StatusBadge. Use role information separately from lifecycle status if both are needed.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included for dashboard rendering, and there is no fixture asserting that complete/disputed chain states are displayed correctly.",
+  "suggestedRegressionTest": "Mock useReadContracts with an escrow record in complete and disputed states, render DashboardPage with a connected depositor and beneficiary wallet, and assert the corresponding StatusBadge status is complete/disputed rather than active/pending.",
+  "minimumFixScope": "frontend/src/app/[locale]/dashboard/page.tsx: preserve the escrow state from the contract result and use it when rendering the badge.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-12a33eb16e_75cfc2e369",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:20.650Z",
+  "updatedAt": "2026-05-17T17:04:20.650Z"
+}

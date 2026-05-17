@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-cbfd18e4d5-b26b_a06006c03e",
+  "featureId": "feat_library_cbfd18e4d5",
+  "title": "Unused SITE_NAME import creates lint noise in locale layout",
+  "category": "maintainability",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/layout.tsx",
+      "startLine": 11,
+      "endLine": 11,
+      "symbol": null,
+      "quote": "import { APP_URL, SITE_NAME, buildMetadata } from \"@/lib/metadata\";"
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 5,
+      "endLine": 9,
+      "symbol": null,
+      "quote": "\"lint\": \"eslint\""
+    }
+  ],
+  "reasoning": "SITE_NAME is imported in the locale layout but is never referenced. The package exposes an ESLint script, and this file produces an @typescript-eslint/no-unused-vars warning during lint, adding avoidable signal loss to release checks and making it easier to miss new warnings in this route group.",
+  "reproduction": "Run `pnpm --dir frontend lint`; ESLint reports `frontend/src/app/[locale]/layout.tsx:11:19 warning 'SITE_NAME' is defined but never used`.",
+  "recommendation": "Remove SITE_NAME from the import list unless the layout starts using it directly.",
+  "whyTestsDoNotAlreadyCoverThis": "There are no linked tests for this feature, and unit or rendering tests generally do not assert lint cleanliness.",
+  "suggestedRegressionTest": "Keep `pnpm --dir frontend lint` in CI so unused imports in route modules are caught before release.",
+  "minimumFixScope": "Edit frontend/src/app/[locale]/layout.tsx to import only APP_URL and buildMetadata from @/lib/metadata.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-cbfd18e4d5_b26b7dd44b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172538-69ab9f",
+  "createdAt": "2026-05-17T17:26:27.846Z",
+  "updatedAt": "2026-05-17T17:26:27.846Z"
+}

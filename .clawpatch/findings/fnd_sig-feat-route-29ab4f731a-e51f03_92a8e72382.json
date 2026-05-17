@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-29ab4f731a-e51f03_92a8e72382",
+  "featureId": "feat_route_29ab4f731a",
+  "title": "AI arbiter evidence form is exposed to non-participant wallets and labels them as seller",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 166,
+      "endLine": 168,
+      "symbol": "SimpleEscrowView",
+      "quote": "{stateNum === SimpleEscrowState.DISPUTED &&\n        data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase() && (\n        <EvidencePanel escrowAddress={address} isBuyer={!!wallet && data.depositor?.toLowerCase() === wallet.toLowerCase()} />"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 459,
+      "endLine": 459,
+      "symbol": "EvidencePanel",
+      "quote": "const role = isBuyer ? \"buyer\" : \"seller\";"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 497,
+      "endLine": 503,
+      "symbol": "submitIntake",
+      "quote": "const hash = await writeContractAsync({\n        address: arbiterAddress,\n        abi: AI_ARBITER_ABI,\n        functionName: \"submitEvidence\",\n        args: [escrowAddress, uri],\n      });"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 520,
+      "endLine": 524,
+      "symbol": "submitFreeform",
+      "quote": "const hash = await writeContractAsync({\n        address: arbiterAddress,\n        abi: AI_ARBITER_ABI,\n        functionName: \"submitEvidence\",\n        args: [escrowAddress, freeformText.trim()],\n      });"
+    }
+  ],
+  "reasoning": "The route renders the AI arbiter evidence panel for every disputed AI-arbiter simple escrow without requiring the connected wallet to be the depositor or beneficiary. The only role signal passed is whether the wallet matches the depositor, so any other wallet is treated as seller and can initiate submitEvidence from this UI. If the arbiter contract accepts the call, unrelated users can pollute the arbitration record; even if the contract rejects it, the UI still presents an invalid participant workflow.",
+  "reproduction": "Open a disputed simple escrow whose arbiter matches the configured AI arbiter while connected with an address that is neither the depositor nor the beneficiary. The statement form is shown, assigns role \"seller\", and attempts submitEvidence with that wallet.",
+  "recommendation": "Only render or enable EvidencePanel when the connected wallet is the depositor or beneficiary, pass an explicit role derived from both addresses, and show an observer-only message otherwise. Also reject submission in submitIntake and submitFreeform if the wallet is not a party.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature lists no linked tests, and the route has no visible participant-gating test around the AI arbiter evidence form.",
+  "suggestedRegressionTest": "Mock useAccount with an unrelated address for an AI-arbiter disputed escrow and assert the evidence form is not rendered and writeContractAsync cannot be called. Add positive cases for depositor as buyer and beneficiary as seller.",
+  "minimumFixScope": "frontend/src/app/[locale]/escrow/[id]/page.tsx: gate EvidencePanel rendering in SimpleEscrowView and change EvidencePanel props to accept an explicit party role instead of a boolean isBuyer.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-29ab4f731a_e51f0334bb",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:29:02.744Z",
+  "updatedAt": "2026-05-17T17:29:02.744Z"
+}

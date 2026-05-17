@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-cc5caf6215-f2d4_5c71bfc014",
+  "featureId": "feat_ui-flow_cc5caf6215",
+  "title": "Copy action silently fails when clipboard write is rejected",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/referral-panel.tsx",
+      "startLine": 75,
+      "endLine": 81,
+      "symbol": "handleCopy",
+      "quote": "navigator.clipboard.writeText(referralLink).then(() => {\n      setCopied(true);\n      addToast({ type: \"success\", message: t(\"copied\") });\n      setTimeout(() => setCopied(false), 2000);\n    });"
+    }
+  ],
+  "reasoning": "navigator.clipboard.writeText returns a promise that can reject when clipboard permission is denied, the API is unavailable, or browser policy blocks the operation. The component only handles success, so the user gets no error toast and the failed copy is indistinguishable from an unresponsive button.",
+  "reproduction": "Block clipboard permission or run in a browser context where clipboard writes are denied, then click Copy. The promise rejects, but no error state or toast is shown.",
+  "recommendation": "Add a catch handler or use async/await with try/catch to show an error toast when copying fails, and consider a fallback if clipboard APIs are unavailable.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided, and there is no test that mocks a rejected clipboard write.",
+  "suggestedRegressionTest": "Mock navigator.clipboard.writeText to reject, click the Copy button, and assert an error toast is emitted while the copied state is not set.",
+  "minimumFixScope": "Update handleCopy in referral-panel.tsx to handle rejected clipboard writes and add a focused clipboard failure test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-cc5caf6215_f2d482d5c1",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T192222-d35783",
+  "createdAt": "2026-05-17T19:22:44.462Z",
+  "updatedAt": "2026-05-17T19:22:44.462Z"
+}

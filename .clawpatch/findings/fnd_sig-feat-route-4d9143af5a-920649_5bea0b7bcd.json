@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4d9143af5a-920649_5bea0b7bcd",
+  "featureId": "feat_route_4d9143af5a",
+  "title": "Locale route renders hard-coded English copy",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/learn/network-sim/page.tsx",
+      "startLine": 121,
+      "endLine": 122,
+      "symbol": "NetworkSimPage",
+      "quote": "<h1 className=\"text-2xl font-bold text-white\">Network Simulator</h1>\n        <p className=\"mt-1 text-slate-400 text-sm\">Simulate different wallet and network states to see how the UI responds.</p>"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 5,
+      "endLine": 5,
+      "symbol": null,
+      "quote": "const withNextIntl = createNextIntlPlugin(\"./src/i18n/request.ts\");"
+    }
+  ],
+  "reasoning": "The page is mounted under the locale segment `/:locale/...` and the project is configured with next-intl, but this route renders all user-facing content directly in English instead of reading locale messages. Non-English locale URLs will therefore serve English-only content, which violates the implied locale route contract and makes this page inconsistent with localized routing.",
+  "reproduction": "Open any non-English locale variant of `/:locale/learn/network-sim`; the simulator headings, state labels, warnings, and reference table remain English.",
+  "recommendation": "Move the route copy into next-intl messages and use the existing locale/i18n mechanism in this page or a wrapper component.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and there is no locale rendering assertion for the route.",
+  "suggestedRegressionTest": "Add a route-level render test for at least one non-default locale that asserts translated simulator labels/headings are rendered from message files.",
+  "minimumFixScope": "Update `frontend/src/app/[locale]/learn/network-sim/page.tsx` and the relevant locale message files for this route.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4d9143af5a_920649d766",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:27:48.128Z",
+  "updatedAt": "2026-05-17T17:27:48.128Z"
+}

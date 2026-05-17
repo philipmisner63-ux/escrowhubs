@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-728899b80a-8183_3440a9c390",
+  "featureId": "feat_ui-flow_728899b80a",
+  "title": "Feedback button can submit an enclosing form",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/feedback-button.tsx",
+      "startLine": 11,
+      "endLine": 19,
+      "symbol": "FeedbackButton",
+      "quote": "<button\n        onClick={() => setOpen(true)}\n        aria-label={t(\"button\")}\n        className=\"fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full border border-white/10"
+    }
+  ],
+  "reasoning": "The component renders a native <button> without an explicit type. In HTML, a button defaults to type=\"submit\" when it is inside a form, so placing this reusable fixed feedback control under a form subtree would submit that form while opening the modal. This is an avoidable correctness issue for a UI component that is not intended to submit data.",
+  "reproduction": "Render <FeedbackButton /> inside a <form onSubmit={...}> and click it; the form submit handler runs in addition to opening the feedback modal.",
+  "recommendation": "Set type=\"button\" on the feedback trigger button.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included for this component, and no test script is declared in the provided package manifest.",
+  "suggestedRegressionTest": "Add a component test that renders FeedbackButton inside a form, clicks it, and asserts the form submit handler is not called while the modal open path is triggered.",
+  "minimumFixScope": "Update frontend/src/components/feedback-button.tsx to add type=\"button\" to the trigger.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-728899b80a_8183582d03",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:27:52.471Z",
+  "updatedAt": "2026-05-17T18:27:52.471Z"
+}

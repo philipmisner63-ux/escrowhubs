@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_8fe69daa9d",
+  "title": "Node source frontend/src/app/[locale]/create",
+  "summary": "Node/TypeScript source group frontend/src/app/[locale]/create with 2 files.",
+  "kind": "library",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend/src/app/[locale]/create",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/[locale]/create/layout.tsx",
+      "reason": "source group frontend/src/app/[locale]/create"
+    },
+    {
+      "path": "frontend/src/app/[locale]/create/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/create"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-8fe69daa9d-5242_19753109ec",
+    "fnd_sig-feat-library-8fe69daa9d-586b_96d83952ff",
+    "fnd_sig-feat-library-8fe69daa9d-b2b9_d9a8fb3767",
+    "fnd_sig-feat-library-8fe69daa9d-a430_8c68664684"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T171856-bf55ad",
+      "kind": "review",
+      "summary": "4 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:19:54.286Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:19:54.286Z"
+}

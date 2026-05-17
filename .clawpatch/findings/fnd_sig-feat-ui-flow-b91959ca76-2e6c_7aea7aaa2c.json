@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-b91959ca76-2e6c_7aea7aaa2c",
+  "featureId": "feat_ui-flow_b91959ca76",
+  "title": "Mouse debug trigger ignores normal top-edge clicks",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/DebugPanel.tsx",
+      "startLine": 35,
+      "endLine": 37,
+      "symbol": "useDebugTrigger",
+      "quote": "if ((e as unknown as { clientY?: number }).clientY ?? 0 > 80) return;\ntaps.current = taps.current.filter((t) => now - t.time < 3000);\ntaps.current.push({ time: now, y: (e as unknown as { clientY?: number }).clientY ?? 0 });"
+    }
+  ],
+  "reasoning": "The nullish-coalescing expression is parsed as clientY ?? (0 > 80), not (clientY ?? 0) > 80. For normal MouseEvent values, the if condition receives the numeric clientY directly, so any click with clientY greater than 0 is truthy and returns early. As a result, the documented-style five-click trigger only works at exactly y=0 instead of anywhere in the top 80 pixels, while the touch path has the intended comparison.",
+  "reproduction": "Click five times near the top of the page at clientY=10 without ?debug=1; the panel remains hidden because each click returns before recording the tap.",
+  "recommendation": "Store clientY in a local variable and compare it explicitly, for example `const y = e.clientY ?? 0; if (y > 80) return; ... push({ time: now, y });`.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for DebugPanel or the hidden gesture behavior.",
+  "suggestedRegressionTest": "Add a component/unit test that dispatches five click events with clientY values between 1 and 80 and asserts that the DebugPanel becomes visible; also assert clientY > 80 does not trigger it.",
+  "minimumFixScope": "Update the onClick handler in frontend/src/components/DebugPanel.tsx and add focused coverage for the click gesture.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-b91959ca76_2e6cee655b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:11.548Z",
+  "updatedAt": "2026-05-17T18:28:11.548Z"
+}

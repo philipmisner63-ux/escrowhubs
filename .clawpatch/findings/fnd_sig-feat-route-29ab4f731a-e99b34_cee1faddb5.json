@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-29ab4f731a-e99b34_cee1faddb5",
+  "featureId": "feat_route_29ab4f731a",
+  "title": "Transaction wait failures are swallowed and still reported as confirmed",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 86,
+      "endLine": 90,
+      "symbol": "SimpleEscrowView.doWrite",
+      "quote": "try {\n        await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });\n      } catch { /* timeout — still poll below */ }\n      removeToast(pid);\n      addToast({ type: \"success\", message: `${label} confirmed`, txHash: hash });"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "startLine": 255,
+      "endLine": 259,
+      "symbol": "MilestoneEscrowView.doWrite",
+      "quote": "try {\n        await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });\n      } catch { /* timeout — still poll below */ }\n      removeToast(pid);\n      addToast({ type: \"success\", message: `${label} confirmed`, txHash: hash });"
+    }
+  ],
+  "reasoning": "Both write helpers catch any waitForTransactionReceipt failure, including timeout or RPC failure, then immediately remove the pending toast and show a success toast saying the action was confirmed. Users can be told that a release, refund, dispute, or milestone action is confirmed even when this code did not observe confirmation.",
+  "reproduction": "Trigger any simple or milestone write and make waitForTransactionReceipt reject or time out, for example by mocking the RPC client. The catch block is ignored and the success toast is still emitted.",
+  "recommendation": "Only show the confirmed success toast after waitForTransactionReceipt returns a successful receipt. On timeout or RPC failure, keep a pending/unknown status or show a non-success message telling the user to check the transaction, then continue background refetching.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature lists no linked tests, and there is no test exercising rejected or timed-out receipt waits for either doWrite helper.",
+  "suggestedRegressionTest": "Mock waitForTransactionReceipt to reject in SimpleEscrowView and MilestoneEscrowView write flows, then assert no success toast is added and an appropriate pending/timeout/error toast is shown.",
+  "minimumFixScope": "frontend/src/app/[locale]/escrow/[id]/page.tsx: update both doWrite implementations to branch on receipt success versus timeout/error before emitting success.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-29ab4f731a_e99b3409b0",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:29:02.744Z",
+  "updatedAt": "2026-05-17T17:29:02.744Z"
+}

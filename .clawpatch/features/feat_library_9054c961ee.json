@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_9054c961ee",
+  "title": "Node source frontend/src/app/[locale]/escrow",
+  "summary": "Node/TypeScript source group frontend/src/app/[locale]/escrow with 2 files.",
+  "kind": "library",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend/src/app/[locale]/escrow",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/layout.tsx",
+      "reason": "source group frontend/src/app/[locale]/escrow"
+    },
+    {
+      "path": "frontend/src/app/[locale]/escrow/[id]/page.tsx",
+      "reason": "source group frontend/src/app/[locale]/escrow"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-9054c961ee-3512_5cad477678",
+    "fnd_sig-feat-library-9054c961ee-fdc8_4c3df71661"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T171856-bf55ad",
+      "kind": "review",
+      "summary": "2 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:20:31.000Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:20:31.000Z"
+}

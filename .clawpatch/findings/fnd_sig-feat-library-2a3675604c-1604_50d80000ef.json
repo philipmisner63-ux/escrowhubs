@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-2a3675604c-1604_50d80000ef",
+  "featureId": "feat_library_2a3675604c",
+  "title": "Support reports read escrow state from the default chain instead of the connected chain",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/SupportModal.tsx",
+      "startLine": 21,
+      "endLine": 26,
+      "symbol": "rpcClient",
+      "quote": "const defaultChainConfig = getChain(DEFAULT_CHAIN_ID);\nconst rpcClient = createPublicClient({\n  chain: defaultChainConfig.chain as Parameters<typeof createPublicClient>[0][\"chain\"],\n  transport: http(defaultChainConfig.rpcUrl),\n});"
+    },
+    {
+      "path": "frontend/src/components/SupportModal.tsx",
+      "startLine": 45,
+      "endLine": 48,
+      "symbol": "SupportModal",
+      "quote": "const { address: wallet, isConnected } = useAccount();\nconst chainId = useChainId();"
+    },
+    {
+      "path": "frontend/src/components/SupportModal.tsx",
+      "startLine": 65,
+      "endLine": 72,
+      "symbol": "handleSubmit",
+      "quote": "const raw = await rpcClient.readContract({\n  address: escrowId,\n  abi: SIMPLE_ESCROW_ABI,\n  functionName: \"state\",\n});"
+    },
+    {
+      "path": "frontend/src/components/SupportModal.tsx",
+      "startLine": 156,
+      "endLine": 158,
+      "symbol": "SupportModal",
+      "quote": "[\"Network\", getChain(chainId).chain.name],"
+    }
+  ],
+  "reasoning": "SupportModal captures the connected chain ID and displays that network in the metadata preview, but the contract state lookup always uses a module-level public client created for DEFAULT_CHAIN_ID. In a multi-chain deployment, support reports for escrow pages on any non-default supported network can contain a null, stale, or unrelated contractState, making support diagnostics misleading.",
+  "reproduction": "Connect to a supported non-default chain, open an escrow route for a contract deployed only on that chain, and submit a support report. The preview shows the connected network, but the state read is attempted against the default chain RPC and is silently ignored or reports the wrong state.",
+  "recommendation": "Create the public client from `getChain(chainId)` at submit time, or skip contract-state capture unless the route's escrow address is known to belong to the selected chain. Include read failures in internal diagnostics rather than silently conflating wrong-chain reads with milestone contracts.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for support report payload construction across multiple chains.",
+  "suggestedRegressionTest": "Mock `useChainId` to a non-default supported chain, mock `createPublicClient`/`readContract`, submit the modal, and assert the read uses that chain's RPC config and the resulting payload contains the correct contractState.",
+  "minimumFixScope": "frontend/src/components/SupportModal.tsx",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-2a3675604c_16048973c3",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:19.942Z",
+  "updatedAt": "2026-05-17T17:04:19.942Z"
+}

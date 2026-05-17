@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-9611d70d35-6946_9aa3844216",
+  "featureId": "feat_ui-flow_9611d70d35",
+  "title": "Dialog does not restore focus to the opener when it closes",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/feedback-modal.tsx",
+      "startLine": 35,
+      "endLine": 40,
+      "symbol": "FeedbackModal",
+      "quote": "// Focus first field on open\n  useEffect(() => {\n    if (open) {\n      setTimeout(() => firstFocusRef.current?.focus(), 50);\n    }\n  }, [open]);"
+    },
+    {
+      "path": "frontend/src/components/feedback-modal.tsx",
+      "startLine": 90,
+      "endLine": 92,
+      "symbol": "handleSubmit",
+      "quote": "setCategory(\"featureRequest\");\n      onClose();"
+    }
+  ],
+  "reasoning": "The modal moves focus into the dialog when opened, but it never records the previously focused element or restores focus when the modal closes via Escape, backdrop click, close button, or successful submit. After unmount, keyboard users can lose their place in the page, which is a user-facing accessibility correctness issue in this UI flow.",
+  "reproduction": "Focus the control that opens the feedback modal, open the modal, then close it with Escape or by submitting successfully. Focus is not explicitly returned to the opener and may fall back to the document/body or another browser-dependent target.",
+  "recommendation": "Store document.activeElement when the modal opens and restore focus to it after the modal closes if it is still connected, or use an existing accessible dialog primitive that handles focus management.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and there is no accessibility/focus management test for the open-close flow.",
+  "suggestedRegressionTest": "Add a component test that focuses an opener button, opens the modal, closes it via Escape or the close button, and asserts the opener regains focus.",
+  "minimumFixScope": "Update frontend/src/components/feedback-modal.tsx focus management around the open/close lifecycle.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-9611d70d35_6946fd0c0d",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:05.290Z",
+  "updatedAt": "2026-05-17T18:28:05.290Z"
+}

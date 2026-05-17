@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-16851df427-d8d6_1798a808a3",
+  "featureId": "feat_ui-flow_16851df427",
+  "title": "Support button can accidentally submit enclosing forms",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/SupportButton.tsx",
+      "startLine": 16,
+      "endLine": 23,
+      "symbol": "SupportButton",
+      "quote": "<button\n        onClick={() => setOpen(true)}\n        aria-label={t(\"button\")}\n        className=\"fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-black/80 px-4 py-2.5 text-xs font-medium text-slate-300 shadow-lg hover:border-cyan-400/30 hover:text-cyan-400 transition-all duration-200\"\n      >"
+    }
+  ],
+  "reasoning": "A bare HTML button defaults to type=\"submit\" when it is rendered inside a form. SupportButton is a reusable floating component with no guard against being mounted under a form, so clicking it can trigger form submission while also opening the support modal.",
+  "reproduction": "Render SupportButton anywhere inside a form with an onSubmit handler, then click the support button. The form submit handler fires because the button has no explicit type.",
+  "recommendation": "Set type=\"button\" on the SupportButton button element.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided for this component, and there is no coverage showing behavior when the component is mounted inside a form.",
+  "suggestedRegressionTest": "Add a React component test that renders SupportButton inside a form with a submit spy, clicks the button, and asserts the submit spy was not called while the modal open action occurs.",
+  "minimumFixScope": "One-line change in frontend/src/components/SupportButton.tsx to add type=\"button\" to the button element.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-16851df427_d8d636de01",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:40.698Z",
+  "updatedAt": "2026-05-17T17:47:40.698Z"
+}

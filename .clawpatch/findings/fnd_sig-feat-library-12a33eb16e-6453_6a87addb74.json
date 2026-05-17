@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-12a33eb16e-6453_6a87addb74",
+  "featureId": "feat_library_12a33eb16e",
+  "title": "Escrow amount formatting loses precision by converting bigint wei values to Number",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/dashboard/page.tsx",
+      "startLine": 146,
+      "endLine": 146,
+      "symbol": "DashboardPage",
+      "quote": "{(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · {t(\"tapToOpen\")}"
+    },
+    {
+      "path": "frontend/package.json",
+      "startLine": 27,
+      "endLine": 27,
+      "symbol": null,
+      "quote": "\"viem\": \"~2.47.6\","
+    }
+  ],
+  "reasoning": "totalAmount is a bigint from the chain, likely denominated in 18-decimal base units. Converting bigint wei values to JavaScript Number loses integer precision for ordinary token amounts above Number.MAX_SAFE_INTEGER base units, so the displayed BDAG amount can be rounded incorrectly before toFixed is applied. The project already depends on viem, which provides precise formatting utilities for bigint token values.",
+  "reproduction": "Render a dashboard card with totalAmount set to a bigint value that is not exactly representable as a Number, such as 1234567890123456789n. The value is rounded during Number(...) conversion before display.",
+  "recommendation": "Use viem's formatEther or formatUnits on the bigint, then apply display rounding to the decimal string without converting the raw base-unit bigint to Number.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are included, and there is no assertion covering large or fractional bigint token amount display.",
+  "suggestedRegressionTest": "Render a card with a mocked totalAmount of 1234567890123456789n and assert the formatted BDAG value is derived from exact bigint decimal formatting.",
+  "minimumFixScope": "frontend/src/app/[locale]/dashboard/page.tsx: replace Number(e.totalAmount) / 1e18 with a precise bigint formatting path.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-12a33eb16e_645332f40e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T170346-113981",
+  "createdAt": "2026-05-17T17:04:20.650Z",
+  "updatedAt": "2026-05-17T17:04:20.650Z"
+}

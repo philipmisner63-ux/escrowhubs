@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8bbfad6a16-5f49_8e3d0ca23c",
+  "featureId": "feat_library_8bbfad6a16",
+  "title": "Milestone reads can allocate an unbounded array from on-chain milestoneCount",
+  "category": "performance",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/lib/hooks/useMilestoneEscrow.ts",
+      "startLine": 33,
+      "endLine": 34,
+      "symbol": "useMilestoneEscrowRead",
+      "quote": "const milestoneCount = (baseData?.[5].result as bigint | undefined) ?? 0n;\n  const indices = Array.from({ length: Number(milestoneCount) }, (_, i) => BigInt(i));"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useMilestoneEscrow.ts",
+      "startLine": 37,
+      "endLine": 45,
+      "symbol": "useMilestoneEscrowRead",
+      "quote": "const { data: milestoneData, isLoading: msLoading, refetch: refetchMs } = useReadContracts({\n    contracts: indices.map(i => ({\n      ...contract,\n      functionName: \"milestones\" as const,\n      args: [i] as const,\n    })),\n    query: { enabled: !!address && milestoneCount > 0n, refetchInterval: 5_000 },\n  });"
+    },
+    {
+      "path": "frontend/src/lib/hooks/useMilestoneEscrow.ts",
+      "startLine": 58,
+      "endLine": 58,
+      "symbol": "useMilestoneEscrowRead",
+      "quote": "milestoneCount: Number(milestoneCount),"
+    }
+  ],
+  "reasoning": "The hook trusts milestoneCount from the target contract and converts it to a JavaScript number before allocating an array and creating one read per milestone. If a bad address, malicious contract, or corrupted deployment returns a very large count, the browser can freeze or crash from the Array.from allocation and repeated contract read construction. The same unchecked conversion can also lose precision above Number.MAX_SAFE_INTEGER.",
+  "reproduction": "Point useMilestoneEscrowRead at a contract whose milestoneCount returns a very large bigint such as 1000000000n. The render path attempts to allocate an array of that size before any pagination or cap can apply.",
+  "recommendation": "Cap the maximum number of milestones fetched in this hook or add pagination. Avoid converting arbitrary bigint counts to number without bounds checks; return a capped count or an explicit overflow/error state.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided, and the included files do not cover large or hostile milestoneCount values.",
+  "suggestedRegressionTest": "Add a hook test that mocks milestoneCount as a large bigint and asserts the hook does not allocate all indices, does not schedule an unbounded readContracts list, and exposes a bounded/error state.",
+  "minimumFixScope": "frontend/src/lib/hooks/useMilestoneEscrow.ts plus a test for large milestoneCount handling.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8bbfad6a16_5f49fb1229",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:29.079Z",
+  "updatedAt": "2026-05-17T17:19:29.079Z"
+}

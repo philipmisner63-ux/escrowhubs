@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-94237e1d60-9d00_2e447d343d",
+  "featureId": "feat_ui-flow_94237e1d60",
+  "title": "Modal does not move focus into the dialog on open",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 73,
+      "endLine": 91,
+      "symbol": "NotificationModal",
+      "quote": "// Escape + focus trap\n  useEffect(() => {\n    if (!open) return;\n    function onKey(e: KeyboardEvent) {"
+    },
+    {
+      "path": "frontend/src/components/notification-modal.tsx",
+      "startLine": 123,
+      "endLine": 130,
+      "symbol": "NotificationModal",
+      "quote": "return createPortal(\n    <div\n      ref={backdropRef}\n      className=\"fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm\"\n      onClick={e => { if (e.target === backdropRef.current) onClose(); }}\n      role=\"dialog\"\n      aria-modal=\"true\""
+    }
+  ],
+  "reasoning": "The component declares a modal dialog and implements Tab wrapping only after focus is already inside the modal, but it never focuses the dialog or the first interactive control when opened. If focus remains on the triggering element or another background element, the first Tab key can continue through background page controls instead of entering the modal, breaking expected modal keyboard behavior.",
+  "reproduction": "Open the modal from a focused button elsewhere on the page, then press Tab. Because no element inside the modal receives focus on open, the key handler's boundary checks do not apply and focus can remain in the background page tab order.",
+  "recommendation": "When open becomes true, focus the first enabled focusable element in the modal, or make the dialog container focusable with tabIndex={-1} and focus it. Preserve and restore the previously focused element on close if possible.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for keyboard focus behavior or accessibility interactions.",
+  "suggestedRegressionTest": "Render the modal from a focused trigger, open it, and assert document.activeElement is inside the modal before simulating Tab navigation.",
+  "minimumFixScope": "Add initial focus management to the modal open effect in frontend/src/components/notification-modal.tsx.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-94237e1d60_9d0081c1ed",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:17.301Z",
+  "updatedAt": "2026-05-17T18:28:17.301Z"
+}

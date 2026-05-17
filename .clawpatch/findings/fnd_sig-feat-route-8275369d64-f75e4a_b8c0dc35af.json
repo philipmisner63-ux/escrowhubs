@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-8275369d64-f75e4a_b8c0dc35af",
+  "featureId": "feat_route_8275369d64",
+  "title": "Webhook can be spoofed when the shared secret is not configured",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 35,
+      "endLine": 38,
+      "symbol": "POST",
+      "quote": "const secret = req.headers.get(\"x-telegram-bot-api-secret-token\");\n  if (process.env.TELEGRAM_WEBHOOK_SECRET && secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {\n    return NextResponse.json({ ok: false }, { status: 401 });\n  }"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "startLine": 51,
+      "endLine": 56,
+      "symbol": "POST",
+      "quote": "if (wallet && /^0x[0-9a-f]{40}$/.test(wallet)) {\n        const all = loadAll() as Record<string, { telegramChatId?: string; wallet?: string; [k: string]: unknown }>;\n        const existing = all[wallet] ?? {};\n        all[wallet] = { ...existing, wallet, telegramChatId: String(chatId) };\n        saveAll(all);"
+    }
+  ],
+  "reasoning": "The authentication check is disabled whenever TELEGRAM_WEBHOOK_SECRET is unset, but the route is a public webhook that updates the wallet-to-chat mapping based only on request JSON. In that configuration, anyone who can reach the endpoint can POST a forged Telegram update like /start 0x... with their own chat id and overwrite where notifications for that wallet are sent.",
+  "reproduction": "Run the app without TELEGRAM_WEBHOOK_SECRET and POST {\"message\":{\"chat\":{\"id\":12345},\"text\":\"/start 0x0000000000000000000000000000000000000001\"}} to /api/notifications/telegram-webhook; notifications.json records telegramChatId \"12345\" for that wallet.",
+  "recommendation": "Fail closed when TELEGRAM_WEBHOOK_SECRET is missing, or require a separate explicit development bypass that cannot be enabled in production. Register the Telegram webhook with secret_token and reject every request whose x-telegram-bot-api-secret-token does not match.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for this route, and the context lists no linked tests.",
+  "suggestedRegressionTest": "Add a route test that clears TELEGRAM_WEBHOOK_SECRET, posts a forged /start update, and asserts the handler returns an auth failure and does not write notifications.json.",
+  "minimumFixScope": "Update the route authentication guard and webhook setup documentation/configuration expectations.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-8275369d64_f75e4ab250",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:24.877Z",
+  "updatedAt": "2026-05-17T17:28:24.877Z"
+}

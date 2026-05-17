@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-8dc17ca8c3-c984_7bd79d4edc",
+  "featureId": "feat_library_8dc17ca8c3",
+  "title": "Copy success is shown even when fallback copy fails",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/ui/address-display.tsx",
+      "startLine": 20,
+      "endLine": 33,
+      "symbol": "AddressDisplay.copy",
+      "quote": "try {\n      await navigator.clipboard.writeText(address);\n    } catch {\n      // Fallback for HTTP (clipboard API requires HTTPS)\n      const el = document.createElement(\"textarea\");\n      el.value = address;\n      el.style.position = \"fixed\";\n      el.style.opacity = \"0\";\n      document.body.appendChild(el);\n      el.focus();\n      el.select();\n      document.execCommand(\"copy\");\n      document.body.removeChild(el);\n    }\n    setCopied(true);"
+    }
+  ],
+  "reasoning": "When the Clipboard API rejects, the fallback calls `document.execCommand(\"copy\")` but ignores its boolean return value. If that fallback returns false, the component still sets `copied` to true and displays `Copied!`, misleading the user about whether the address is actually on the clipboard.",
+  "reproduction": "In a browser/context where `navigator.clipboard.writeText` rejects and `document.execCommand(\"copy\")` returns false, click the copy button. The UI still displays `Copied!` even though no copy occurred.",
+  "recommendation": "Check the fallback return value and only set `copied` after a confirmed copy. Track a failure state or leave the button unchanged when both copy paths fail, and ensure the temporary textarea is removed in a `finally` block.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for clipboard success/failure paths, and the fallback branch is not exercised by any provided test.",
+  "suggestedRegressionTest": "Add tests that mock `navigator.clipboard.writeText` rejection and `document.execCommand` returning false, then assert the success state is not shown.",
+  "minimumFixScope": "Update `AddressDisplay.copy` error handling and add focused clipboard fallback tests.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-8dc17ca8c3_c984d64685",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:18.763Z",
+  "updatedAt": "2026-05-17T17:19:18.763Z"
+}

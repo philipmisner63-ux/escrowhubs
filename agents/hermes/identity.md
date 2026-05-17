@@ -28,6 +28,7 @@
 - **Receives from Philip:** Direct conversation, task requests
 - **Knows:** `~/projects/CONTEXT_MAP.md` (navigates to full context)
 - **Sends outputs to:** terminal stdout, file writes for persistence
+- **Logs builds/deployments to:** `agents/copilot/session-notes.md` (use `agents/log-session-event.sh`)
 
 ## EscrowHubs Context
 - We are building AgentCred: identity, accountability, and collective reasoning infrastructure for AI agents

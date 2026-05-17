@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-59a7f027c8-85fe37_0a60e0fd42",
+  "featureId": "feat_route_59a7f027c8",
+  "title": "Escrow balances are formatted through Number(), losing bigint precision",
+  "category": "bug",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/dashboard/page.tsx",
+      "startLine": 73,
+      "endLine": 73,
+      "symbol": "DashboardPage",
+      "quote": "totalAmount: arr[5] as bigint,"
+    },
+    {
+      "path": "frontend/src/app/[locale]/dashboard/page.tsx",
+      "startLine": 147,
+      "endLine": 147,
+      "symbol": "DashboardPage",
+      "quote": "{(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · {t(\"tapToOpen\")}"
+    }
+  ],
+  "reasoning": "The contract amount is a bigint, but the dashboard converts it to a JavaScript Number before dividing by 1e18. JavaScript Numbers cannot exactly represent large integer token amounts, so the displayed BDAG balance can be rounded incorrectly for common on-chain values. This is user-visible accounting information on the dashboard, even if it does not alter the on-chain value.",
+  "reproduction": "Render a dashboard escrow with a totalAmount bigint above Number.MAX_SAFE_INTEGER and near a 4-decimal rounding boundary; the value shown by Number(totalAmount) / 1e18 can differ from a bigint-safe formatter such as viem formatEther.",
+  "recommendation": "Format token amounts with a bigint-safe utility, for example viem's formatEther/formatUnits followed by controlled decimal trimming, instead of converting the raw wei bigint to Number first.",
+  "whyTestsDoNotAlreadyCoverThis": "The feature lists no linked tests, and the included files do not contain any dashboard rendering test for large bigint escrow totals.",
+  "suggestedRegressionTest": "Add a dashboard component/unit test that supplies a large bigint totalAmount and asserts the displayed BDAG value matches a bigint-safe formatUnits/formatEther result.",
+  "minimumFixScope": "Update the dashboard amount formatting path for myEscrows and add a focused regression test for bigint token amount display.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-59a7f027c8_85fe37f52e",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:14.588Z",
+  "updatedAt": "2026-05-17T17:28:14.588Z"
+}

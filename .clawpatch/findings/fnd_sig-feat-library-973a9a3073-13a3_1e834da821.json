@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-library-973a9a3073-13a3_1e834da821",
+  "featureId": "feat_library_973a9a3073",
+  "title": "Public admin escalations GET exposes dispute data without server-side authorization",
+  "category": "security",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "startLine": 5,
+      "endLine": 8,
+      "symbol": null,
+      "quote": "* Protected: only callable from the /admin page (owner-gated in UI)"
+    },
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "startLine": 27,
+      "endLine": 31,
+      "symbol": "GET",
+      "quote": "export async function GET() {\n  const data = loadEscalations();\n  // eslint-disable-next-line @typescript-eslint/no-explicit-any\n  const pending = Object.values(data).filter((v: any) => !v.resolved);\n  return NextResponse.json({ escalations: pending, total: pending.length });"
+    },
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "startLine": 34,
+      "endLine": 37,
+      "symbol": "POST",
+      "quote": "const adminSecret = req.headers.get(\"x-admin-secret\");\n  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {\n    return NextResponse.json({ error: \"Unauthorized\" }, { status: 403 });\n  }"
+    }
+  ],
+  "reasoning": "The file declares the admin route as protected and POST enforces x-admin-secret, but GET reads and returns all unresolved escalations with no equivalent authorization check. UI owner gating does not protect the API endpoint from direct requests, so pending dispute data can be enumerated by anyone who can reach the frontend server.",
+  "reproduction": "Send GET /api/admin/escalations without x-admin-secret. The route returns { escalations, total } instead of 403.",
+  "recommendation": "Apply the same server-side admin authentication to GET as POST, or replace the shared secret with the project’s normal authenticated admin session check if one exists.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests were provided for the admin route, and there is no evidence of an unauthenticated GET denial test.",
+  "suggestedRegressionTest": "Add a route test asserting GET /api/admin/escalations without x-admin-secret returns 403 and with the correct secret returns pending escalations.",
+  "minimumFixScope": "frontend/src/app/api/admin/escalations/route.ts GET authorization",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-library-973a9a3073_13a360677c",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T171856-bf55ad",
+  "createdAt": "2026-05-17T17:19:27.591Z",
+  "updatedAt": "2026-05-17T17:19:27.591Z"
+}

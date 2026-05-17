@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-3acecc5f1b-d69472_fab4090eb4",
+  "featureId": "feat_route_3acecc5f1b",
+  "title": "Locale route renders hard-coded English copy",
+  "category": "api-contract",
+  "severity": "low",
+  "confidence": "medium",
+  "triage": "contract-mismatch",
+  "evidence": [
+    {
+      "path": "frontend/src/app/[locale]/learn/how-it-works/page.tsx",
+      "startLine": 11,
+      "endLine": 13,
+      "symbol": "LearnHowItWorksPage",
+      "quote": "<h1 className=\"text-2xl font-bold text-white\">How It Works</h1>"
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "startLine": 5,
+      "endLine": 5,
+      "symbol": "withNextIntl",
+      "quote": "const withNextIntl = createNextIntlPlugin(\"./src/i18n/request.ts\");"
+    }
+  ],
+  "reasoning": "The page is served below the [locale] segment in a next-intl configured app, but the route-owned heading and description are literal English strings. Users visiting non-English locale URLs such as /es/learn/how-it-works will still see this route copy in English, which breaks the locale route contract for this page.",
+  "reproduction": null,
+  "recommendation": "Replace the route-owned literal strings with next-intl message lookups, and add the corresponding message keys for supported locales. If the imported flow components are intended to be part of this same localized experience, translate their visible copy in the same pass or track that as a separate feature.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are linked for this feature, and the provided page has no assertion that renders the route under a non-default locale.",
+  "suggestedRegressionTest": "Render /es/learn/how-it-works with the intl provider/messages and assert the page heading and summary come from the Spanish message catalog rather than the English literals.",
+  "minimumFixScope": "frontend/src/app/[locale]/learn/how-it-works/page.tsx plus locale message catalog entries for the new keys.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-3acecc5f1b_d69472fb0b",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:28:19.597Z",
+  "updatedAt": "2026-05-17T17:28:19.597Z"
+}

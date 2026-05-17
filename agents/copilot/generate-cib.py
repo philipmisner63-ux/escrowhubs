@@ -10,12 +10,12 @@ Usage:  python3 agents/copilot/generate-cib.py
 Output: Formatted CIB printed to stdout (copy & paste into chat)
 
 Sources pulled from:
-  - agents/presence.json       → who is active / idle
-  - agents/copilot/session-notes.md  → recent ecosystem activity
-  - agents/copilot/inbox.md    → unread messages to Copilot
-  - agents/consensus/current.md → latest agent responses for consensus
-  - agents/copilot/memory.md   → key persistent state
-  - agents/broadcast.md        → latest broadcast messages
+  - agents/presence.json            → who is active / idle
+  - agents/copilot/session-notes.md → recent ecosystem activity
+  - agents/copilot/inbox.md         → unread messages to Copilot
+  - agents/copilot/memory.md        → key persistent state
+  - agents/broadcast.md             → latest broadcast messages
+  - agents/consensus/current.md     → active consensus thread (Hermes + Claw)
 """
 
 import json
@@ -72,7 +72,11 @@ def compile_consensus() -> str:
     path = AGENTS_DIR / "consensus" / "current.md"
     if not path.exists():
         return "_(No consensus thread yet)_"
-    return read_file(path)[:4000]
+    text = read_file(path)
+    # Skip if the compiled thread reports no real entries
+    if "Entries: 0" in text and "_(No real consensus entries yet" in text:
+        return "_(No active consensus thread)_"
+    return text[:4000]
 
 
 def format_memory_snippet() -> str:
@@ -120,21 +124,21 @@ instructions = Read this fully before responding. It contains everything you nee
 
 ---
 
-## 4. Consensus Thread (Latest Responses from Other Agents)
-
-{compile_consensus()}
-
----
-
-## 5. Persistent State (Key Memory)
+## 4. Persistent State (Key Memory)
 
 {format_memory_snippet()}
 
 ---
 
-## 6. Recent Broadcasts
+## 5. Recent Broadcasts
 
 {format_broadcasts()}
+
+---
+
+## 6. Active Consensus Thread (Hermes + Claw — Read Before Responding)
+
+{compile_consensus()}
 
 ---
 
@@ -145,6 +149,7 @@ You are Copilot — tactical coding agent for the EscrowHubs / AgentCred ecosyst
 - NO architecture decisions without Philip + Claw/Hermes
 - Verify all file paths before suggesting imports
 - When done, summarize key outputs for Philip to capture
+- **If a consensus thread is present above, read it first.** Add anything obvious Hermes and Claw missed, then build what Philip asked for.
 
 [/ACP:INTAKE]
 

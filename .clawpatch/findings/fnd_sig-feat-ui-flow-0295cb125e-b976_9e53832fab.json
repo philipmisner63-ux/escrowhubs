@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-0295cb125e-b976_9e53832fab",
+  "featureId": "feat_ui-flow_0295cb125e",
+  "title": "Tour can be permanently skipped when target elements are missing",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "medium",
+  "triage": "risk",
+  "evidence": [
+    {
+      "path": "frontend/src/components/onboarding-tour.tsx",
+      "startLine": 21,
+      "endLine": 23,
+      "symbol": "OnboardingTour",
+      "quote": "onDestroyed: () => {\n        localStorage.setItem(TOUR_KEY, \"true\");\n      }"
+    },
+    {
+      "path": "frontend/src/components/onboarding-tour.tsx",
+      "startLine": 63,
+      "endLine": 65,
+      "symbol": "OnboardingTour",
+      "quote": "const timer = setTimeout(() => {\n      startTour();\n    }, 2000);"
+    },
+    {
+      "path": "frontend/src/components/onboarding-tour.tsx",
+      "startLine": 26,
+      "endLine": 55,
+      "symbol": "OnboardingTour",
+      "quote": "steps: [\n        {\n          element: \"h1\",\n...\n          element: \"[data-tour='stats']\","
+    }
+  ],
+  "reasoning": "The component auto-starts once after a fixed 2 second delay and marks the tour completed whenever the driver instance is destroyed. Several steps depend on selectors that may not be present yet, may be absent on some responsive layouts, or may be unavailable if the component is mounted outside the expected page. If driver.js destroys or exits because the configured step elements are missing, the completion key is still written, so the user will not be offered the tour again on later visits when the elements are available.",
+  "reproduction": "Mount OnboardingTour on a page where one of the configured selectors such as [data-tour='stats'] is not rendered within 2 seconds, or is hidden/omitted for the current viewport. Let the auto-start run and close/destroy the tour; localStorage escrowhubs_onboarding_completed is set even though the tour was not successfully completed.",
+  "recommendation": "Only persist TOUR_KEY after the user reaches the final step and clicks done, or after verifying all required target elements exist and the tour starts successfully. Consider delaying start until the expected elements are present or scoping this component to the page that owns those tour targets.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests are included for this feature, and there is no coverage for missing or delayed tour target elements.",
+  "suggestedRegressionTest": "Add a component/browser test that renders OnboardingTour without one required data-tour element, advances timers, and asserts that escrowhubs_onboarding_completed is not written unless the final step is completed.",
+  "minimumFixScope": "Update frontend/src/components/onboarding-tour.tsx to gate persistence on successful completion rather than on every destruction path.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-0295cb125e_b976b0a625",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T174710-134d79",
+  "createdAt": "2026-05-17T17:47:38.287Z",
+  "updatedAt": "2026-05-17T17:47:38.287Z"
+}

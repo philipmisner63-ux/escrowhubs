@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "featureId": "feat_library_973a9a3073",
+  "title": "Node source frontend/src/app/api",
+  "summary": "Node/TypeScript source group frontend/src/app/api with 6 files.",
+  "kind": "library",
+  "source": "node-source-group",
+  "confidence": "medium",
+  "entrypoints": [
+    {
+      "path": "frontend/package.json",
+      "symbol": "frontend/src/app/api",
+      "route": null,
+      "command": null
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "reason": "source group frontend/src/app/api"
+    },
+    {
+      "path": "frontend/src/app/api/feedback/route.ts",
+      "reason": "source group frontend/src/app/api"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/preferences/route.ts",
+      "reason": "source group frontend/src/app/api"
+    },
+    {
+      "path": "frontend/src/app/api/notifications/telegram-webhook/route.ts",
+      "reason": "source group frontend/src/app/api"
+    },
+    {
+      "path": "frontend/src/app/api/support/route.ts",
+      "reason": "source group frontend/src/app/api"
+    },
+    {
+      "path": "frontend/src/app/api/upload-evidence/route.ts",
+      "reason": "source group frontend/src/app/api"
+    }
+  ],
+  "contextFiles": [
+    {
+      "path": "frontend/package.json",
+      "reason": "package manifest"
+    }
+  ],
+  "tests": [],
+  "tags": [
+    "node",
+    "typescript",
+    "source-group",
+    "project:frontend",
+    "project-root:frontend"
+  ],
+  "trustBoundaries": [],
+  "status": "needs-fix",
+  "lock": null,
+  "findingIds": [
+    "fnd_sig-feat-library-973a9a3073-c2b5_cdef1e883f",
+    "fnd_sig-feat-library-973a9a3073-13a3_1e834da821",
+    "fnd_sig-feat-library-973a9a3073-4238_c838d75985"
+  ],
+  "patchAttemptIds": [],
+  "analysisHistory": [
+    {
+      "runId": "20260517T171856-bf55ad",
+      "kind": "review",
+      "summary": "3 finding(s)",
+      "provider": "codex",
+      "model": null,
+      "createdAt": "2026-05-17T17:19:27.592Z"
+    }
+  ],
+  "createdAt": "2026-05-17T17:01:54.684Z",
+  "updatedAt": "2026-05-17T17:19:27.592Z"
+}

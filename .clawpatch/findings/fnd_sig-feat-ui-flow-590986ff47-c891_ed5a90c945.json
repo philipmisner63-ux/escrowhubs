@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-ui-flow-590986ff47-c891_ed5a90c945",
+  "featureId": "feat_ui-flow_590986ff47",
+  "title": "BDAG locked display rounds away fractional balances",
+  "category": "bug",
+  "severity": "medium",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 19,
+      "endLine": 20,
+      "symbol": "StatsData",
+      "quote": "bdagLocked: number;   // formatted as float"
+    },
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 55,
+      "endLine": 55,
+      "symbol": "useCountUp",
+      "quote": "setValue(Math.round(eased * target));"
+    },
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 164,
+      "endLine": 166,
+      "symbol": "LiveStats.fetchStats",
+      "quote": "const bdagLocked = balanceResult.status === \"fulfilled\"\n        ? parseFloat(formatEther(balanceResult.value as bigint))\n        : statsRef.current?.bdagLocked ?? 0;"
+    },
+    {
+      "path": "frontend/src/components/live-stats.tsx",
+      "startLine": 210,
+      "endLine": 215,
+      "symbol": "LiveStats",
+      "quote": "<StatCard\n        label={t(\"bdagLocked\")}\n        value={stats?.bdagLocked ?? 0}\n        suffix=\" BDAG\"\n        isLive={isLive}\n        loading={loading}\n      />"
+    }
+  ],
+  "reasoning": "The fetched BDAG balance is explicitly converted from wei to a fractional number, but the shared count-up hook rounds every animation frame to an integer before StatCard formats the BDAG value. A real balance such as 0.5 BDAG will render as 1.00 BDAG when animation completes, and 12.34 BDAG will render as 12 BDAG. This materially misreports the live locked value.",
+  "reproduction": "Mock client.getBalance to resolve to 500000000000000000n and render LiveStats until the BDAG card animation completes; the card displays 1.00 BDAG instead of 0.50 BDAG.",
+  "recommendation": "Preserve decimal precision for fractional metrics. For example, let useCountUp return a floating-point value or add a precision option, then only round integer-only stats such as escrow count, chain id, and exploits.",
+  "whyTestsDoNotAlreadyCoverThis": "No tests were included for this feature, and there is no coverage asserting formatting of fractional BDAG balances.",
+  "suggestedRegressionTest": "Add a component test for StatCard or LiveStats that supplies a fractional BDAG value and asserts the displayed amount retains the expected decimal precision after animation completes.",
+  "minimumFixScope": "frontend/src/components/live-stats.tsx: adjust useCountUp/StatCard formatting so BDAG values are not integer-rounded before display.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-ui-flow-590986ff47_c8918ffcae",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T182735-942d1e",
+  "createdAt": "2026-05-17T18:28:10.354Z",
+  "updatedAt": "2026-05-17T18:28:10.354Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "findingId": "fnd_sig-feat-route-4d2afe7c22-034dd5_856adc999a",
+  "featureId": "feat_route_4d2afe7c22",
+  "title": "GET exposes admin escalation data without server-side authorization",
+  "category": "security",
+  "severity": "high",
+  "confidence": "high",
+  "triage": "confirmed-bug",
+  "evidence": [
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "symbol": null,
+      "quote": "Protected: only callable from the /admin page (owner-gated in UI)"
+    },
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "startLine": 27,
+      "endLine": 31,
+      "symbol": "GET",
+      "quote": "export async function GET() {\n  const data = loadEscalations();\n  // eslint-disable-next-line @typescript-eslint/no-explicit-any\n  const pending = Object.values(data).filter((v: any) => !v.resolved);\n  return NextResponse.json({ escalations: pending, total: pending.length });"
+    },
+    {
+      "path": "frontend/src/app/api/admin/escalations/route.ts",
+      "startLine": 34,
+      "endLine": 38,
+      "symbol": "POST",
+      "quote": "export async function POST(req: NextRequest) {\n  const adminSecret = req.headers.get(\"x-admin-secret\");\n  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {\n    return NextResponse.json({ error: \"Unauthorized\" }, { status: 403 });\n  }"
+    }
+  ],
+  "reasoning": "The route is documented as protected and the POST handler enforces x-admin-secret, but GET returns all unresolved escalation records without checking any credential. UI owner-gating does not protect the API route, so any network caller who can reach /api/admin/escalations can enumerate pending dispute escalation data.",
+  "reproduction": "Send GET /api/admin/escalations without x-admin-secret; the handler reads escalations.json and returns { escalations, total } instead of 403.",
+  "recommendation": "Apply the same server-side admin authentication check to GET as POST, ideally via a shared helper used by both handlers. If browser access is required, use a server-validated session/cookie rather than relying on the admin page UI.",
+  "whyTestsDoNotAlreadyCoverThis": "No linked tests are provided for this route, and there is no test asserting unauthenticated GET requests are rejected.",
+  "suggestedRegressionTest": "Add route handler tests that call GET without credentials and with an invalid x-admin-secret and assert 403, then call with a valid credential and assert pending escalations are returned.",
+  "minimumFixScope": "Update frontend/src/app/api/admin/escalations/route.ts to enforce server-side admin authorization in GET and cover it with a focused route test.",
+  "status": "open",
+  "history": [],
+  "signature": "sig_feat-route-4d2afe7c22_034dd5d996",
+  "linkedPatchAttemptIds": [],
+  "createdByRunId": "20260517T172730-c89fe4",
+  "createdAt": "2026-05-17T17:27:53.156Z",
+  "updatedAt": "2026-05-17T17:27:53.156Z"
+}
