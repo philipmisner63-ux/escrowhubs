@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const PREFS_FILE = path.join(process.cwd(), "notifications.json");
+const PREFS_FILE = process.env.NOTIFICATIONS_FILE ?? path.join(process.cwd(), "notifications.json");
 const BOT_TOKEN  = process.env.TELEGRAM_BOT_TOKEN ?? "";
 
 function loadAll(): Record<string, object> {
@@ -38,7 +38,10 @@ async function sendMessage(chatId: string | number, text: string) {
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-telegram-bot-api-secret-token");
-  if (process.env.TELEGRAM_WEBHOOK_SECRET && secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+  if (!process.env.TELEGRAM_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 503 });
+  }
+  if (secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

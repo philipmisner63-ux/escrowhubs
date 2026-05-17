@@ -25,7 +25,11 @@ function loadEscalations(): Record<string, unknown> {
   return {};
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const adminSecret = req.headers.get("x-admin-secret");
+  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
   const data = loadEscalations();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pending = Object.values(data).filter((v: any) => !v.resolved);

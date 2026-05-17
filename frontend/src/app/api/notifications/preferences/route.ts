@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { verifyWalletSignature, isTimestampValid, buildAuthMessage } from "@/lib/verify-wallet";
 
-const PREFS_FILE = path.join(process.cwd(), "notifications.json");
+const PREFS_FILE = process.env.NOTIFICATIONS_FILE ?? path.join(process.cwd(), "notifications.json");
 
 export type EventKey =
   | "escrow_created"
@@ -33,21 +34,56 @@ function saveAll(data: Record<string, NotificationPrefs>) {
 
 export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get("wallet")?.toLowerCase();
-  if (!wallet) return NextResponse.json({ error: "wallet required" }, { status: 400 });
+  const signature = req.nextUrl.searchParams.get("signature");
+  const timestamp = req.nextUrl.searchParams.get("timestamp");
+
+  if (!wallet || !signature || !timestamp) {
+    return NextResponse.json({ error: "wallet, signature, and timestamp required" }, { status: 400 });
+  }
+
+  const ts = Number(timestamp);
+  if (!isTimestampValid(ts)) {
+    return NextResponse.json({ error: "signature expired or timestamp invalid" }, { status: 401 });
+  }
+
+  const message = buildAuthMessage("notifications-read", wallet, ts);
+  const valid = await verifyWalletSignature(wallet, signature, message);
+  if (!valid) {
+    return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+  }
+
   return NextResponse.json(loadAll()[wallet] ?? null);
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body: Partial<NotificationPrefs> = await req.json();
+    const body = await req.json();
     if (!body.wallet) return NextResponse.json({ error: "wallet required" }, { status: 400 });
-    const key = body.wallet.toLowerCase();
+
+    const wallet = body.wallet.toLowerCase();
+    const { signature, timestamp } = body;
+    if (!signature || !timestamp) {
+      return NextResponse.json({ error: "signature and timestamp required" }, { status: 400 });
+    }
+
+    const ts = Number(timestamp);
+    if (!isTimestampValid(ts)) {
+      return NextResponse.json({ error: "signature expired or timestamp invalid" }, { status: 401 });
+    }
+
+    const message = buildAuthMessage("notifications-write", wallet, ts);
+    const valid = await verifyWalletSignature(wallet, signature, message);
+    if (!valid) {
+      return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+    }
+
+    const key = wallet;
     const all = loadAll();
     all[key] = {
-      wallet:          key,
-      telegramChatId:  body.telegramChatId  ?? all[key]?.telegramChatId  ?? null,
+      wallet: key,
+      telegramChatId: body.telegramChatId ?? all[key]?.telegramChatId ?? null,
       telegramEnabled: body.telegramEnabled ?? all[key]?.telegramEnabled ?? {},
-      updatedAt:       new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     saveAll(all);
     return NextResponse.json({ success: true });

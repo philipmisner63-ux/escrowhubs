@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const PREFS_FILE = path.join(process.cwd(), "notifications.json");
+const PREFS_FILE = process.env.NOTIFICATIONS_FILE ?? path.join(process.cwd(), "notifications.json");
 const BOT_TOKEN  = process.env.TELEGRAM_BOT_TOKEN ?? "";
 
 function loadAll(): Record<string, object> {

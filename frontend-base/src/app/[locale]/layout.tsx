@@ -60,20 +60,10 @@ export default async function LocaleLayout({
   const dir = meta?.dir ?? "ltr";
 
   return (
-    <html lang={locale} dir={dir} className="dark">
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#06b6d4" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="EscrowHubs" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-      </head>
-      <body className={`${geistSans.variable} ${jetbrainsMono.variable} antialiased`}>
+    <div className={`${geistSans.variable} ${jetbrainsMono.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
-      </body>
-    </html>
-  );
+      </div>
+    );
 }

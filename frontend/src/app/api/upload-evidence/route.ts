@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyWalletSignature, isTimestampValid, buildAuthMessage } from "@/lib/verify-wallet";
 
 const PINATA_JWT = process.env.PINATA_JWT ?? "";
 const PINATA_GATEWAY = process.env.NEXT_PUBLIC_PINATA_GATEWAY ?? "https://gateway.pinata.cloud";
@@ -14,9 +15,25 @@ export async function POST(req: NextRequest) {
     const text = formData.get("text") as string | null;
     const escrowAddress = formData.get("escrowAddress") as string | null;
     const submitter = formData.get("submitter") as string | null;
+    const signature = formData.get("signature") as string | null;
+    const timestamp = formData.get("timestamp") as string | null;
 
     if (!text && !file) {
       return NextResponse.json({ error: "No file or text provided" }, { status: 400 });
+    }
+    if (!escrowAddress || !submitter || !signature || !timestamp) {
+      return NextResponse.json({ error: "escrowAddress, submitter, signature, and timestamp required" }, { status: 400 });
+    }
+
+    const ts = Number(timestamp);
+    if (!isTimestampValid(ts)) {
+      return NextResponse.json({ error: "signature expired or timestamp invalid" }, { status: 401 });
+    }
+
+    const message = buildAuthMessage("evidence-upload", submitter.toLowerCase(), ts);
+    const valid = await verifyWalletSignature(submitter.toLowerCase(), signature, message);
+    if (!valid) {
+      return NextResponse.json({ error: "invalid signature" }, { status: 401 });
     }
 
     const MAX_SIZE = 50 * 1024 * 1024; // 50MB
