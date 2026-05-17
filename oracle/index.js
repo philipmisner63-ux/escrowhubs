@@ -47,6 +47,7 @@ const { default: ValidationRegistryABI } = await import("./abis/ValidationRegist
 
 // Oracle agentId in AgentCred (keccak256("escrowhubs-oracle-v1"))
 const ORACLE_AGENT_ID = "0x6644591c623772087d0a6418243ef0aabe51acbe27a2415ff5fb1d92b70f6239";
+const chainResolvers = new Map(); // escrow address → (ruling) => txHash
 
 // ─── Chain config (from chains.json or CHAINS_FILE env var) ──────────────────
 // Use CHAINS_FILE=chains.base.json to run a Base-specific oracle instance.
@@ -168,8 +169,8 @@ async function notifyHumanArbiter(contractAddress, escrowType, milestoneIndex, c
         ],
         footer: { text: "EscrowHubs — Human Review Queue" },
         timestamp: new Date().toISOString(),
-      }]}
-    ));
+      }]})
+    });
     console.log(`✅ [HUMAN-REVIEW] Discord alert sent for ${contractAddress}`);
   } catch (err) {
     console.error(`❌ [HUMAN-REVIEW] Discord alert failed: ${err.message}`);
@@ -1187,6 +1188,7 @@ function startChainListener(chainConfig) {
 
       appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "simple", disputeContext, decision, scores: decision.scores ?? null, evidenceCount: currentEvidence.length, hadIntake: !!intakeContext, isPhysicalGoods: isPhysical, txHash });
       processed.add(escrowAddress);
+      chainResolvers.set(escrowAddress, (ruling) => executeSimpleResolution(escrowAddress, ruling));
 
       // ── Notify parties ──
       const eventData = { amount: disputeContext.amount, symbol: nativeCurrency?.symbol ?? "BDAG", chainId };
@@ -1322,6 +1324,7 @@ function startChainListener(chainConfig) {
 
       appendDecision({ timestamp: detectedAt, contractAddress: escrowAddress, chainId, chainName: name, escrowType: "milestone", milestoneIndex, disputeContext, decision, scores: decision.scores ?? null, evidenceCount: currentEvidence.length, hadIntake: !!intakeContext, isPhysicalGoods: isPhysical, txHash });
       processed.add(disputeKey);
+      chainResolvers.set(escrowAddress, (ruling) => executeMilestoneResolution(escrowAddress, milestoneIndex, ruling));
 
       // ── Notify parties ──
       const eventData = {
