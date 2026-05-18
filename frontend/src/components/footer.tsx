@@ -113,10 +113,8 @@ export function Footer() {
                 <button
                   type="button"
                   onClick={() => {
-                    const allBtns = document.querySelectorAll<HTMLButtonElement>("button[aria-label]");
-                    for (const b of allBtns) {
-                      if (b.className.includes("fixed")) { b.click(); break; }
-                    }
+                    const btn = document.querySelector<HTMLButtonElement>("button[data-support-trigger='true']");
+                    btn?.click();
                   }}
                   className="text-sm text-slate-500 hover:text-cyan-400 transition-colors"
                 >

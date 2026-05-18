@@ -31,7 +31,10 @@ export function useMilestoneEscrowRead(address: Address | undefined, chainId?: n
   });
 
   const milestoneCount = (baseData?.[5].result as bigint | undefined) ?? 0n;
-  const indices = Array.from({ length: Number(milestoneCount) }, (_, i) => BigInt(i));
+  // Cap milestone array to prevent unbounded allocation from a malformed contract
+  const MAX_MILESTONES = 50;
+  const safeCount = milestoneCount > BigInt(MAX_MILESTONES) ? BigInt(MAX_MILESTONES) : milestoneCount;
+  const indices = Array.from({ length: Number(safeCount) }, (_, i) => BigInt(i));
 
   // Per-milestone reads
   const { data: milestoneData, isLoading: msLoading, refetch: refetchMs } = useReadContracts({

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useAccount, useReadContracts, useChainId } from "wagmi";
+import { formatEther } from "viem";
 import { Nav } from "@/components/nav";
 import { ShareButton } from "@/components/share-escrow";
 import { Footer } from "@/components/footer";
@@ -14,7 +15,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AddressDisplay } from "@/components/ui/address-display";
 import { useWalletEscrows } from "@/lib/hooks/useEscrowFactory";
-import { ESCROW_FACTORY_ABI } from "@/lib/contracts";
+import { ESCROW_FACTORY_ABI, SIMPLE_ESCROW_ABI } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
 import { getViewedEscrows, type ViewedEscrow } from "@/lib/localStorage";
 import { ReferralPanel } from "@/components/referral-panel";
@@ -57,11 +58,10 @@ export default function DashboardPage() {
     query: { enabled: myIndices.length > 0, refetchInterval: 5_000 },
   });
 
-  const myEscrows = (escrowData ?? [])
+  const myEscrowsRaw = (escrowData ?? [])
     .map((r) => {
       const raw = r?.result;
       if (!raw) return null;
-      // Result may be array-like or object depending on wagmi version
       const arr = Array.isArray(raw) ? raw : Object.values(raw);
       const contractAddress = arr[0] as `0x${string}`;
       if (!contractAddress || typeof contractAddress !== 'string') return null;
@@ -75,9 +75,24 @@ export default function DashboardPage() {
     })
     .filter((e): e is { contractAddress: `0x${string}`; escrowType: number; depositor: `0x${string}`; beneficiary: `0x${string}`; totalAmount: bigint } => !!e);
 
+  // Read actual on-chain state for each escrow (factory struct doesn't include state)
+  const { data: stateData, isLoading: statesLoading } = useReadContracts({
+    contracts: myEscrowsRaw.map(e => ({
+      address: e.contractAddress,
+      abi: SIMPLE_ESCROW_ABI,
+      functionName: "state" as const,
+      chainId,
+    })),
+    query: { enabled: myEscrowsRaw.length > 0, refetchInterval: 5_000 },
+  });
+
+  const myEscrows = myEscrowsRaw.map((e, i) => ({
+    ...e,
+    state: (stateData?.[i]?.result as number | undefined) ?? 0,
+  }));
+
   useEffect(() => {
-    // Read persisted viewed escrows on client mount
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (typeof window === "undefined") return;
     setViewed(getViewedEscrows());
   }, []);
 
@@ -91,7 +106,7 @@ export default function DashboardPage() {
     router.push(`/escrow/${addr}`);
   }
 
-  const isLoading = walletLoading || recordsLoading;
+  const isLoading = walletLoading || recordsLoading || statesLoading;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -130,25 +145,29 @@ export default function DashboardPage() {
                 </GlassCard>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {myEscrows.map(e => (
-                    <Link key={e.contractAddress} href={`/escrow/${e.contractAddress}`}>
-                      <GlassCard className="p-4 cursor-pointer hover:border-cyan-400/30 transition-all">
-                        <div className="flex items-center justify-between mb-2">
-                          <StatusBadge status={e.depositor?.toLowerCase() === wallet?.toLowerCase() ? "active" : "pending"} />
-                          <span className="text-xs text-slate-500">
-                            {e.escrowType === 0 ? t("simple") : t("milestone")}
-                          </span>
-                          <ShareButton address={e.contractAddress} />
-                        </div>
-                        <p className="text-xs font-mono text-slate-300 truncate">
-                          {e.contractAddress.slice(0, 10)}…{e.contractAddress.slice(-6)}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {(Number(e.totalAmount) / 1e18).toFixed(4)} BDAG · {t("tapToOpen")}
-                        </p>
-                      </GlassCard>
-                    </Link>
-                  ))}
+                  {myEscrows.map(e => {
+                    const title = viewed.find(v => v.address.toLowerCase() === e.contractAddress.toLowerCase())?.title;
+                    return (
+                      <Link key={e.contractAddress} href={`/escrow/${e.contractAddress}`}>
+                        <GlassCard className="p-4 cursor-pointer hover:border-cyan-400/30 transition-all">
+                          <div className="flex items-center justify-between mb-2">
+                            <StatusBadge status={stateToStatus(e.state)} />
+                            <span className="text-xs text-slate-500">
+                              {e.escrowType === 0 ? t("simple") : t("milestone")}
+                            </span>
+                            <ShareButton address={e.contractAddress} />
+                          </div>
+                          {title && <p className="text-sm font-medium text-white mb-1 truncate">{title}</p>}
+                          <p className="text-xs font-mono text-slate-300 truncate">
+                            {e.contractAddress.slice(0, 10)}…{e.contractAddress.slice(-6)}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {formatEther(e.totalAmount)} BDAG · {t("tapToOpen")}
+                          </p>
+                        </GlassCard>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -25,11 +25,18 @@ function loadAll(): Record<string, NotificationPrefs> {
     if (!fs.existsSync(PREFS_FILE)) return {};
     const raw = fs.readFileSync(PREFS_FILE, "utf-8").trim();
     return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+  } catch (err) {
+    console.error("notifications file corrupt:", err);
+    // Don't overwrite corrupt file — return empty but don't write back
+    return {};
+  }
 }
 
 function saveAll(data: Record<string, NotificationPrefs>) {
-  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  // Atomic write: write to temp file then rename
+  const tmp = PREFS_FILE + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
+  fs.renameSync(tmp, PREFS_FILE);
 }
 
 export async function GET(req: NextRequest) {

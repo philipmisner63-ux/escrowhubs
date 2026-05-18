@@ -1,5 +1,6 @@
 // Client-side PDF receipt generator using jsPDF
 // All generation happens in the browser — no server calls needed.
+import { formatEther } from "viem";
 import { DEFAULT_CHAIN_ID, getChainName, getExplorerTxUrl } from "@/lib/chains";
 
 export interface MilestoneItem {
@@ -19,11 +20,17 @@ export interface ReceiptData {
   createdAt?: number;   // unix timestamp (seconds)
   milestones?: MilestoneItem[];
   isAIArbiter?: boolean;
+  chainId?: number;
 }
 
 function fmt(wei: bigint, decimals = 4): string {
-  const eth = Number(wei) / 1e18;
-  return eth.toFixed(decimals) + " BDAG";
+  // Use string-based formatting to avoid Number precision loss on large wei values
+  const etherStr = formatEther(wei);
+  const [intPartRaw, fracPartRaw] = etherStr.split(".");
+  const intPart = BigInt(intPartRaw).toLocaleString();
+  const fracPart = fracPartRaw?.padEnd(decimals, "0").slice(0, decimals) ?? "";
+  const displayVal = fracPart ? `${intPart}.${fracPart}` : intPart;
+  return displayVal + " BDAG";
 }
 
 function shortAddr(addr: string): string {
@@ -136,10 +143,8 @@ export async function generateReceipt(data: ReceiptData): Promise<void> {
 
   // ── Financial summary ─────────────────────────────────────────────────────
   section("Financial Summary");
-  const protocolFee = data.amount * 50n / 10000n;
-  const netAmount = data.amount - protocolFee;
+  // data.amount is already the net amount (factory deducts fees before storing totalAmount)
   row("Escrow Amount", fmt(data.amount));
-  row("Platform Fee (0.5%)", fmt(protocolFee));
 
   y += 1;
   doc.setFillColor("#f8fafc");
@@ -149,7 +154,7 @@ export async function generateReceipt(data: ReceiptData): Promise<void> {
   doc.setTextColor("#0f172a");
   doc.text("Net Amount to Seller", col + 2, y + 2.5);
   doc.setTextColor("#166534");
-  doc.text(fmt(netAmount, 6), W - margin - 2, y + 2.5, { align: "right" });
+  doc.text(fmt(data.amount, 6), W - margin - 2, y + 2.5, { align: "right" });
   y += 12;
 
   // ── Milestones ────────────────────────────────────────────────────────────
@@ -188,11 +193,12 @@ export async function generateReceipt(data: ReceiptData): Promise<void> {
 
   // ── Blockchain verification ───────────────────────────────────────────────
   section("Blockchain Verification");
-  row("Network", `${getChainName(DEFAULT_CHAIN_ID)} (Chain ID: ${DEFAULT_CHAIN_ID})`);
+  const receiptChainId = data.chainId ?? DEFAULT_CHAIN_ID;
+  row("Network", `${getChainName(receiptChainId)} (Chain ID: ${receiptChainId})`);
   row("Contract Address", data.escrowAddress, true);
   if (data.txHash) {
     row("Transaction Hash", data.txHash, true);
-    row("Explorer URL", getExplorerTxUrl(DEFAULT_CHAIN_ID, data.txHash), true);
+    row("Explorer URL", getExplorerTxUrl(receiptChainId, data.txHash), true);
   }
   row("Factory Contract", "0x8a9001c28c4cc1e0952ae5ca2a8366f1c1ac6724", true);
 

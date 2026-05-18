@@ -239,10 +239,11 @@ export default function MarketplacePage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Description */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                  <label htmlFor="marketplace-description" className="text-xs font-medium uppercase tracking-widest text-slate-500">
                     What are you selling?
                   </label>
                   <textarea
+                    id="marketplace-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="e.g. Custom logo design, vintage guitar, freelance dev work..."
@@ -253,10 +254,11 @@ export default function MarketplacePage() {
 
                 {/* Buyer contact */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                  <label htmlFor="marketplace-buyer" className="text-xs font-medium uppercase tracking-widest text-slate-500">
                     Buyer Email or Phone
                   </label>
                   <input
+                    id="marketplace-buyer"
                     type="text"
                     value={buyerContact}
                     onChange={(e) => setBuyerContact(e.target.value)}
@@ -270,10 +272,11 @@ export default function MarketplacePage() {
 
                 {/* Amount */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                  <label htmlFor="marketplace-amount" className="text-xs font-medium uppercase tracking-widest text-slate-500">
                     Amount (USDC)
                   </label>
                   <input
+                    id="marketplace-amount"
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
@@ -285,10 +288,10 @@ export default function MarketplacePage() {
                 </div>
 
                 {/* Dispute resolution */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                <fieldset className="space-y-2">
+                  <legend className="text-xs font-medium uppercase tracking-widest text-slate-500">
                     Dispute Resolution
-                  </label>
+                  </legend>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -317,7 +320,7 @@ export default function MarketplacePage() {
                       <p className="text-xs text-slate-500 mt-0.5">Automated dispute resolution (~$1 flat fee)</p>
                     </button>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Fee breakdown */}
                 {fees && (

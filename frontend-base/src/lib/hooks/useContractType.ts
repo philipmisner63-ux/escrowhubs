@@ -33,10 +33,8 @@ export function useContractType(address: Address | undefined, chainId?: number):
     return () => clearTimeout(t);
   }, [address, resolvedChainId]);
 
-  if (!address) return "unknown";
-  if (isError) return "simple";
+  if (!address || isLoading) return "unknown";
+  if (isError) return "unknown";
   if (data !== undefined) return "milestone";
-  if (timedOut) return "simple"; // fallback after 8s
-  if (isLoading) return "unknown";
   return "unknown";
 }

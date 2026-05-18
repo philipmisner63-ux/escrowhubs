@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 interface GlowButtonProps {
   variant?: "primary" | "secondary" | "danger";
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
   loading?: boolean;
   className?: string;

@@ -20,11 +20,17 @@ function loadAll(): Record<string, object> {
     if (!fs.existsSync(PREFS_FILE)) return {};
     const raw = fs.readFileSync(PREFS_FILE, "utf-8").trim();
     return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+  } catch (err) {
+    console.error("Corrupt notifications.json:", err);
+    // Do not overwrite on next write; return empty but let caller know it's corrupt
+    throw new Error("Notification storage is corrupt");
+  }
 }
 
 function saveAll(data: Record<string, object>) {
-  fs.writeFileSync(PREFS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  const tmp = PREFS_FILE + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
+  fs.renameSync(tmp, PREFS_FILE);
 }
 
 async function sendMessage(chatId: string | number, text: string) {
@@ -39,7 +45,8 @@ async function sendMessage(chatId: string | number, text: string) {
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-telegram-bot-api-secret-token");
   if (!process.env.TELEGRAM_WEBHOOK_SECRET) {
-    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 503 });
+    // Always reject when secret is missing; don't expose endpoint as unconfigured
+    return NextResponse.json({ ok: false }, { status: 401 });
   }
   if (secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
     return NextResponse.json({ ok: false }, { status: 401 });

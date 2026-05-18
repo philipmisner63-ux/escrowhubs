@@ -6,10 +6,10 @@ import { locales, localeMetadata, type Locale } from "@/i18n/config";
 
 function switchLocale(next: Locale) {
   document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
-  // Replace the locale segment in the current URL
+  // Replace the locale segment in the current URL, preserving query string and hash
   const segments = window.location.pathname.split("/").filter(Boolean);
   segments[0] = next; // first segment is always the locale
-  window.location.href = "/" + segments.join("/");
+  window.location.href = "/" + segments.join("/") + window.location.search + window.location.hash;
 }
 
 export function LanguagePicker() {

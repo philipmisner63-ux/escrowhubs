@@ -77,15 +77,25 @@ function SimpleEscrowView({ address }: { address: Address }) {
     }
   }, [address, data.depositor]);
 
+  const [isWriting, setIsWriting] = useState(false);
+
   async function doWrite(fn: () => Promise<`0x${string}`>, label: string) {
+    if (isWriting) return;
+    setIsWriting(true);
     const pid = addToast({ type: "pending", message: `${label}…` });
     try {
       const hash = await fn();
       addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
       // Wait for receipt
+      let receipt;
       try {
-        await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
+        receipt = await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
       } catch { /* timeout — still poll below */ }
+      if (!receipt) {
+        removeToast(pid);
+        addToast({ type: "info", message: `${label} submitted but confirmation timed out. Check explorer.`, txHash: hash });
+        return;
+      }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
       // Poll contract state directly (bypasses wagmi cache) until it changes
@@ -109,6 +119,8 @@ function SimpleEscrowView({ address }: { address: Address }) {
     } catch (e: unknown) {
       removeToast(pid);
       addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Transaction failed" });
+    } finally {
+      setIsWriting(false);
     }
   }
 
@@ -162,10 +174,11 @@ function SimpleEscrowView({ address }: { address: Address }) {
         </div>
       </GlassCard>
 
-      {/* Evidence panel for AI arbiter disputes */}
+      {/* Evidence panel for AI arbiter disputes — only participants may submit */}
       {stateNum === SimpleEscrowState.DISPUTED &&
-        data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase() && (
-        <EvidencePanel escrowAddress={address} isBuyer={!!wallet && data.depositor?.toLowerCase() === wallet.toLowerCase()} />
+        data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase() &&
+        (role === "depositor" || role === "beneficiary") && (
+        <EvidencePanel escrowAddress={address} role={role} />
       )}
 
       {/* Actions */}
@@ -177,12 +190,12 @@ function SimpleEscrowView({ address }: { address: Address }) {
               <ActionRow
                 title="Release Funds"
                 desc={`Send ${data.amount ? formatEther(data.amount) : "?"} BDAG to beneficiary`}
-                action={<GlowButton variant="primary" loading={writes.isPending} onClick={() => doWrite(() => writes.release(address), "Release")}>Release</GlowButton>}
+                action={<GlowButton variant="primary" loading={isWriting || writes.isPending} onClick={() => doWrite(() => writes.release(address), "Release")}>Release</GlowButton>}
               />
               <ActionRow
                 title="Raise Dispute"
                 desc="Escalate to arbiter for resolution"
-                action={<GlowButton variant="danger" loading={writes.isPending} onClick={() => doWrite(() => writes.dispute(address), "Dispute")}>Dispute</GlowButton>}
+                action={<GlowButton variant="danger" loading={isWriting || writes.isPending} onClick={() => doWrite(() => writes.dispute(address), "Dispute")}>Dispute</GlowButton>}
               />
             </>
           )}
@@ -191,12 +204,12 @@ function SimpleEscrowView({ address }: { address: Address }) {
               <ActionRow
                 title="Resolve — Release to Beneficiary"
                 desc="Arbiter decision: funds go to beneficiary"
-                action={<GlowButton variant="primary" loading={writes.isPending} onClick={() => doWrite(() => writes.resolveRelease(address), "Resolve Release")}>Resolve Release</GlowButton>}
+                action={<GlowButton variant="primary" loading={isWriting || writes.isPending} onClick={() => doWrite(() => writes.resolveRelease(address), "Resolve Release")}>Resolve Release</GlowButton>}
               />
               <ActionRow
                 title="Resolve — Refund Depositor"
                 desc="Arbiter decision: funds returned to depositor"
-                action={<GlowButton variant="secondary" loading={writes.isPending} onClick={() => doWrite(() => writes.resolveRefund(address), "Resolve Refund")}>Resolve Refund</GlowButton>}
+                action={<GlowButton variant="secondary" loading={isWriting || writes.isPending} onClick={() => doWrite(() => writes.resolveRefund(address), "Resolve Refund")}>Resolve Refund</GlowButton>}
               />
             </>
           )}
@@ -212,6 +225,7 @@ function SimpleEscrowView({ address }: { address: Address }) {
                   arbiter: data.arbiter ?? "",
                   amount: data.amount ?? 0n,
                   isAIArbiter: data.arbiter?.toLowerCase() === arbiterAddress?.toLowerCase(),
+                  chainId,
                 }} />
               )}
             </div>
@@ -247,14 +261,24 @@ function MilestoneEscrowView({ address }: { address: Address }) {
     }
   }, [address, data.depositor]);
 
+  const [isWriting, setIsWriting] = useState(false);
+
   async function doWrite(fn: () => Promise<`0x${string}`>, label: string) {
+    if (isWriting) return;
+    setIsWriting(true);
     const pid = addToast({ type: "pending", message: `${label}…` });
     try {
       const hash = await fn();
       addToast({ type: "pending", message: `Waiting for confirmation…`, txHash: hash });
+      let receipt;
       try {
-        await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
-      } catch { /* timeout — still poll below */ }
+        receipt = await rpcClient.waitForTransactionReceipt({ hash, timeout: 120_000, pollingInterval: 2_000 });
+      } catch { /* timeout */ }
+      if (!receipt) {
+        removeToast(pid);
+        addToast({ type: "info", message: `${label} submitted but confirmation timed out. Check explorer.`, txHash: hash });
+        return;
+      }
       removeToast(pid);
       addToast({ type: "success", message: `${label} confirmed`, txHash: hash });
       // Invalidate wagmi cache + keep polling until state is fresh
@@ -266,6 +290,8 @@ function MilestoneEscrowView({ address }: { address: Address }) {
     } catch (e: unknown) {
       removeToast(pid);
       addToast({ type: "error", message: e instanceof Error ? e.message.slice(0, 120) : "Transaction failed" });
+    } finally {
+      setIsWriting(false);
     }
   }
 
@@ -333,20 +359,20 @@ function MilestoneEscrowView({ address }: { address: Address }) {
                 <StatusBadge status={msLabel} />
                 {role === "depositor" && ms.state === MilestoneState.PENDING && (
                   <div className="flex gap-2 shrink-0">
-                    <GlowButton variant="secondary" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.releaseMilestone(address, BigInt(i)), `Release M${i+1}`)}>
+                    <GlowButton variant="secondary" className="h-7 px-3 text-xs" loading={isWriting} onClick={() => doWrite(() => writes.releaseMilestone(address, BigInt(i)), `Release M${i+1}`)}>
                       Release
                     </GlowButton>
-                    <GlowButton variant="danger" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.disputeMilestone(address, BigInt(i)), `Dispute M${i+1}`)}>
+                    <GlowButton variant="danger" className="h-7 px-3 text-xs" loading={isWriting} onClick={() => doWrite(() => writes.disputeMilestone(address, BigInt(i)), `Dispute M${i+1}`)}>
                       Dispute
                     </GlowButton>
                   </div>
                 )}
                 {role === "arbiter" && ms.state === MilestoneState.DISPUTED && (
                   <div className="flex gap-2 shrink-0">
-                    <GlowButton variant="primary" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.resolveRelease(address, BigInt(i)), `Resolve M${i+1}`)}>
+                    <GlowButton variant="primary" className="h-7 px-3 text-xs" loading={isWriting} onClick={() => doWrite(() => writes.resolveRelease(address, BigInt(i)), `Resolve M${i+1}`)}>
                       Release
                     </GlowButton>
-                    <GlowButton variant="secondary" className="h-7 px-3 text-xs" onClick={() => doWrite(() => writes.resolveRefund(address, BigInt(i)), `Refund M${i+1}`)}>
+                    <GlowButton variant="secondary" className="h-7 px-3 text-xs" loading={isWriting} onClick={() => doWrite(() => writes.resolveRefund(address, BigInt(i)), `Refund M${i+1}`)}>
                       Refund
                     </GlowButton>
                   </div>
@@ -366,6 +392,7 @@ function MilestoneEscrowView({ address }: { address: Address }) {
               arbiter: data.arbiter ?? "",
               amount: data.totalDeposited ?? 0n,
               milestones: data.milestones,
+              chainId,
             }} />
           </div>
         )}
@@ -445,7 +472,7 @@ const EMPTY_INTAKE: IntakeForm = {
   complaintEvidence: "", requestedOutcome: "", requestedOutcomeReason: "",
 };
 
-function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isBuyer: boolean }) {
+function EvidencePanel({ escrowAddress, role }: { escrowAddress: Address; role: Role }) {
   const [step, setStep] = useState<"intake" | "freeform" | "done">("intake");
   const [form, setForm] = useState<IntakeForm>(EMPTY_INTAKE);
   const [freeformText, setFreeformText] = useState("");
@@ -456,7 +483,7 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
   const arbiterAddress = getArbiterAddress(chainId);
   if (!arbiterAddress) return null;
 
-  const role = isBuyer ? "buyer" : "seller";
+  const isBuyer = role === "depositor";
   const set = (k: keyof IntakeForm, v: string | boolean) =>
     setForm(f => ({ ...f, [k]: v }));
 
@@ -487,7 +514,7 @@ function EvidencePanel({ escrowAddress, isBuyer }: { escrowAddress: Address; isB
         actionsTimeline: form.actionsTimeline.trim(),
         counterpartyTimeline: form.counterpartyTimeline.trim(),
         deliveryClaim: form.deliveryClaim,
-        ...(role === "seller" ? { buyerUseClaim: form.buyerUseClaim } : {}),
+        ...(role === "beneficiary" ? { buyerUseClaim: form.buyerUseClaim } : {}),
         evidence: form.evidence.trim().split(/\n+/).filter(Boolean),
         firstComplaintTime: form.firstComplaintTime.trim(),
         complaintEvidence: form.complaintEvidence.trim().split(/\n+/).filter(Boolean),

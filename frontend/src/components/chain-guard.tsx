@@ -70,7 +70,7 @@ export function ChainGuard({ children }: ChainGuardProps) {
       </div>
 
       {/* Content rendered underneath (dimmed) */}
-      <div className="pointer-events-none opacity-40 select-none" aria-hidden="true">
+      <div className="pointer-events-none opacity-40 select-none" inert aria-hidden="true">
         {children}
       </div>
     </>

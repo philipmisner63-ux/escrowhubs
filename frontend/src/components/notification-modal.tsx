@@ -55,9 +55,13 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
   const [prefs,      setPrefs]      = useState<NotificationPrefs>(defaultPrefs());
   const [submitting, setSubmitting] = useState(false);
 
-  // Load saved prefs
+  // Load saved prefs once per modal open for the wallet that was active at open time
+  const walletAtOpen = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (!open || !wallet) return;
+    // Prevent a wallet-switch during the session from overwriting unsaved changes
+    if (walletAtOpen.current && walletAtOpen.current !== wallet) return;
+    walletAtOpen.current = wallet;
     (async () => {
       try {
         const timestamp = Date.now().toString();

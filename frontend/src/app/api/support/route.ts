@@ -20,9 +20,14 @@ export async function POST(req: NextRequest) {
       lastTxHash,
     } = body;
 
+    // Basic anti-spam: require at least issueType and description
+    if (!issueType?.trim() || !description?.trim()) {
+      return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
+    }
+
     if (!DISCORD_WEBHOOK) {
       console.warn("SUPPORT_DISCORD_WEBHOOK not set — support report dropped");
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: false, error: "Webhook not configured" }, { status: 503 });
     }
 
     const lines = [
@@ -42,11 +47,16 @@ export async function POST(req: NextRequest) {
       `- **Time:** ${timestamp}`,
     ].filter(Boolean).join("\n");
 
-    await fetch(DISCORD_WEBHOOK, {
+    const discordRes = await fetch(DISCORD_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: lines }),
     });
+
+    if (!discordRes.ok) {
+      console.error("Discord webhook delivery failed:", discordRes.status, await discordRes.text());
+      return NextResponse.json({ success: false, error: "Failed to deliver to Discord" }, { status: 502 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

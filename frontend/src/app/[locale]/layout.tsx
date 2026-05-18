@@ -56,18 +56,20 @@ export default async function LocaleLayout({
   const dir = meta?.dir ?? "ltr";
 
   return (
-    <div lang={locale} dir={dir} className={`dark ${geistSans.variable} ${jetbrainsMono.variable} antialiased`}>
-      <NextIntlClientProvider messages={messages}>
-        <ProvidersClient>
-          <PWARegister />
-          <AnimatedBackground />
-          <div className="relative min-h-screen">
-            <ChainGuard>
-              {children}
-            </ChainGuard>
-          </div>
-        </ProvidersClient>
-      </NextIntlClientProvider>
-    </div>
+    <html lang={locale} dir={dir} className={`dark ${geistSans.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body>
+        <NextIntlClientProvider messages={messages}>
+          <ProvidersClient>
+            <PWARegister />
+            <AnimatedBackground />
+            <div className="relative min-h-screen">
+              <ChainGuard>
+                {children}
+              </ChainGuard>
+            </div>
+          </ProvidersClient>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

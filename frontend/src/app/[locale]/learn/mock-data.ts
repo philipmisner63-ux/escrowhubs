@@ -1,5 +1,5 @@
 // ─── Mock data for sandbox — no real blockchain calls ─────────────────────────
-import { DEFAULT_CHAIN_ID, getRpcUrl } from "@/lib/chains";
+import { DEFAULT_CHAIN_ID } from "@/lib/chains";
 
 export const MOCK_SIMPLE_ESCROW = {
   address: "0xDeAdBeEf1234567890AbCdEf1234567890aBcDeF",

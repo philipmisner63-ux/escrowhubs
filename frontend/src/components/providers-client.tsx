@@ -1,18 +1,14 @@
 "use client";
 
 /**
- * Client-side wrapper that dynamically imports Providers with ssr:false.
- * This prevents wagmi / WalletConnect / idb-keyval from being evaluated
- * during SSR/SSG, eliminating the "indexedDB is not defined" build warning.
+ * Client-side wrapper that imports Providers directly.
+ * Providers itself isolates browser-only RainbowKit initialization
+ * behind a nested dynamic boundary so the rest of the tree (WagmiProvider,
+ * QueryClientProvider, ToastProvider, children) remains SSR-renderable.
  */
 
-import dynamic from "next/dynamic";
-
-const ProvidersInner = dynamic(
-  () => import("@/components/providers").then(m => m.Providers),
-  { ssr: false }
-);
+import { Providers } from "@/components/providers";
 
 export function ProvidersClient({ children }: { children: React.ReactNode }) {
-  return <ProvidersInner>{children}</ProvidersInner>;
+  return <Providers>{children}</Providers>;
 }

@@ -44,8 +44,13 @@ export async function POST(req: NextRequest) {
       wallet:    wallet ?? null,
     };
 
-    // Persist to local JSON log
-    appendLog(entry);
+    // Persist to local JSON log (append-only to avoid read-modify-write races)
+    try {
+      const line = JSON.stringify(entry) + "\n";
+      fs.appendFileSync(LOG_FILE, line, "utf-8");
+    } catch (err) {
+      console.error("feedback log write failed:", err);
+    }
 
     // Forward to Discord webhook if configured
     if (DISCORD_WEBHOOK) {
@@ -54,20 +59,35 @@ export async function POST(req: NextRequest) {
         ? `\`${entry.wallet}\``
         : "_not connected_";
 
+      // Sanitize user content to prevent Discord mass mentions
+      const safeTitle = String(title).slice(0, 100)
+        .replace(/@everyone/g, "@ everyone")
+        .replace(/@here/g, "@ here")
+        .replace(/<@&?\d+>/g, "[mention]");
+      const safeDescription = String(description).slice(0, 1000)
+        .replace(/@everyone/g, "@ everyone")
+        .replace(/@here/g, "@ here")
+        .replace(/<@&?\d+>/g, "[mention]");
+
       const content = [
-        `## ${emoji} Feedback: ${entry.title}`,
+        `## ${emoji} Feedback: ${safeTitle}`,
         `**Category:** ${entry.category.replace(/([A-Z])/g, " $1").trim()}`,
         `**Wallet:** ${walletLine}`,
         `**Time:** ${entry.timestamp}`,
         ``,
-        entry.description,
+        safeDescription,
       ].join("\n");
 
-      await fetch(DISCORD_WEBHOOK, {
+      const discordRes = await fetch(DISCORD_WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
+
+      if (!discordRes.ok) {
+        console.error("Discord webhook delivery failed:", discordRes.status, await discordRes.text());
+        return NextResponse.json({ success: false, error: "Failed to deliver to Discord" }, { status: 502 });
+      }
     }
 
     return NextResponse.json({ success: true });

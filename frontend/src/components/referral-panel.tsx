@@ -10,7 +10,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 
 const ZERO = "0x0000000000000000000000000000000000000000" as const;
-const APP_URL = "https://app.escrowhubs.io";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.escrowhubs.io";
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
@@ -68,11 +68,15 @@ export function ReferralPanel() {
 
   const handleCopy = useCallback(() => {
     if (!referralLink) return;
-    navigator.clipboard.writeText(referralLink).then(() => {
-      setCopied(true);
-      addToast({ type: "success", message: t("copied") });
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard.writeText(referralLink)
+      .then(() => {
+        setCopied(true);
+        addToast({ type: "success", message: t("copied") });
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        addToast({ type: "error", message: t("copyFailed") });
+      });
   }, [referralLink, addToast, t]);
 
   const handleClaim = async () => {

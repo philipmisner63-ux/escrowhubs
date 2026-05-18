@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { FAQ_ITEMS } from "../mock-data";
 
 export default function FAQPage() {
+  const t = useTranslations("faq");
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Frequently Asked Questions</h1>
-        <p className="mt-1 text-slate-400 text-sm">Everything you need to know about EscrowHubs on BlockDAG.</p>
+        <h1 className="text-2xl font-bold text-white">{t("title")}</h1>
+        <p className="mt-1 text-slate-400 text-sm">{t("subtitle")}</p>
       </div>
 
       <div className="space-y-2">

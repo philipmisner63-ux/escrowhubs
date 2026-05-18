@@ -10,8 +10,6 @@ import { AddressDisplay } from "@/components/ui/address-display";
 import { ESCROW_FACTORY_ABI, EXPLORER_TX_URL } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
 
-const OWNER_ADDRESS = "0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA";
-
 // ─── Admin fee functions not in the shared ABI — extend locally ───────────────
 const ADMIN_ABI = [
   { type: "function", name: "accumulatedFees",  inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
@@ -111,8 +109,6 @@ export default function AdminPage() {
     setSubmittingReview(false);
   }
 
-  const isOwner = isConnected && wallet?.toLowerCase() === OWNER_ADDRESS.toLowerCase();
-
   const { data, refetch } = useReadContracts({
     contracts: [
       { ...adminContract, functionName: "accumulatedFees" },
@@ -132,6 +128,8 @@ export default function AdminPage() {
   const owner           = (data?.[4]?.result as `0x${string}` | undefined);
   const escrowCount     = (data?.[5]?.result as bigint | undefined) ?? 0n;
 
+  const isOwner = isConnected && wallet?.toLowerCase() === (owner ?? "").toLowerCase();
+
   const handleWithdraw = async () => {
     setTxError("");
     try {
@@ -145,8 +143,9 @@ export default function AdminPage() {
 
   const handleSetFees = async () => {
     setTxError("");
-    const bps = parseInt(feeBps);
-    if (isNaN(bps) || bps < 0 || bps > 500) { setTxError("Protocol fee must be 0–500 bps (0–5%)"); return; }
+    if (!feeBps || !/^[0-9]+$/.test(feeBps)) { setTxError("Protocol fee must be a whole number (0–500 bps)"); return; }
+    const bps = parseInt(feeBps, 10);
+    if (bps < 0 || bps > 500) { setTxError("Protocol fee must be 0–500 bps (0–5%)"); return; }
     if (!arbiterFee || isNaN(parseFloat(arbiterFee))) { setTxError("Invalid AI arbiter fee"); return; }
     try {
       const hash = await writeContractAsync({
@@ -180,8 +179,10 @@ export default function AdminPage() {
     }
   };
 
-  // Load escalations on mount and when admin panel is visible
-  useEffect(() => { loadEscalations(); }, []);
+  // Load escalations only when owner is confirmed
+  useEffect(() => {
+    if (isOwner) loadEscalations();
+  }, [isOwner]);
 
   return (
     <div className="min-h-screen bg-[#050510]">

@@ -18,7 +18,7 @@ export function useContractType(address: Address | undefined, chainId?: number):
   });
 
   if (!address || isLoading) return "unknown";
-  if (isError) return "simple";
+  if (isError) return "unknown";
   if (data !== undefined) return "milestone";
   return "unknown";
 }

@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 interface GlassCardProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   glowOnHover?: boolean;
   accentColor?: "cyan" | "purple" | "blue" | "green" | "red";

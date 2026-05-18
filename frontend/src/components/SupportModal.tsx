@@ -19,12 +19,6 @@ const ISSUE_TYPES = [
   "Other",
 ];
 
-const defaultChainConfig = getChain(DEFAULT_CHAIN_ID);
-const rpcClient = createPublicClient({
-  chain: defaultChainConfig.chain as Parameters<typeof createPublicClient>[0]["chain"],
-  transport: http(defaultChainConfig.rpcUrl),
-});
-
 interface SupportModalProps {
   open: boolean;
   onClose: () => void;
@@ -34,6 +28,13 @@ interface SupportModalProps {
 export function SupportModal({ open, onClose, lastTxHash }: SupportModalProps) {
   const { address: wallet, isConnected } = useAccount();
   const chainId = useChainId();
+
+  // Build RPC client from the *connected* chain, not a hardcoded default
+  const chainConfig = getChain(chainId);
+  const rpcClient = createPublicClient({
+    chain: chainConfig.chain as Parameters<typeof createPublicClient>[0]["chain"],
+    transport: http(chainConfig.rpcUrl),
+  });
   const pathname = usePathname();
   const { addToast } = useToast();
 

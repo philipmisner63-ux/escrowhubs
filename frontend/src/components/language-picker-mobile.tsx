@@ -8,7 +8,7 @@ function switchLocale(next: Locale) {
   document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=Lax`;
   const segments = window.location.pathname.split("/").filter(Boolean);
   segments[0] = next;
-  window.location.href = "/" + segments.join("/");
+  window.location.href = "/" + segments.join("/") + window.location.search + window.location.hash;
 }
 
 export function LanguagePickerMobile() {

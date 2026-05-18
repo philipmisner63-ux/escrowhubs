@@ -79,7 +79,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
+    if (submitting || !title.trim() || !description.trim()) return;
     setSubmitting(true);
 
     try {

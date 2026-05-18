@@ -11,6 +11,7 @@ export function FeedbackButton() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         aria-label={t("button")}
         className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full border border-white/10

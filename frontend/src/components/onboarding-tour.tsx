@@ -82,6 +82,10 @@ export function OnboardingTour() {
     if (localStorage.getItem(TOUR_KEY)) return;
 
     const timer = setTimeout(() => {
+      // Don't start if key tour elements are missing (prevents broken tour on non-home pages)
+      if (!document.querySelector("h1") || !document.querySelector("[data-tour='connect-wallet']")) {
+        return;
+      }
       startTour();
     }, 2000);
 

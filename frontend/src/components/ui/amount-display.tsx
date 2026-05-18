@@ -26,10 +26,20 @@ export function AmountDisplay({
   size = "md",
   className,
 }: AmountDisplayProps) {
-  const formatted =
-    typeof amount === "bigint"
-      ? parseFloat(formatEther(amount)).toLocaleString(undefined, { maximumFractionDigits: 4 })
-      : amount;
+  let formatted: string;
+  if (typeof amount === "bigint") {
+    const etherStr = formatEther(amount);
+    // Preserve precision: split integer/fractional, format integer with locale, keep fractional
+    const [intPartRaw, fracPartRaw] = etherStr.split(".");
+    const intPart = BigInt(intPartRaw).toLocaleString();
+    const fracPart = fracPartRaw?.slice(0, 4) ?? "";
+    const trimmed = fracPart.replace(/0+$/, "");
+    const displayVal = trimmed ? `${intPart}.${trimmed}` : intPart;
+    // Show nonzero tiny values as "<0.0001" instead of "0"
+    formatted = amount > 0n && displayVal === "0" ? "<0.0001" : displayVal;
+  } else {
+    formatted = amount;
+  }
 
   return (
     <span

@@ -247,11 +247,11 @@ export default function CreateEscrowPage() {
             {/* Form */}
             <form onSubmit={handleSubmit}>
               <GlassCard className="p-6 space-y-5">
-                <Field label={t("titleLabel")} value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder={t("titlePlaceholder")} />
-                <Field label={t("beneficiaryLabel")} value={form.beneficiary} onChange={v => setForm(f => ({ ...f, beneficiary: v }))} placeholder={t("beneficiaryPlaceholder")} mono />
+                <Field id="escrow-title" label={t("titleLabel")} value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder={t("titlePlaceholder")} />
+                <Field id="escrow-beneficiary" label={t("beneficiaryLabel")} value={form.beneficiary} onChange={v => setForm(f => ({ ...f, beneficiary: v }))} placeholder={t("beneficiaryPlaceholder")} mono />
                 {/* Arbiter selector */}
-                <div className="space-y-3">
-                  <label className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("arbiterLabel")}</label>
+                <fieldset className="space-y-3">
+                  <legend className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("arbiterLabel")}</legend>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -315,15 +315,15 @@ export default function CreateEscrowPage() {
                 </div>
 
                 {type === "simple" ? (
-                  <Field label={isUSDC ? "Amount (USDC)" : "Amount (ETH)"} value={form.amount} onChange={v => setForm(f => ({ ...f, amount: v }))} placeholder={isUSDC ? "0.00" : "0.0"} type="number" />
+                  <Field id="escrow-amount" label={isUSDC ? "Amount (USDC)" : "Amount (ETH)"} value={form.amount} onChange={v => setForm(f => ({ ...f, amount: v }))} placeholder={isUSDC ? "0.00" : "0.0"} type="number" />
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("milestones")}</label>
+                  <fieldset className="space-y-3">
+                    <legend className="flex items-center justify-between w-full">
+                      <span className="text-xs font-medium uppercase tracking-widest text-slate-500">{t("milestones")}</span>
                       <button type="button" onClick={addMilestone} className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
                         + Add Milestone
                       </button>
-                    </div>
+                    </legend>
                     {milestones.map((ms, i) => (
                       <div key={i} className="flex gap-3 items-start rounded-xl bg-white/3 border border-white/8 p-3">
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center text-xs text-cyan-400 font-mono mt-0.5">
@@ -356,10 +356,10 @@ export default function CreateEscrowPage() {
                     <div className="flex justify-between text-xs text-slate-500 pt-1">
                       <span>{t("total")}</span>
                       <span className="text-cyan-400 font-semibold" style={{ fontFamily: "var(--font-mono)" }}>
-                        {milestoneTotal.toFixed(3)} ETH
+                        {milestoneTotal.toFixed(3)} {isUSDC ? "USDC" : "ETH"}
                       </span>
                     </div>
-                  </div>
+                  </fieldset>
                 )}
 
                 {/* Fee preview */}
@@ -435,15 +435,16 @@ export default function CreateEscrowPage() {
 }
 
 function Field({
-  label, value, onChange, placeholder, mono, type = "text",
+  id, label, value, onChange, placeholder, mono, type = "text",
 }: {
-  label: string; value: string; onChange: (v: string) => void;
+  id: string; label: string; value: string; onChange: (v: string) => void;
   placeholder?: string; mono?: boolean; type?: string;
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium uppercase tracking-widest text-slate-500">{label}</label>
+      <label htmlFor={id} className="text-xs font-medium uppercase tracking-widest text-slate-500">{label}</label>
       <input
+        id={id}
         type={type}
         step={type === "number" ? "0.001" : undefined}
         className={cn(

@@ -16,7 +16,7 @@ const ADMIN_ABI = [
 
 interface StatsData {
   totalEscrows: number;
-  bdagLocked: number;   // formatted as float
+  bdagLocked: string;   // keep as formatted string to preserve precision
   successRate: number;  // 0-100
   fetchedAt: number;
 }
@@ -71,7 +71,7 @@ function StatCard({
   loading = false,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   suffix?: string;
   prefix?: string;
   isLive?: boolean;
@@ -79,7 +79,8 @@ function StatCard({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
-  const animated = useCountUp(value, 1500, inView && !loading);
+  const numericValue = typeof value === "string" ? parseFloat(value) || 0 : value;
+  const animated = useCountUp(numericValue, 1500, inView && !loading && typeof value === "number");
 
   useEffect(() => {
     const el = ref.current;
@@ -97,9 +98,11 @@ function StatCard({
     : suffix === "%"
     ? `${animated}%`
     : suffix === " BDAG"
-    ? animated >= 1000
-      ? `${(animated / 1000).toFixed(1)}K`
-      : animated.toFixed(animated < 10 ? 2 : 0)
+    ? typeof value === "string"
+      ? `${parseFloat(value).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+      : animated >= 1000
+        ? `${(animated / 1000).toFixed(1)}K`
+        : animated.toFixed(animated < 10 ? 2 : 0)
     : animated.toLocaleString();
 
   return (
@@ -162,8 +165,8 @@ export function LiveStats() {
         : statsRef.current?.totalEscrows ?? 0;
 
       const bdagLocked = balanceResult.status === "fulfilled"
-        ? parseFloat(formatEther(balanceResult.value as bigint))
-        : statsRef.current?.bdagLocked ?? 0;
+        ? formatEther(balanceResult.value as bigint)
+        : statsRef.current?.bdagLocked ?? "0";
 
       const newStats: StatsData = {
         totalEscrows,
@@ -179,7 +182,7 @@ export function LiveStats() {
       // Fallback to cached or defaults
       setLoading(false);
       if (!statsRef.current) {
-        setStats({ totalEscrows: 0, bdagLocked: 0, successRate: 100, fetchedAt: 0 });
+        setStats({ totalEscrows: 0, bdagLocked: "0", successRate: 100, fetchedAt: 0 });
       }
     }
   }, []);
