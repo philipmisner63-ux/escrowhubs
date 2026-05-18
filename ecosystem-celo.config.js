@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'frontend-celo',
-    cwd: '/root/blockdag-escrow/live/celo',
+    cwd: '/root/blockdag-escrow/frontend-celo',
     // Celo uses next start (non-standalone) — requires node_modules symlink
     script: './node_modules/next/dist/bin/next',
     args: 'start -p 3004',

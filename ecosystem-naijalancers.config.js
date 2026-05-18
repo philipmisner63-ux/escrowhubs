@@ -1,12 +1,12 @@
 module.exports = {
   apps: [{
-    name: 'frontend-polygon',
-    cwd: '/root/blockdag-escrow/frontend-polygon',
+    name: 'frontend-naijalancers',
+    cwd: '/root/blockdag-escrow/frontend-naijalancers',
     script: './node_modules/next/dist/bin/next',
-    args: 'start -p 3002',
+    args: 'start -p 3005',
     interpreter: '/usr/bin/node',
     env: {
-      PORT: 3002,
+      PORT: 3005,
       NODE_ENV: 'production',
     },
     instances: 1,

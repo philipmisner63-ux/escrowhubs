@@ -1,0 +1,13 @@
+[
+  {
+    "chainId": 42220,
+    "name": "Celo",
+    "nativeCurrency": { "name": "Celo", "symbol": "CELO", "decimals": 18 },
+    "rpcUrlEnvVar": "CELO_RPC_URL",
+    "rpcUrlFallback": "https://rpc.ankr.com/celo",
+    "factoryAddressEnvVar": "NEXT_PUBLIC_FACTORY_ADDRESS",
+    "factoryAddressFallback": "0x2fcec726073a47b71242f24fa3821d299b5119e1",
+    "arbiterAddressEnvVar": "AI_ARBITER_ADDRESS",
+    "arbiterAddressFallback": "0x34dd4dda6d704ddbc0b800a7eaff3fea710eba9c"
+  }
+]

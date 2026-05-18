@@ -56,7 +56,7 @@ module.exports = {
     // ─── BlockDAG Frontend ───────────────────────────────────────────────────
     {
       name:   "frontend",
-      script: "node_modules/.bin/next",
+      script: "node_modules/next/dist/bin/next",
       args:   "start -p 3000",
       cwd:    "/root/blockdag-escrow/frontend",
       env: {
@@ -72,7 +72,7 @@ module.exports = {
     // ─── Base Frontend (disabled until Base deployment) ──────────────────────
     {
       name:   "frontend-base",
-      script: "node_modules/.bin/next",
+      script: "node_modules/next/dist/bin/next",
       args:   "start -p 3001",
       cwd:    "/root/blockdag-escrow/frontend-base",
       env: {
@@ -106,7 +106,7 @@ module.exports = {
     // ─── BSC Frontend ────────────────────────────────────────────────────────
     {
       name:   "frontend-bsc",
-      script: "node_modules/.bin/next",
+      script: "node_modules/next/dist/bin/next",
       args:   "start -p 3003",
       cwd:    "/root/blockdag-escrow/frontend-bsc",
       env: {
