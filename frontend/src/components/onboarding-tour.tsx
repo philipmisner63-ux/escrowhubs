@@ -22,7 +22,7 @@ export function OnboardingTour() {
       prevBtnText: "←",
       doneBtnText: t("done"),
       onDestroyed: () => {
-        localStorage.setItem(TOUR_KEY, "true");
+        try { localStorage.setItem(TOUR_KEY, "true"); } catch {}
       },
       steps: [
         {
@@ -79,7 +79,9 @@ export function OnboardingTour() {
   useEffect(() => {
     // Only auto-start if not completed before
     if (typeof window === "undefined") return;
-    if (localStorage.getItem(TOUR_KEY)) return;
+    try {
+      if (localStorage.getItem(TOUR_KEY)) return;
+    } catch { return; }
 
     const timer = setTimeout(() => {
       // Don't start if key tour elements are missing (prevents broken tour on non-home pages)
@@ -98,7 +100,7 @@ export function OnboardingTour() {
 // Exported so footer "Take a Tour" link can call it
 export function resetAndStartTour() {
   if (typeof window !== "undefined") {
-    localStorage.removeItem(TOUR_KEY);
+    try { localStorage.removeItem(TOUR_KEY); } catch {}
     window.location.reload();
   }
 }

@@ -86,7 +86,9 @@ export default function AdminPage() {
   async function loadEscalations() {
     setLoadingEsc(true);
     try {
-      const res = await fetch("/api/admin/escalations");
+      const res = await fetch("/api/admin/escalations", {
+        headers: { "x-admin-secret": process.env.NEXT_PUBLIC_ADMIN_SECRET ?? "" },
+      });
       if (res.ok) { const data = await res.json(); setEscalations(data.escalations ?? []); }
     } catch { /* ignore */ }
     setLoadingEsc(false);
@@ -146,7 +148,7 @@ export default function AdminPage() {
     if (!feeBps || !/^[0-9]+$/.test(feeBps)) { setTxError("Protocol fee must be a whole number (0–500 bps)"); return; }
     const bps = parseInt(feeBps, 10);
     if (bps < 0 || bps > 500) { setTxError("Protocol fee must be 0–500 bps (0–5%)"); return; }
-    if (!arbiterFee || isNaN(parseFloat(arbiterFee))) { setTxError("Invalid AI arbiter fee"); return; }
+    if (!arbiterFee || !/^\d+(\.\d+)?$/.test(arbiterFee) || parseFloat(arbiterFee) < 0) { setTxError("Invalid AI arbiter fee — must be a non-negative number"); return; }
     try {
       const hash = await writeContractAsync({
         ...adminContract,

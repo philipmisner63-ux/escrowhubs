@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface AddressDisplayProps {
   address: string;
@@ -10,14 +10,17 @@ interface AddressDisplayProps {
 
 export function AddressDisplay({ address, label, className }: AddressDisplayProps) {
   const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const short = address.length >= 10
     ? `${address.slice(0, 6)}…${address.slice(-4)}`
     : address;
 
   async function copy() {
+    let ok = false;
     try {
       await navigator.clipboard.writeText(address);
+      ok = true;
     } catch {
       // Fallback for HTTP (clipboard API requires HTTPS)
       const el = document.createElement("textarea");
@@ -27,11 +30,13 @@ export function AddressDisplay({ address, label, className }: AddressDisplayProp
       document.body.appendChild(el);
       el.focus();
       el.select();
-      document.execCommand("copy");
+      ok = document.execCommand("copy");
       document.body.removeChild(el);
     }
+    if (!ok) return;
+    if (copyTimer.current) clearTimeout(copyTimer.current);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    copyTimer.current = setTimeout(() => setCopied(false), 2000);
   }
 
   return (

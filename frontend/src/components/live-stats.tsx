@@ -146,7 +146,7 @@ export function LiveStats() {
     try {
       const client = createPublicClient({ chain: blockdagMainnet, transport: http(getRpcUrl(DEFAULT_CHAIN_ID)) });
 
-      const [countResult, balanceResult, feesResult] = await Promise.allSettled([
+      const [countResult, balanceResult] = await Promise.allSettled([
         client.readContract({
           address: getFactoryAddress(DEFAULT_CHAIN_ID),
           abi: ESCROW_FACTORY_ABI,

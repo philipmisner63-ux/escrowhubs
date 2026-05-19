@@ -104,8 +104,7 @@ export default function CreateEscrowPage() {
       }
 
       // Wait for receipt and extract escrow address from logs
-      addToast({ type: "info", message: t("submitted"), txHash });
-      triggerDeployConfetti();
+      const submittedToastId = addToast({ type: "info", message: t("submitted"), txHash });
 
       try {
         const chain = SUPPORTED_CHAINS.find(c => c.id === currentChainId) ?? SUPPORTED_CHAINS[0];
@@ -114,15 +113,22 @@ export default function CreateEscrowPage() {
           transport: http(getRpcUrl(currentChainId)),
         });
         const receipt = await rpcClient.waitForTransactionReceipt({ hash: txHash, timeout: 120_000, pollingInterval: 2_000 });
+        const ESCROW_CREATED_TOPIC0 = "0x78da7430b15648a5954de6bf3f6dc65a9eb64c292537d89a2a9989fdd3679923";
         let contractAddress: `0x${string}` | null = null;
         for (const log of receipt.logs) {
-          if (log.address.toLowerCase() === factoryAddress.toLowerCase() && log.topics[1]) {
+          if (
+            log.address.toLowerCase() === factoryAddress.toLowerCase() &&
+            log.topics[0]?.toLowerCase() === ESCROW_CREATED_TOPIC0 &&
+            log.topics[1]
+          ) {
             const addr = `0x${log.topics[1].slice(26)}` as `0x${string}`;
             if (/^0x[0-9a-fA-F]{40}$/.test(addr)) { contractAddress = addr; break; }
           }
         }
         removeToast(pendingId);
+        removeToast(submittedToastId);
         if (contractAddress) {
+          triggerDeployConfetti();
           addViewedEscrow({ address: contractAddress, type: type === "simple" ? "simple" : "milestone", title: form.title });
           addToast({ type: "success", message: "Escrow deployed successfully", txHash });
           setTimeout(() => router.push(`/escrow/${contractAddress}`), 500);
@@ -133,6 +139,7 @@ export default function CreateEscrowPage() {
       } catch {
         // Timed out — tx is probably still pending on-chain. Don't show success.
         removeToast(pendingId);
+        removeToast(submittedToastId);
         addToast({ type: "error", message: `Confirmation timed out. Tx: ${txHash.slice(0, 18)}… — check your dashboard in a moment.` });
         setTimeout(() => router.push(`/dashboard`), 3_000);
       }

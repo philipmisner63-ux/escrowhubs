@@ -51,6 +51,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
   const { openConnectModal } = useConnectModal();
   const { addToast }        = useToast();
   const backdropRef         = useRef<HTMLDivElement>(null);
+  const lastFocusedRef      = useRef<HTMLElement | null>(null);
 
   const [prefs,      setPrefs]      = useState<NotificationPrefs>(defaultPrefs());
   const [submitting, setSubmitting] = useState(false);
@@ -79,9 +80,13 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
     })();
   }, [open, wallet, signMessageAsync]);
 
-  // Escape + focus trap
+  // Escape + focus trap + focus restore on close
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      if (lastFocusedRef.current) { lastFocusedRef.current.focus(); }
+      return;
+    }
+    lastFocusedRef.current = document.activeElement as HTMLElement;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") { onClose(); return; }
       if (e.key === "Tab") {

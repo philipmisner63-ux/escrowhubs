@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useWatchContractEvent, useChainId } from "wagmi";
 import { SIMPLE_ESCROW_ABI, MILESTONE_ESCROW_ABI } from "@/lib/contracts";
 
@@ -22,6 +22,11 @@ export function useEscrowEvents(
   const activeChainId = useChainId();
   const resolvedChainId = chainId ?? activeChainId;
   const [events, setEvents] = useState<EscrowEvent[]>([]);
+
+  // Clear events whenever the watched contract changes
+  useEffect(() => {
+    setEvents([]);
+  }, [address, resolvedChainId, contractType]);
 
   const addEvent = useCallback((name: string, log: unknown) => {
     const l = log as { args?: Record<string, unknown>; blockNumber?: bigint | null; transactionHash?: `0x${string}` | null };

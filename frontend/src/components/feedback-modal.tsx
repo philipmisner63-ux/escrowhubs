@@ -32,16 +32,20 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const { addToast }        = useToast();
   const backdropRef         = useRef<HTMLDivElement>(null);
   const firstFocusRef       = useRef<HTMLSelectElement>(null);
+  const lastFocusedRef      = useRef<HTMLElement | null>(null);
 
   const [category,    setCategory]    = useState<Category>("featureRequest");
   const [title,       setTitle]       = useState("");
   const [description, setDescription] = useState("");
   const [submitting,  setSubmitting]  = useState(false);
 
-  // Focus first field on open
+  // Focus first field on open, save previously focused element
   useEffect(() => {
     if (open) {
+      lastFocusedRef.current = document.activeElement as HTMLElement;
       setTimeout(() => firstFocusRef.current?.focus(), 50);
+    } else if (lastFocusedRef.current) {
+      lastFocusedRef.current.focus();
     }
   }, [open]);
 
