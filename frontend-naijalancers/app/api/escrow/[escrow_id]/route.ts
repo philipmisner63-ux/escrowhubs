@@ -9,11 +9,23 @@ export async function GET(
     const { escrow_id } = await params;
     const supabase = createServerClient();
 
-    const { data, error } = await supabase
+    // Try lookup by escrow_id (UUID) first, then by contract_address
+    let { data, error } = await supabase
       .from("marketplace_escrows")
       .select("*")
       .eq("escrow_id", escrow_id)
       .single();
+
+    if (!data && !error) {
+      // Not found by escrow_id — try contract_address (shareable link case)
+      const result = await supabase
+        .from("marketplace_escrows")
+        .select("*")
+        .eq("contract_address", escrow_id)
+        .single();
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) throw error;
     if (!data) {

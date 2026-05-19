@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { CONTRACTS, CUSD, ERC20_APPROVE_ABI, FACTORY_ABI, getFeeCurrency } from "@/lib/contracts";
@@ -26,24 +26,44 @@ export default function CreatePage() {
   const [error, setError] = useState("");
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | undefined>();
   const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
+  const [supabaseEscrowId, setSupabaseEscrowId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const { writeContractAsync: approveToken } = useWriteContract();
   const { writeContractAsync: createEscrow } = useWriteContract();
 
-  const { data: receipt } = useWaitForTransactionReceipt({ hash: createTxHash });
+  const { data: receipt, isLoading: receiptLoading } = useWaitForTransactionReceipt({ hash: createTxHash });
 
-  // Extract escrow address from factory event
-  useState(() => {
-    if (!receipt) return;
+  // Extract escrow address from factory event + sync to backend
+  useEffect(() => {
+    if (!receipt || escrowAddress) return;
+
     const log = receipt.logs.find(
       (l) => l.address.toLowerCase() === CONTRACTS.factory.toLowerCase()
     );
     const topic1 = log?.topics?.[1];
-    if (topic1) {
-      setEscrowAddress("0x" + topic1.slice(-40));
+    if (!topic1) return;
+
+    const realAddress = "0x" + topic1.slice(-40);
+    setEscrowAddress(realAddress);
+    showToast("Escrow deployed! Updating record...", "success");
+
+    // Patch the backend record with the real on-chain address
+    if (supabaseEscrowId) {
+      fetch("/api/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          escrow_id: supabaseEscrowId,
+          contract_address: realAddress,
+          on_chain_escrow_id: realAddress,
+          status: "PENDING_PAYMENT",
+        }),
+      }).catch((err) => {
+        console.error("[Create] Failed to update contract_address:", err);
+      });
     }
-  });
+  }, [receipt, escrowAddress, supabaseEscrowId, showToast]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -83,11 +103,6 @@ export default function CreatePage() {
       setStep("create");
 
       // Step 2: Create escrow
-      // Note: buyer wallet address is unknown until they fund.
-      // We pass seller's own address as beneficiary placeholder; buyer will be set on deposit.
-      // Actually, the factory creates with beneficiary. In the simple escrow model,
-      // the beneficiary is the seller. The depositor is the buyer.
-      // So beneficiary = seller's address.
       const hash = await createEscrow({
         address: CONTRACTS.factory,
         abi: FACTORY_ABI,
@@ -106,11 +121,10 @@ export default function CreatePage() {
 
       setCreateTxHash(hash as `0x${string}`);
       setStep("done");
-      showToast("Escrow created! Share the link with your buyer.", "success");
 
-      // Store metadata in backend
+      // Store metadata in backend immediately (with placeholder address)
       try {
-        await fetch("/api/create-escrow", {
+        const res = await fetch("/api/create-escrow", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -121,10 +135,14 @@ export default function CreatePage() {
             currency: "cUSD",
             description,
             chain_id: 42220,
-            contract_address: "0x0000000000000000000000000000000000000000", // will update after receipt
-            on_chain_escrow_id: "0x0000000000000000000000000000000000000000",
+            contract_address: null, // will be patched when receipt arrives
+            on_chain_escrow_id: null,
           }),
         });
+        const json = await res.json();
+        if (json.success && json.escrow?.escrow_id) {
+          setSupabaseEscrowId(json.escrow.escrow_id);
+        }
       } catch {
         // Backend storage is best-effort
       }
@@ -141,6 +159,22 @@ export default function CreatePage() {
     await navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (step === "done" && !escrowAddress) {
+    return (
+      <main className="flex flex-col min-h-screen">
+        <MarketplaceNav />
+        <div className="flex-1 flex flex-col items-center justify-center px-5 py-12 max-w-md mx-auto">
+          <div className="w-8 h-8 border-2 border-[#4A9EFF] border-t-transparent rounded-full animate-spin mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">Confirming on-chain...</h1>
+          <p className="text-white/70 text-center">
+            Waiting for block confirmation. This may take a few seconds.
+          </p>
+        </div>
+        <Footer />
+      </main>
+    );
   }
 
   if (step === "done" && escrowAddress) {
