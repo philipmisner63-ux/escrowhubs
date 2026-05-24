@@ -2,61 +2,66 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useAccount, useWriteContract, useReadContract } from "wagmi";
-import { formatUnits, parseUnits } from "viem";
-import { CONTRACTS, CUSD, ERC20_APPROVE_ABI } from "@/lib/contracts";
-import EscrowABI from "@/lib/abi-SimpleEscrow.json";
-import { ConnectButton } from "@/components/connect-button";
+import { useSession } from "@/components/session-provider";
+import { GoogleSignInButton } from "@/components/google-signin";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 import { MarketplaceNav } from "@/components/marketplace-nav";
 import { Footer } from "@/components/footer";
+import { CONTRACTS, ESCROW_TOKEN, TOKEN_DECIMALS, ERC20_APPROVE_ABI } from "@/lib/contracts";
+import EscrowABI from "@/lib/abi-SimpleEscrow.json";
 
-const STATE_LABELS: Record<number, string> = {
-  0: "Awaiting Deposit",
-  1: "Funded",
-  2: "Released",
-  3: "Disputed",
-  4: "Refunded",
+const STATE_LABELS: Record<number, { label: string; color: string; emoji: string; desc: string }> = {
+  0: { label: "Awaiting Payment", color: "text-amber-400", emoji: "⏳", desc: "The seller is waiting for the buyer to fund the escrow." },
+  1: { label: "Funded — In Progress", color: "text-[#35D07F]", emoji: "🔒", desc: "Funds are held securely. Deliver the item or service to release payment." },
+  2: { label: "Complete", color: "text-blue-400", emoji: "✅", desc: "Payment has been released to the seller." },
+  3: { label: "In Dispute", color: "text-red-400", emoji: "⚖️", desc: "A dispute has been raised. Our team will help resolve it." },
+  4: { label: "Refunded", color: "text-red-400", emoji: "↩️", desc: "Payment has been refunded to the buyer." },
 };
 
 export default function EscrowDetailPage() {
   const params = useParams();
   const escrowId = params.escrow_id as string;
-  const { address, isConnected } = useAccount();
+  const { session } = useSession();
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [escrowData, setEscrowData] = useState<any>(null);
   const [error, setError] = useState("");
-  const [funding, setFunding] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [ramping, setRamping] = useState(false);
+  const [onChainState, setOnChainState] = useState<number | null>(null);
+  const [onChainAmount, setOnChainAmount] = useState<bigint | null>(null);
+  const [beneficiary, setBeneficiary] = useState<string | null>(null);
+  const [depositor, setDepositor] = useState<string | null>(null);
 
-  const { writeContractAsync: approveToken } = useWriteContract();
-  const { writeContractAsync: deposit } = useWriteContract();
+  // Fetch on-chain data
+  useEffect(() => {
+    async function fetchOnChain() {
+      if (!escrowId || !escrowId.startsWith("0x")) return;
+      try {
+        const { ethers } = await import("ethers");
+        const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
+        const escrow = new ethers.Contract(escrowId, EscrowABI, provider);
+        const [st, amt, ben, dep] = await Promise.all([
+          escrow.state(),
+          escrow.amount(),
+          escrow.beneficiary(),
+          escrow.depositor().catch(() => null),
+        ]);
+        setOnChainState(Number(st));
+        setOnChainAmount(amt);
+        setBeneficiary(ben);
+        setDepositor(dep);
+      } catch {
+        // on-chain fetch is best-effort
+      }
+    }
+    fetchOnChain();
+  }, [escrowId]);
 
-  // Read on-chain state
-  const { data: state } = useReadContract({
-    address: escrowId as `0x${string}`,
-    abi: EscrowABI,
-    functionName: "state",
-    query: { enabled: !!escrowId && escrowId.startsWith("0x") },
-  });
-
-  const { data: amount } = useReadContract({
-    address: escrowId as `0x${string}`,
-    abi: EscrowABI,
-    functionName: "amount",
-    query: { enabled: !!escrowId && escrowId.startsWith("0x") },
-  });
-
-  const { data: beneficiary } = useReadContract({
-    address: escrowId as `0x${string}`,
-    abi: EscrowABI,
-    functionName: "beneficiary",
-    query: { enabled: !!escrowId && escrowId.startsWith("0x") },
-  });
-
+  // Fetch off-chain metadata
   useEffect(() => {
     async function fetchEscrow() {
       try {
@@ -66,7 +71,7 @@ export default function EscrowDetailPage() {
           setEscrowData(json.escrow);
         }
       } catch {
-        // Fallback: if API fails, we still have on-chain data
+        // Fallback
       } finally {
         setLoading(false);
       }
@@ -74,71 +79,150 @@ export default function EscrowDetailPage() {
     if (escrowId) fetchEscrow();
   }, [escrowId]);
 
-  async function handleFund() {
-    if (!isConnected || !address || !amount) return;
-    setFunding(true);
+  // Buyer pays by depositing USDT into the EXISTING escrow contract
+  async function handlePay() {
+    if (!session || !escrowData) return;
+    setPaying(true);
     setError("");
 
     try {
-      // Step 1: Approve cUSD
-      await approveToken({
-        address: CUSD,
-        abi: ERC20_APPROVE_ABI,
-        functionName: "approve",
-        args: [escrowId as `0x${string}`, amount as bigint],
+      const { parseUnits } = await import("viem");
+      const amountUsdt = escrowData.amount_usdt || 0;
+      const amountWei = parseUnits(amountUsdt.toFixed(6), TOKEN_DECIMALS).toString();
+
+      // Step 1: Approve token spend for the escrow contract
+      const approveRes = await fetch("/api/wallet/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userAddress: session.walletAddress,
+          contract: ESCROW_TOKEN,
+          abi: ERC20_APPROVE_ABI,
+          method: "approve",
+          args: [escrowId, amountWei],
+        }),
       });
 
-      // Step 2: Deposit
-      const hash = await deposit({
-        address: escrowId as `0x${string}`,
-        abi: EscrowABI,
-        functionName: "deposit",
-        gas: 500_000n,
-      });
-
-      showToast("Escrow funded successfully!", "success");
-
-      // Update backend status
-      try {
-        await fetch("/api/update-status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            escrow_id: escrowData?.escrow_id || escrowId,
-            status: "FUNDED",
-            buyer_wallet: address,
-            tx_hash: hash,
-          }),
-        });
-      } catch {
-        // Best effort
+      if (!approveRes.ok) {
+        const err = await approveRes.json();
+        throw new Error(err.error || "Approval failed");
       }
+
+      // Step 2: Deposit into existing escrow
+      const depositRes = await fetch("/api/wallet/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userAddress: session.walletAddress,
+          contract: escrowId,
+          abi: EscrowABI,
+          method: "deposit",
+          args: [amountWei],
+          value: "0",
+        }),
+      });
+
+      if (!depositRes.ok) {
+        const err = await depositRes.json();
+        throw new Error(err.error || "Deposit failed");
+      }
+
+      const { txHash } = await depositRes.json();
+
+      // Update backend
+      await fetch("/api/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          escrow_id: escrowData.escrow_id,
+          status: "FUNDED",
+          buyer_wallet: session.walletAddress,
+          tx_hash: txHash,
+        }),
+      });
+
+      setOnChainState(1);
+      showToast("Payment successful! Funds are now in escrow.", "success");
     } catch (err: any) {
-      console.error("[Fund]", err);
-      setError(err?.shortMessage ?? err?.message ?? "Funding failed");
+      console.error("[Pay]", err);
+      setError(err?.message ?? "Payment failed");
     } finally {
-      setFunding(false);
+      setPaying(false);
     }
   }
 
-  const stateNum = typeof state === "number" ? state : Number(state ?? 0);
-  const stateLabel = STATE_LABELS[stateNum] ?? "Unknown";
-  const amountFormatted = amount ? parseFloat(formatUnits(amount as bigint, 18)).toFixed(2) : "...";
+  // Buyer pays with Naira via Awwal's ramp
+  async function handleRamp() {
+    if (!session || !escrowData) return;
+    setRamping(true);
+    setError("");
+
+    try {
+      const amountNgn = escrowData.amount_fiat || 0;
+      if (amountNgn < 3000) {
+        throw new Error("Minimum Naira payment is ₦3,000");
+      }
+
+      const res = await fetch("/api/ramp/session/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fiat_amount: amountNgn,
+          destination_address: session.walletAddress,
+          external_user_id: session.userId,
+          currency: "USDT",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to create ramp session");
+      }
+
+      // Open Awwal's payment page in new tab
+      if (data.redirect_url) {
+        window.open(data.redirect_url, "_blank");
+        showToast("Redirecting to Naira payment... Pay there, then return and click 'Pay with USDT'", "success");
+      } else {
+        throw new Error("No redirect URL from ramp");
+      }
+    } catch (err: any) {
+      console.error("[Ramp]", err);
+      setError(err?.message ?? "Naira payment setup failed");
+    } finally {
+      setRamping(false);
+    }
+  }
+
+  const stateNum = onChainState ?? 0;
+  const stateInfo = STATE_LABELS[stateNum] ?? STATE_LABELS[0];
+  const amountFormatted = onChainAmount
+    ? (Number(onChainAmount) / 10 ** TOKEN_DECIMALS).toFixed(2)
+    : escrowData?.amount_usdt?.toFixed(2) ?? "...";
+
+  const isSeller = session?.walletAddress && escrowData?.seller_wallet
+    ? session.walletAddress.toLowerCase() === escrowData.seller_wallet.toLowerCase()
+    : false;
+
+  const isClient = session?.walletAddress && depositor
+    ? session.walletAddress.toLowerCase() === depositor.toLowerCase()
+    : false;
 
   return (
     <main className="flex flex-col min-h-screen">
       <MarketplaceNav />
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
         <div className="max-w-lg w-full">
-          <h1 className="text-3xl font-bold text-white mb-2">Escrow Details</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Payment Details</h1>
           <p className="text-white/60 mb-8">
-            Review and fund this escrow with cUSD.
+            Review and pay securely.
           </p>
 
           {loading && (
             <GlassCard className="text-center py-12">
               <div className="w-8 h-8 border-2 border-[#4A9EFF] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-white/50">Loading escrow...</p>
+              <p className="text-white/50">Loading payment details...</p>
             </GlassCard>
           )}
 
@@ -147,22 +231,19 @@ export default function EscrowDetailPage() {
               <GlassCard>
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-white/50 text-sm">Status</span>
-                  <span className={`text-sm font-semibold ${
-                    stateNum === 0 ? "text-amber-400" :
-                    stateNum === 1 ? "text-[#35D07F]" :
-                    stateNum === 2 ? "text-blue-400" :
-                    "text-red-400"
-                  }`}>{stateLabel}</span>
+                  <span className={`text-sm font-semibold ${stateInfo.color}`}>
+                    {stateInfo.emoji} {stateInfo.label}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-white/50 text-sm">Amount</span>
-                  <span className="text-2xl font-bold text-white">{amountFormatted} cUSD</span>
+                  <span className="text-2xl font-bold text-white">${amountFormatted} USDT</span>
                 </div>
-                {beneficiary && (
+                {escrowData?.seller_wallet && (
                   <div className="flex justify-between items-center">
                     <span className="text-white/50 text-sm">Seller</span>
                     <span className="text-sm font-mono text-white">
-                      {(beneficiary as string).slice(0, 8)}...{(beneficiary as string).slice(-6)}
+                      {escrowData.seller_wallet.slice(0, 8)}...{escrowData.seller_wallet.slice(-6)}
                     </span>
                   </div>
                 )}
@@ -174,31 +255,60 @@ export default function EscrowDetailPage() {
                 )}
               </GlassCard>
 
-              {!isConnected && (
+              {/* Status explanation */}
+              <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+                <p className="text-sm text-white/60">{stateInfo.desc}</p>
+              </div>
+
+              {!session && stateNum === 0 && (
                 <GlassCard className="text-center py-8">
-                  <p className="text-white/70 mb-4">Connect your MiniPay wallet to fund this escrow</p>
-                  <ConnectButton />
+                  <p className="text-white/70 mb-4">Sign in to pay securely</p>
+                  <GoogleSignInButton />
                 </GlassCard>
               )}
 
-              {isConnected && stateNum === 0 && (
+              {session && isSeller && stateNum === 0 && (
+                <GlassCard className="text-center py-6 border-amber-500/30">
+                  <div className="text-4xl mb-2">📤</div>
+                  <p className="text-amber-400 font-medium">Share This With Your Buyer</p>
+                  <p className="text-white/60 text-sm mt-1">
+                    Send this link to your buyer so they can pay securely.
+                  </p>
+                </GlassCard>
+              )}
+
+              {session && !isSeller && stateNum === 0 && (
                 <>
                   {error && (
                     <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">
                       {error}
                     </div>
                   )}
+
+                  {/* Pay with Naira */}
                   <GlowButton
-                    variant="primary"
-                    onClick={handleFund}
-                    disabled={funding}
-                    loading={funding}
+                    variant="secondary"
+                    onClick={handleRamp}
+                    disabled={ramping}
+                    loading={ramping}
                     className="w-full"
                   >
-                    {funding ? "Funding..." : "Fund Escrow with cUSD"}
+                    {ramping ? "Setting up..." : "🇳🇬 Pay with Naira"}
                   </GlowButton>
+
+                  {/* Pay with USDT */}
+                  <GlowButton
+                    variant="primary"
+                    onClick={handlePay}
+                    disabled={paying}
+                    loading={paying}
+                    className="w-full"
+                  >
+                    {paying ? "Processing..." : `Pay $${amountFormatted}`}
+                  </GlowButton>
+
                   <p className="text-xs text-white/40 text-center">
-                    You'll approve cUSD spend, then confirm the deposit.
+                    Your funds are held securely until delivery is complete.
                   </p>
                 </>
               )}
@@ -206,9 +316,9 @@ export default function EscrowDetailPage() {
               {stateNum === 1 && (
                 <GlassCard className="text-center py-6 border-[#35D07F]/30">
                   <div className="text-4xl mb-2">🔒</div>
-                  <p className="text-[#35D07F] font-medium">Funded</p>
+                  <p className="text-[#35D07F] font-medium">Funded — In Progress</p>
                   <p className="text-white/60 text-sm mt-1">
-                    Funds are locked. Seller will release once delivery is confirmed.
+                    Funds are held securely. The seller will deliver your item or service.
                   </p>
                 </GlassCard>
               )}
@@ -216,9 +326,9 @@ export default function EscrowDetailPage() {
               {stateNum === 2 && (
                 <GlassCard className="text-center py-6 border-blue-500/30">
                   <div className="text-4xl mb-2">✅</div>
-                  <p className="text-blue-400 font-medium">Released</p>
+                  <p className="text-blue-400 font-medium">Complete</p>
                   <p className="text-white/60 text-sm mt-1">
-                    Funds have been released to the seller.
+                    Payment has been released to the seller.
                   </p>
                 </GlassCard>
               )}

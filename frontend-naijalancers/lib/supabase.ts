@@ -9,33 +9,32 @@ export const supabaseBrowser = createClient(
   supabaseAnonKey || "placeholder"
 );
 
-export function createServerClient() {
+// Alias for backward compat with existing routes
+type SupabaseClient = ReturnType<typeof createClient>;
+export function createServerClient(): SupabaseClient {
   const url = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseUrl : "https://placeholder.supabase.co";
-  const key = supabaseServiceRoleKey || "placeholder";
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder";
   return createClient(url, key);
 }
 
-export type MarketplaceEscrow = {
-  id: string;
+// Also export for new code
+export const supabaseServer = createServerClient;
+
+// Placeholder MarketplaceEscrow type (used in existing routes)
+export interface MarketplaceEscrow {
   escrow_id: string;
-  seller_email: string | null;
-  seller_phone: string | null;
-  seller_wallet: string | null;
-  buyer_email: string | null;
-  buyer_phone: string | null;
-  buyer_wallet: string | null;
-  amount_fiat: number;
-  amount_usdc: number;
-  currency: string;
-  description: string | null;
-  protocol_fee_usdc: number;
-  arbitration_enabled: boolean;
-  chain_id: number;
-  contract_address: string | null;
-  on_chain_escrow_id: string | null;
-  status: "PENDING_PAYMENT" | "FUNDED" | "RELEASED" | "DISPUTED" | "REFUNDED" | "CANCELLED";
-  created_at: string;
-  funded_at: string | null;
-  released_at: string | null;
-  updated_at: string;
-};
+  seller_wallet: string;
+  buyer_wallet?: string | null;
+  buyer_contact?: string | null;
+  amount_fiat?: number;
+  amount_cusd?: number;
+  amount_usdt?: number;
+  currency?: string;
+  description?: string;
+  status?: string;
+  contract_address?: string | null;
+  on_chain_escrow_id?: string | null;
+  chain_id?: number;
+  created_at?: string;
+  buyer_notified?: boolean;
+}

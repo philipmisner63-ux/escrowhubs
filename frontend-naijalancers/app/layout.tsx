@@ -6,8 +6,8 @@ import { DebugPanel } from "@/components/DebugPanel";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NaijaLancers — Marketplace & Safe Escrow Payments",
-  description: "Buy and sell goods and services with trust on Celo. Funds locked in cUSD until delivery is confirmed. Powered by EscrowHubs.",
+  title: "NaijaLancers — Safe Payments for Freelancers",
+  description: "Get paid with confidence. Your money is held securely until the job is done. Built for Nigerian freelancers and clients.",
 };
 
 export default function RootLayout({

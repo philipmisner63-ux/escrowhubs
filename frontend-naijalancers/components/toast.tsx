@@ -46,8 +46,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 export function useToast() {
   const ctx = useContext(ToastContext);
-  if (!ctx) return { toasts: [], addToast: () => "", removeToast: () => {} };
-  return ctx;
+  if (!ctx) return { 
+    toasts: [], 
+    addToast: () => "", 
+    removeToast: () => {},
+    showToast: () => "",
+  };
+  
+  const showToast = (message: string, type: Toast["type"] = "info", txHash?: string) => {
+    return ctx.addToast({ message, type, txHash });
+  };
+  
+  return { ...ctx, showToast };
 }
 
 const TYPE_STYLES = {
