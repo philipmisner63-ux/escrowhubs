@@ -79,10 +79,10 @@ export async function POST(req: NextRequest) {
         if (balance < ethers.parseEther("0.5")) {
           const tx = await gasWallet.sendTransaction({
             to: wallet.address,
-            value: ethers.parseEther("1.0"),
+            value: ethers.parseEther("0.02"),
           });
           await tx.wait();
-          console.log(`[Wallet Create] Funded ${wallet.address} with 1.0 CELO, tx: ${tx.hash}`);
+          console.log(`[Wallet Create] Funded ${wallet.address} with 0.02 CELO, tx: ${tx.hash}`);
         }
       } catch (fundErr: any) {
         console.error("[Wallet Create] Funding error:", fundErr.message);

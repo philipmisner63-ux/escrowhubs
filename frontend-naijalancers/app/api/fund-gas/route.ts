@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 
 const CELO_RPC = "https://forno.celo.org";
 const MIN_BALANCE = ethers.parseEther("0.5"); // 0.5 CELO
-const FUND_AMOUNT = ethers.parseEther("1.0"); // 1.0 CELO
+const FUND_AMOUNT = ethers.parseEther("0.02"); // 0.02 CELO
 
 export async function POST(req: NextRequest) {
   try {
