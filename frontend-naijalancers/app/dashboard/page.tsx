@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "@/components/session-provider";
 import { GoogleSignInButton } from "@/components/google-signin";
@@ -32,6 +32,8 @@ type PaymentItem = {
   status: string;
   buyer_wallet: string | null;
   seller_wallet: string | null;
+  buyer_email: string | null;
+  seller_email: string | null;
   created_at: string;
 };
 
@@ -42,27 +44,55 @@ export default function DashboardPage() {
 
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
     async function fetchPayments() {
-      if (!session || !activeAddress) {
+      if (!session) {
         setLoading(false);
         return;
       }
+      if (fetchedRef.current) return;
+      fetchedRef.current = true;
+
+      setLoading(true);
       try {
-        const res = await fetch(`/api/my-escrows?wallet=${activeAddress}`);
+        const email = session.email;
+        if (!email) {
+          setLoading(false);
+          return;
+        }
+        const url = `/api/my-escrows?email=${encodeURIComponent(email)}`;
+        const res = await fetch(url);
         const json = await res.json();
         if (json.success) {
           setPayments(json.escrows);
+        } else {
+          console.error("[Dashboard] API error:", json.error);
+          showToast("Failed to load payments", "error");
         }
-      } catch {
+      } catch (err) {
+        console.error("[Dashboard] Fetch error:", err);
         showToast("Failed to load payments", "error");
       } finally {
         setLoading(false);
       }
     }
     fetchPayments();
-  }, [session, activeAddress, showToast]);
+  }, [session, showToast]);
+
+  const copyShareLink = useCallback(async (payment: PaymentItem) => {
+    const link = `https://marketplace.escrowhubs.io/escrow/${payment.contract_address ?? payment.escrow_id}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(payment.escrow_id);
+      showToast("Link copied!", "success");
+      setTimeout(() => setCopiedId((id) => id === payment.escrow_id ? null : id), 2000);
+    } catch {
+      showToast("Could not copy link", "error");
+    }
+  }, [showToast]);
 
   if (!session) {
     return (
@@ -95,13 +125,15 @@ export default function DashboardPage() {
         </p>
 
         {/* Wallet Card */}
-        <div className="mb-8 max-w-md">
-          <WalletQR
-            address={activeAddress}
-            balanceUsdt="0.00"
-            balanceCelo="0"
-          />
-        </div>
+        {activeAddress && (
+          <div className="mb-8 max-w-md">
+            <WalletQR
+              address={activeAddress!}
+              balanceUsdt="0.00"
+              balanceCelo="0"
+            />
+          </div>
+        )}
 
         {loading && (
           <GlassCard className="text-center py-12">
@@ -124,8 +156,13 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4">
             {payments.map((payment) => {
               const state = STATE_LABELS[payment.status] ?? STATE_LABELS.PENDING_PAYMENT;
-              const isFreelancer = activeAddress?.toLowerCase() === payment.seller_wallet?.toLowerCase();
-              const isClient = activeAddress?.toLowerCase() === payment.buyer_wallet?.toLowerCase();
+              const isFreelancer = activeAddress
+                ? activeAddress.toLowerCase() === payment.seller_wallet?.toLowerCase()
+                : session.email.toLowerCase() === payment.seller_email?.toLowerCase();
+              const isClient = activeAddress
+                ? activeAddress.toLowerCase() === payment.buyer_wallet?.toLowerCase()
+                : session.email.toLowerCase() === payment.buyer_email?.toLowerCase();
+              const linkCopied = copiedId === payment.escrow_id;
 
               return (
                 <GlassCard key={payment.escrow_id} className="flex flex-col gap-3">
@@ -156,13 +193,19 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex gap-2 mt-2">
+                    <Link
+                      href={`/escrow/${payment.escrow_id}`}
+                      className="flex-1 text-center bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 text-sm hover:bg-white/10 transition-colors"
+                    >
+                      View Details
+                    </Link>
                     {payment.contract_address && (
-                      <Link
-                        href={`/escrow/${payment.contract_address}`}
-                        className="flex-1 text-center bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 text-sm hover:bg-white/10 transition-colors"
+                      <button
+                        onClick={() => copyShareLink(payment)}
+                        className="flex-1 text-center bg-[#35D07F]/10 border border-[#35D07F]/30 text-[#35D07F] rounded-xl px-3 py-2 text-sm hover:bg-[#35D07F]/20 transition-colors"
                       >
-                        View Details
-                      </Link>
+                        {linkCopied ? "Copied!" : "Copy Share Link"}
+                      </button>
                     )}
                   </div>
                 </GlassCard>

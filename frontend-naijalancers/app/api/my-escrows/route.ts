@@ -5,17 +5,34 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const wallet = searchParams.get("wallet");
-    if (!wallet) {
-      return NextResponse.json({ success: false, error: "Missing wallet" }, { status: 400 });
+    const email = searchParams.get("email");
+
+    if (!wallet && !email) {
+      return NextResponse.json(
+        { success: false, error: "Missing wallet or email" },
+        { status: 400 }
+      );
     }
 
     const supabase = createServerClient();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("marketplace_escrows")
       .select("*")
-      .or(`seller_wallet.eq.${wallet},buyer_wallet.eq.${wallet}`)
       .order("created_at", { ascending: false });
+
+    if (wallet && email) {
+      // Both provided — OR match on wallet OR email
+      query = query.or(
+        `seller_wallet.eq.${wallet},buyer_wallet.eq.${wallet},seller_email.eq.${email},buyer_email.eq.${email}`
+      );
+    } else if (wallet) {
+      query = query.or(`seller_wallet.eq.${wallet},buyer_wallet.eq.${wallet}`);
+    } else {
+      query = query.or(`seller_email.eq.${email},buyer_email.eq.${email}`);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 

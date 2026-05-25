@@ -307,7 +307,13 @@ export default function EscrowDetailPage() {
     }
   }
 
-  const stateNum = onChainState ?? 0;
+  const stateNum = onChainState ?? (
+    escrowData?.status === "FUNDED" ? 1 :
+    escrowData?.status === "RELEASED" ? 2 :
+    escrowData?.status === "DISPUTED" ? 3 :
+    escrowData?.status === "REFUNDED" ? 4 :
+    0
+  );
   const stateInfo = STATE_LABELS[stateNum] ?? STATE_LABELS[0];
   const amountFormatted = onChainAmount !== null
     ? (Number(onChainAmount) / 10 ** TOKEN_DECIMALS).toFixed(2)
@@ -386,9 +392,24 @@ export default function EscrowDetailPage() {
                   <GlassCard className="text-center py-6 border-amber-500/30">
                     <div className="text-4xl mb-2">📤</div>
                     <p className="text-amber-400 font-medium">Share This With Your Buyer</p>
-                    <p className="text-white/60 text-sm mt-1">
+                    <p className="text-white/60 text-sm mt-1 mb-4">
                       Send this link to your buyer so they can pay securely.
                     </p>
+                    <div className="flex gap-2">
+                      <div className="flex-1 bg-white/10 border border-white/20 text-white/50 rounded-xl px-3 py-2 text-xs truncate">
+                        {typeof window !== "undefined" ? window.location.origin : ""}/escrow/{escrowId}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const link = `${window.location.origin}/escrow/${escrowId}`;
+                          await navigator.clipboard.writeText(link);
+                          showToast("Link copied!", "success");
+                        }}
+                        className="bg-white/20 border border-white/20 text-white rounded-xl px-3 py-2 text-xs font-semibold hover:bg-white/30 transition-colors"
+                      >
+                        Copy
+                      </button>
+                    </div>
                   </GlassCard>
 
                   {/* Test mode: allow seller to also deposit as buyer */}

@@ -6,7 +6,7 @@ import { encryptPrivateKey } from "@/lib/encryption";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, user_id } = body;
+    const { email, user_id, phone } = body;
     if (!email) {
       return NextResponse.json({ error: "email required" }, { status: 400 });
     }
@@ -31,6 +31,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
       }
       user = newUser;
+    }
+
+    // Update phone if provided (onboarding flow)
+    if (phone) {
+      const formattedPhone = phone.replace(/\s/g, "").replace(/^0/, "+234");
+      if (/^\+\d{10,15}$/.test(formattedPhone)) {
+        await sb.from("users").update({ phone: formattedPhone }).eq("id", user.id);
+      }
     }
 
     // Check if wallet already exists
@@ -62,14 +70,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Fund new wallet with CELO for gas (invisible to user)
-    const treasuryKey = process.env.TREASURY_PRIVATE_KEY;
-    if (treasuryKey) {
+    const gasKey = process.env.GAS_WALLET_PRIVATE_KEY;
+    if (gasKey) {
       try {
         const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
-        const treasury = new ethers.Wallet(treasuryKey, provider);
+        const gasWallet = new ethers.Wallet(gasKey, provider);
         const balance = await provider.getBalance(wallet.address);
         if (balance < ethers.parseEther("0.5")) {
-          const tx = await treasury.sendTransaction({
+          const tx = await gasWallet.sendTransaction({
             to: wallet.address,
             value: ethers.parseEther("1.0"),
           });

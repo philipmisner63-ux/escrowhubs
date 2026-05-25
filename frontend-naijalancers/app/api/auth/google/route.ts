@@ -33,9 +33,11 @@ export async function POST(req: NextRequest) {
       .single();
 
     let userId: string;
+    let isNewUser = false;
     if (existingUser?.id) {
       userId = existingUser.id;
     } else {
+      isNewUser = true;
       const { data: newUser, error } = await sb
         .from("users")
         .insert({ email, name, created_at: new Date().toISOString() })
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
       email,
       name,
       walletCreated: false,
+      isNewUser,
     });
   } catch (err: any) {
     console.error("[Google Auth] Error:", err);

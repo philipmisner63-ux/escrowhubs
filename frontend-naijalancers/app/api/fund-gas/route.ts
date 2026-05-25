@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const treasuryKey = process.env.TREASURY_PRIVATE_KEY;
-    if (!treasuryKey) {
+    const gasKey = process.env.GAS_WALLET_PRIVATE_KEY;
+    if (!gasKey) {
       return NextResponse.json(
-        { success: false, error: "Treasury not configured" },
+        { success: false, error: "Gas wallet not configured" },
         { status: 500 }
       );
     }
@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Fund the wallet
-    const treasury = new ethers.Wallet(treasuryKey, provider);
-    const tx = await treasury.sendTransaction({
+    const gasWallet = new ethers.Wallet(gasKey, provider);
+    const tx = await gasWallet.sendTransaction({
       to: address,
       value: FUND_AMOUNT,
     });
