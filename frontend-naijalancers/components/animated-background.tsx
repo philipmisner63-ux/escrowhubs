@@ -37,42 +37,36 @@ export function AnimatedBackground() {
           className="orb1"
           style={{
             position: "absolute",
-            top: "-10%",
-            left: "-10%",
-            width: 600,
-            height: 600,
+            top: "-20%",
+            left: "-20%",
+            width: 900,
+            height: 900,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #1a0533 0%, transparent 70%)",
-            filter: "blur(80px)",
-            opacity: 0.7,
+            background: "radial-gradient(circle, rgba(26,5,51,0.4) 0%, rgba(26,5,51,0.1) 40%, transparent 70%)",
           }}
         />
         <div
           className="orb2"
           style={{
             position: "absolute",
-            bottom: "-15%",
-            right: "-10%",
-            width: 800,
-            height: 800,
+            bottom: "-25%",
+            right: "-20%",
+            width: 1100,
+            height: 1100,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #0a1628 0%, transparent 70%)",
-            filter: "blur(80px)",
-            opacity: 0.7,
+            background: "radial-gradient(circle, rgba(10,22,40,0.35) 0%, rgba(10,22,40,0.08) 40%, transparent 70%)",
           }}
         />
         <div
           className="orb3"
           style={{
             position: "absolute",
-            top: "30%",
-            left: "35%",
-            width: 500,
-            height: 500,
+            top: "20%",
+            left: "25%",
+            width: 700,
+            height: 700,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #0a2a2a 0%, transparent 70%)",
-            filter: "blur(80px)",
-            opacity: 0.6,
+            background: "radial-gradient(circle, rgba(10,42,42,0.3) 0%, rgba(10,42,42,0.05) 40%, transparent 70%)",
           }}
         />
       </div>

@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/components/session-provider";
+import { useActiveWallet } from "@/hooks/useActiveWallet";
 import { GoogleSignInButton } from "./google-signin";
 
 export function MarketplaceNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { session, signOut } = useSession();
+  const { address: activeAddress } = useActiveWallet();
 
   const links = [
     { href: "/marketplace", label: "Marketplace" },
@@ -17,7 +19,7 @@ export function MarketplaceNav() {
   ];
 
   return (
-    <nav className="sticky top-0 z-40 border-white/8 bg-black/50 backdrop-blur-xl">
+    <nav className="sticky top-0 z-40 border-white/8 bg-[#0a0a0f]">
       <div className="border-b border-white/8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -59,7 +61,7 @@ export function MarketplaceNav() {
                       {session.name || session.email.split("@")[0]}
                     </span>
                     <span className="text-[10px] text-white/40 font-mono">
-                      {session.walletAddress.slice(0, 6)}...{session.walletAddress.slice(-4)}
+                      {activeAddress ? `${activeAddress.slice(0, 6)}...${activeAddress.slice(-4)}` : ""}
                     </span>
                   </div>
                   <button

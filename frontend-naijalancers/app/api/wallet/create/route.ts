@@ -68,13 +68,13 @@ export async function POST(req: NextRequest) {
         const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
         const treasury = new ethers.Wallet(treasuryKey, provider);
         const balance = await provider.getBalance(wallet.address);
-        if (balance < ethers.parseEther("0.01")) {
+        if (balance < ethers.parseEther("0.1")) {
           const tx = await treasury.sendTransaction({
             to: wallet.address,
-            value: ethers.parseEther("0.03"),
+            value: ethers.parseEther("1.0"),
           });
           await tx.wait();
-          console.log(`[Wallet Create] Funded ${wallet.address} with 0.03 CELO, tx: ${tx.hash}`);
+          console.log(`[Wallet Create] Funded ${wallet.address} with 1.0 CELO, tx: ${tx.hash}`);
         }
       } catch (fundErr: any) {
         console.error("[Wallet Create] Funding error:", fundErr.message);

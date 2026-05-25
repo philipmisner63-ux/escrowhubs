@@ -9,6 +9,8 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 import { MarketplaceNav } from "@/components/marketplace-nav";
 import { Footer } from "@/components/footer";
+import { WalletQR } from "@/components/wallet-qr";
+import { useActiveWallet } from "@/hooks/useActiveWallet";
 
 const STATE_LABELS: Record<string, { label: string; color: string; emoji: string }> = {
   PENDING_PAYMENT: { label: "Awaiting Payment", color: "text-amber-400", emoji: "⏳" },
@@ -24,7 +26,7 @@ type PaymentItem = {
   contract_address: string | null;
   on_chain_escrow_id: string | null;
   description: string | null;
-  amount_usdt: number;
+  amount_usdc: number;
   amount_fiat: number | null;
   currency: string | null;
   status: string;
@@ -36,18 +38,19 @@ type PaymentItem = {
 export default function DashboardPage() {
   const { session } = useSession();
   const { showToast } = useToast();
+  const { address: activeAddress } = useActiveWallet();
 
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchPayments() {
-      if (!session) {
+      if (!session || !activeAddress) {
         setLoading(false);
         return;
       }
       try {
-        const res = await fetch(`/api/my-escrows?wallet=${session.walletAddress}`);
+        const res = await fetch(`/api/my-escrows?wallet=${activeAddress}`);
         const json = await res.json();
         if (json.success) {
           setPayments(json.escrows);
@@ -59,7 +62,7 @@ export default function DashboardPage() {
       }
     }
     fetchPayments();
-  }, [session, showToast]);
+  }, [session, activeAddress, showToast]);
 
   if (!session) {
     return (
@@ -91,6 +94,15 @@ export default function DashboardPage() {
           Track and manage your payment requests and deliveries.
         </p>
 
+        {/* Wallet Card */}
+        <div className="mb-8 max-w-md">
+          <WalletQR
+            address={activeAddress}
+            balanceUsdt="0.00"
+            balanceCelo="0"
+          />
+        </div>
+
         {loading && (
           <GlassCard className="text-center py-12">
             <div className="w-8 h-8 border-2 border-[#4A9EFF] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -112,8 +124,8 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4">
             {payments.map((payment) => {
               const state = STATE_LABELS[payment.status] ?? STATE_LABELS.PENDING_PAYMENT;
-              const isFreelancer = session.walletAddress.toLowerCase() === payment.seller_wallet?.toLowerCase();
-              const isClient = session.walletAddress.toLowerCase() === payment.buyer_wallet?.toLowerCase();
+              const isFreelancer = activeAddress?.toLowerCase() === payment.seller_wallet?.toLowerCase();
+              const isClient = activeAddress?.toLowerCase() === payment.buyer_wallet?.toLowerCase();
 
               return (
                 <GlassCard key={payment.escrow_id} className="flex flex-col gap-3">
@@ -133,7 +145,7 @@ export default function DashboardPage() {
 
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-white/50">Amount</span>
-                    <span className="text-white font-semibold">${payment.amount_usdt.toFixed(2)} USDT</span>
+                    <span className="text-white font-semibold">${(payment.amount_usdc ?? 0).toFixed(2)} USDT</span>
                   </div>
 
                   <div className="flex justify-between items-center text-sm">

@@ -104,7 +104,7 @@ function ToastItem({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-xl border p-4 backdrop-blur-xl",
+        "flex items-start gap-3 rounded-xl border p-4 ",
         "shadow-[0_8px_32px_rgba(0,0,0,0.5)]",
         TYPE_STYLES[toast.type]
       )}

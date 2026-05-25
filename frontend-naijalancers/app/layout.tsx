@@ -6,8 +6,8 @@ import { DebugPanel } from "@/components/DebugPanel";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NaijaLancers — Safe Payments for Freelancers",
-  description: "Get paid with confidence. Your money is held securely until the job is done. Built for Nigerian freelancers and clients.",
+  title: "EscrowHubs — Protect Any Deal in Nigeria",
+  description: "Buy or sell anything safely. Your money is held securely until delivery is confirmed. Built for Nigerians trading online.",
 };
 
 export default function RootLayout({

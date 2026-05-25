@@ -1,0 +1,31 @@
+module.exports = {
+  apps: [{
+    name: 'frontend-naijalancers',
+    script: './.next/standalone/server.js',
+    cwd: '/root/blockdag-escrow/frontend-naijalancers',
+    env: {
+      PORT: '3005',
+      NODE_ENV: 'production',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://mslxqfgiglarthzikbfv.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+      WALLET_SEED: process.env.WALLET_SEED || '',
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+      GAS_WALLET_PRIVATE_KEY: process.env.GAS_WALLET_PRIVATE_KEY || '',
+      NAIJALANCERS_API_URL: process.env.NAIJALANCERS_API_URL || '',
+      NAIJALANCERS_API_KEY: process.env.NAIJALANCERS_API_KEY || '',
+      AT_API_KEY: process.env.AT_API_KEY || '',
+      AT_USERNAME: process.env.AT_USERNAME || '',
+      RESEND_API_KEY: process.env.RESEND_API_KEY || '',
+    },
+    instances: 1,
+    exec_mode: 'fork',
+    autorestart: true,
+    max_memory_restart: '500M',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    error_log: '/root/.pm2/logs/frontend-naijalancers-error.log',
+    out_log: '/root/.pm2/logs/frontend-naijalancers-out.log',
+  }]
+};

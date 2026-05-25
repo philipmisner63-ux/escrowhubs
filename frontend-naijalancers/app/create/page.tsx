@@ -8,6 +8,8 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { useToast } from "@/components/toast";
 import { MarketplaceNav } from "@/components/marketplace-nav";
 import { Footer } from "@/components/footer";
+import { WalletQR } from "@/components/wallet-qr";
+import { useActiveWallet } from "@/hooks/useActiveWallet";
 import Link from "next/link";
 
 // Exchange rate: 1 USDT = 1600 NGN (Awwal's platform rate)
@@ -29,13 +31,99 @@ function formatUsdt(n: number): string {
   return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-type Step = "form" | "approve" | "create" | "confirming" | "done";
+type Step = "form" | "fund" | "funding_gas" | "approve" | "create" | "confirming" | "done";
+
+const USDT_CELO = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e";
+const erc20Abi = [
+  { inputs: [{ name: "account", type: "address" }], name: "balanceOf", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+] as const;
+
+async function checkBalance(address: string): Promise<{ usdt: string; celo: string }> {
+  const { createPublicClient, http, formatEther } = await import("viem");
+  const { celo } = await import("viem/chains");
+  const client = createPublicClient({ chain: celo, transport: http("https://rpc.ankr.com/celo") });
+  
+  const [celoBal, usdtBal] = await Promise.all([
+    client.getBalance({ address: address as `0x${string}` }),
+    client.readContract({ address: USDT_CELO, abi: erc20Abi, functionName: "balanceOf", args: [address as `0x${string}`] }),
+  ]);
+  
+  return {
+    celo: parseFloat(formatEther(celoBal)).toFixed(4),
+    usdt: (Number(usdtBal) / 1e6).toFixed(2),
+  };
+}
+
+async function waitForReceipt(txHash: string, maxAttempts = 30): Promise<void> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const res = await fetch(`/api/wallet/receipt?hash=${txHash}`);
+    if (res.ok) {
+      const receipt = await res.json();
+      if (receipt && receipt.status === "success") return;
+      if (receipt && receipt.status === "failed") throw new Error("Transaction failed");
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  throw new Error("Transaction confirmation timeout");
+}
+
+async function sendExternalTx({
+  address,
+  contract,
+  abi,
+  method,
+  args,
+  value,
+  isMiniPay,
+}: {
+  address: string;
+  contract: `0x${string}`;
+  abi: any;
+  method: string;
+  args: any[];
+  value?: string;
+  isMiniPay: boolean;
+}): Promise<string> {
+  const { createWalletClient, custom, encodeFunctionData } = await import("viem");
+  const { celo } = await import("viem/chains");
+  const { getFeeCurrency } = await import("@/lib/contracts");
+
+  const walletClient = createWalletClient({
+    chain: celo,
+    transport: custom(window.ethereum),
+  });
+
+  const data = encodeFunctionData({
+    abi,
+    functionName: method,
+    args,
+  });
+
+  const txParams: any = {
+    account: address as `0x${string}`,
+    to: contract,
+    data,
+  };
+
+  if (value && value !== "0") {
+    txParams.value = BigInt(value);
+  }
+
+  if (isMiniPay) {
+    txParams.feeCurrency = getFeeCurrency();
+  }
+
+  const hash = await walletClient.sendTransaction(txParams);
+  return hash;
+}
 
 export default function CreatePage() {
   const { session } = useSession();
   const { showToast } = useToast();
+  const { address: activeAddress, isExternal, isMiniPay } = useActiveWallet();
 
   const [clientContact, setClientContact] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
   const [amountNgn, setAmountNgn] = useState("");
   const [description, setDescription] = useState("");
   const [step, setStep] = useState<Step>("form");
@@ -63,10 +151,12 @@ export default function CreatePage() {
         if (receipt && receipt.status === "success") {
           clearInterval(interval);
 
-          // Extract escrow address from factory event log
+          // Extract escrow address from factory SimpleEscrowCreated event
           const { CONTRACTS } = await import("@/lib/contracts");
+          const factoryLower = CONTRACTS.factory.toLowerCase();
+          const simpleEscrowTopic = "0x3c14757009bd552ee12509c68577aef24fd027570e83ecacf93182b08a681d74";
           const log = receipt.logs.find(
-            (l: any) => l.address.toLowerCase() === CONTRACTS.factory.toLowerCase()
+            (l: any) => l.address.toLowerCase() === factoryLower && l.topics?.[0] === simpleEscrowTopic
           );
           const topic1 = log?.topics?.[1];
           if (!topic1) return;
@@ -108,12 +198,49 @@ export default function CreatePage() {
       setError("Enter buyer's phone or WhatsApp");
       return;
     }
+    if (!buyerEmail.trim() || !buyerEmail.includes("@")) {
+      setError("Enter a valid buyer email");
+      return;
+    }
     if (!amountNgnNum || amountNgnNum <= 0) {
       setError("Enter a valid amount");
       return;
     }
     if (!description.trim()) {
       setError("Describe what you're delivering");
+      return;
+    }
+
+    // Check wallet balance first
+    setStep("fund");
+    try {
+      const bal = await checkBalance(activeAddress!);
+      
+      // No USDT — show fund step
+      if (parseFloat(bal.usdt) <= 0) {
+        setStep("fund");
+        return;
+      }
+      
+      // Has USDT but low CELO for gas — auto-fund
+      if (parseFloat(bal.celo) < 0.01) {
+        setStep("funding_gas");
+        const fundRes = await fetch("/api/fund-gas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address: activeAddress }),
+        });
+        const fundJson = await fundRes.json();
+        if (!fundJson.success) {
+          throw new Error(fundJson.error || "Failed to fund gas");
+        }
+        if (fundJson.funded) {
+          showToast(`Funded 0.05 CELO for gas`, "success");
+        }
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Balance check failed");
+      setStep("form");
       return;
     }
 
@@ -124,39 +251,59 @@ export default function CreatePage() {
       const amountWei = parseUnits(amountUsdt.toFixed(6), TOKEN_DECIMALS).toString();
       setStep("approve");
 
-      // Step 1: Approve token spend (server-side signing)
-      const approveRes = await fetch("/api/wallet/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userAddress: session.walletAddress,
+      let approveTxHash: string;
+
+      if (isExternal) {
+        // Client-side signing via MetaMask/Valora/MiniPay
+        approveTxHash = await sendExternalTx({
+          address: activeAddress!,
           contract: ESCROW_TOKEN,
           abi: ERC20_APPROVE_ABI,
           method: "approve",
           args: [CONTRACTS.factory, amountWei],
-        }),
-      });
+          isMiniPay,
+        });
+      } else {
+        // Server-side signing for managed wallets
+        const approveRes = await fetch("/api/wallet/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userAddress: activeAddress,
+            contract: ESCROW_TOKEN,
+            abi: ERC20_APPROVE_ABI,
+            method: "approve",
+            args: [CONTRACTS.factory, amountWei],
+          }),
+        });
 
-      if (!approveRes.ok) {
-        const err = await approveRes.json();
-        throw new Error(err.error || "Approval failed");
+        if (!approveRes.ok) {
+          const err = await approveRes.json();
+          throw new Error(err.error || "Approval failed");
+        }
+        const approveResult = await approveRes.json();
+        approveTxHash = approveResult.txHash;
       }
-      await approveRes.json();
+
       showToast("Payment approved", "success");
+
+      // Wait for approval to be mined before proceeding
+      setStep("approve");
+      await waitForReceipt(approveTxHash);
 
       setStep("create");
 
-      // Step 2: Create escrow (server-side signing)
-      const createRes = await fetch("/api/wallet/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userAddress: session.walletAddress,
+      // Step 2: Create escrow
+      let txHash: string;
+
+      if (isExternal) {
+        txHash = await sendExternalTx({
+          address: activeAddress!,
           contract: CONTRACTS.factory,
           abi: FACTORY_ABI,
           method: "createSimpleEscrow",
           args: [
-            session.walletAddress, // beneficiary = seller
+            activeAddress!, // beneficiary = seller
             CONTRACTS.arbiter,
             0, // trustTier
             false, // useAIArbiter
@@ -164,15 +311,38 @@ export default function CreatePage() {
             "0x7ed3d953ad3ef99f101f4808d4c123052c583282", // Awwal referrer
           ],
           value: "0",
-        }),
-      });
+          isMiniPay,
+        });
+      } else {
+        const createRes = await fetch("/api/wallet/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userAddress: activeAddress,
+            contract: CONTRACTS.factory,
+            abi: FACTORY_ABI,
+            method: "createSimpleEscrow",
+            args: [
+              activeAddress, // beneficiary = seller
+              CONTRACTS.arbiter,
+              0, // trustTier
+              false, // useAIArbiter
+              ESCROW_TOKEN,
+              "0x7ed3d953ad3ef99f101f4808d4c123052c583282", // Awwal referrer
+            ],
+            value: "0",
+          }),
+        });
 
-      if (!createRes.ok) {
-        const err = await createRes.json();
-        throw new Error(err.error || "Payment request failed");
+        if (!createRes.ok) {
+          const err = await createRes.json();
+          throw new Error(err.error || "Payment request failed");
+        }
+
+        const createResult = await createRes.json();
+        txHash = createResult.txHash;
       }
 
-      const { txHash } = await createRes.json();
       setCreateTxHash(txHash);
       setStep("confirming");
 
@@ -182,10 +352,12 @@ export default function CreatePage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            seller_wallet: session.walletAddress,
+            seller_wallet: activeAddress,
+            seller_email: session.email,
+            buyer_email: buyerEmail,
             buyer_contact: clientContact,
             amount_fiat: amountNgnNum,
-            amount_usdt: amountUsdt,
+            amount_cusd: amountUsdt,
             currency: "USDT",
             description,
             chain_id: 42220,
@@ -231,6 +403,57 @@ export default function CreatePage() {
               <GoogleSignInButton />
             </GlassCard>
           </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
+  if (step === "fund") {
+    return (
+      <main className="flex flex-col min-h-screen">
+        <MarketplaceNav />
+        <div className="flex-1 flex flex-col items-center justify-center px-5 py-12 max-w-lg mx-auto w-full">
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">💳</span>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Top Up Your Wallet</h1>
+            <p className="text-white/60">
+              You need USDT in your wallet to create a payment request.
+            </p>
+          </div>
+
+          <WalletQR
+            address={activeAddress!}
+            balanceUsdt="0.00"
+            balanceCelo="0"
+          />
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setStep("form")}
+              className="text-white/40 text-sm hover:text-white/70"
+            >
+              ← Back to form
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
+  if (step === "funding_gas") {
+    return (
+      <main className="flex flex-col min-h-screen">
+        <MarketplaceNav />
+        <div className="flex-1 flex flex-col items-center justify-center px-5 py-12 max-w-md mx-auto">
+          <div className="w-8 h-8 border-2 border-[#35D07F] border-t-transparent rounded-full animate-spin mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">Getting gas...</h1>
+          <p className="text-white/70 text-center">
+            Sending CELO to your wallet so you can create the escrow. This takes a few seconds.
+          </p>
         </div>
         <Footer />
       </main>
@@ -320,6 +543,20 @@ export default function CreatePage() {
 
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">
+                Buyer's Email
+              </label>
+              <input
+                type="email"
+                placeholder="buyer@example.com"
+                value={buyerEmail}
+                onChange={(e) => setBuyerEmail(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-xl px-4 py-3 focus:outline-none focus:border-[#35D07F]"
+                disabled={step !== "form"}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">
                 Amount (NGN)
               </label>
               <div className="relative">
@@ -400,7 +637,7 @@ export default function CreatePage() {
             <GlowButton
               variant="primary"
               type="submit"
-              disabled={step !== "form" || !amountNgn || !description || !clientContact}
+              disabled={step !== "form" || !amountNgn || !description || !clientContact || !buyerEmail}
               loading={step !== "form"}
               className="w-full"
             >
