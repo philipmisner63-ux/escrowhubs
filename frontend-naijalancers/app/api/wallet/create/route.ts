@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
         const treasury = new ethers.Wallet(treasuryKey, provider);
         const balance = await provider.getBalance(wallet.address);
-        if (balance < ethers.parseEther("0.1")) {
+        if (balance < ethers.parseEther("0.5")) {
           const tx = await treasury.sendTransaction({
             to: wallet.address,
             value: ethers.parseEther("1.0"),
