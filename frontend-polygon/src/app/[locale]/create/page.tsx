@@ -302,7 +302,7 @@ export default function CreateEscrowPage() {
                   ) : (
                     <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3 text-xs text-cyan-300 space-y-1">
                       <p className="font-semibold">👤 EscrowHubs Review Team</p>
-                      <p className="text-cyan-400/70">A human reviewer will evaluate your dispute and issue a binding resolution. Typically within 48–72 hours.</p>
+                      <p className="text-cyan-400/70">A human reviewer will evaluate your dispute and issue a binding resolution. Typically within 48-72 hours.</p>
                     </div>
                   )}
                 </div>
@@ -311,7 +311,7 @@ export default function CreateEscrowPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium uppercase tracking-widest text-slate-500">Token</label>
                   <TokenSelector value={selectedToken} onChange={setSelectedToken} />
-                  <p className="text-xs text-slate-600">{isUSDC ? "USDC requires two transactions: approve then create." : "Native ETH — single transaction."}</p>
+                  <p className="text-xs text-slate-600">{isUSDC ? "USDC requires two transactions: approve then create." : "Native ETH - single transaction."}</p>
                 </div>
 
                 {type === "simple" ? (
