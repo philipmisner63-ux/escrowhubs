@@ -8,9 +8,9 @@ export interface ChainContracts {
 
 const CONTRACT_ADDRESSES: Record<number, ChainContracts> = {
   56: {
-    factory:     (process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? "0x93e86fac9a15add437363f7bbec776bdbc932411") as Address,
-    arbiter:     (process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  ?? "0x79e78c1ed9a8e239a8334294bf4f0d356f858416") as Address,
-    trustOracle: (process.env.NEXT_PUBLIC_ORACLE_ADDRESS      ?? "0xf2612fddf7505f6d168c1cbe8b725f3449ea535e") as Address,
+    factory:     (process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? "0x0390028e61a7245737f3bf7576e17f39e16f2152") as Address,
+    arbiter:     (process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  ?? "0x6b8b146978177bd4bc324e0bba8a6eb92c271d4e") as Address,
+    trustOracle: (process.env.NEXT_PUBLIC_ORACLE_ADDRESS      ?? "0xf2c13d34fd924f93e0f70967d11b7dc3612ad558") as Address,
   },
 };
 
