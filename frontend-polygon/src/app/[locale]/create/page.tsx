@@ -305,7 +305,7 @@ export default function CreateEscrowPage() {
                       <p className="text-cyan-400/70">A human reviewer will evaluate your dispute and issue a binding resolution. Typically within 48-72 hours.</p>
                     </div>
                   )}
-                </div>
+                </fieldset>
 
                 {/* Token selector */}
                 <div className="space-y-1.5">
