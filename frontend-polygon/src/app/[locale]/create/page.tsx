@@ -235,7 +235,7 @@ export default function CreateEscrowPage() {
                   {type === t2 && (
                     <div className="absolute top-3 right-3 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,245,255,0.8)]" />
                   )}
-                  <div className="text-2xl mb-2">{t2 === "simple" ? "⬡" : "◈"}</div>
+                  <div className="text-2xl mb-2">{t2 === "simple" ? "\u2B21" : "\u25C8"}</div>
                   <h3 className="font-semibold text-white">{t2 === "simple" ? t("simpleEscrow") : t("milestoneEscrow")}</h3>
                   <p className="mt-1 text-xs text-slate-400 leading-relaxed">
                     {t2 === "simple" ? t("simpleEscrowDesc") : t("milestoneEscrowDesc")}
