@@ -266,7 +266,7 @@ export default function CreateEscrowPage() {
                       {!useAIArbiter && (
                         <div className="float-right h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,245,255,0.8)]" />
                       )}
-                      <div className="text-lg mb-1">👤</div>
+                      <div className="text-lg mb-1"></div>
                       <p className="text-xs font-semibold text-white">{t("manualArbiter")}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{t("manualArbiterDesc")}</p>
                     </button>
@@ -301,11 +301,11 @@ export default function CreateEscrowPage() {
                     </div>
                   ) : (
                     <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3 text-xs text-cyan-300 space-y-1">
-                      <p className="font-semibold">👤 EscrowHubs Review Team</p>
+                      <p className="font-semibold">EscrowHubs Review Team</p>
                       <p className="text-cyan-400/70">A human reviewer will evaluate your dispute and issue a binding resolution. Typically within 48–72 hours.</p>
                     </div>
                   )}
-                </div>
+                </fieldset>
 
                 {/* Token selector */}
                 <div className="space-y-1.5">
