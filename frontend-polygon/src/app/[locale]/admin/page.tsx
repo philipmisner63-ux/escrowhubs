@@ -10,7 +10,7 @@ import { AddressDisplay } from "@/components/ui/address-display";
 import { ESCROW_FACTORY_ABI, EXPLORER_TX_URL } from "@/lib/contracts";
 import { getFactoryAddress } from "@/lib/contracts/addresses";
 
-const OWNER_ADDRESS = "0x202eBD8c160BF77Eb026406c7C2BA2602E974EaA";
+const OWNER_ADDRESS = "0xDBED228e19fe0d37a2ebBe90A2a9314C624ef4Ad";
 
 // ─── Admin fee functions not in the shared ABI — extend locally ───────────────
 const ADMIN_ABI = [

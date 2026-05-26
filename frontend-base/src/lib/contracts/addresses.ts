@@ -9,9 +9,9 @@ export interface ChainContracts {
 const CONTRACT_ADDRESSES: Record<number, ChainContracts> = {
   // Base mainnet
   8453: {
-    factory:     (process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? "0x93e86fac9a15add437363f7bbec776bdbc932411") as Address,
-    arbiter:     (process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  ?? "0x79e78c1ed9a8e239a8334294bf4f0d356f858416") as Address,
-    trustOracle: (process.env.NEXT_PUBLIC_ORACLE_ADDRESS      ?? "0xf2612fddf7505f6d168c1cbe8b725f3449ea535e") as Address,
+    factory:     (process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? "0x33c27af1df6c0cc2d9b5e3cc9d8ea5c48c661501") as Address,
+    arbiter:     (process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  ?? "0xeace347b21317b085320e886bf9b64abe98ced91") as Address,
+    trustOracle: (process.env.NEXT_PUBLIC_ORACLE_ADDRESS      ?? "0x64de6d7053e6ba5de97321b883f4b6453ad5089e") as Address,
   },
   // Celo mainnet
   42220: {

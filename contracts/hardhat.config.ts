@@ -67,7 +67,7 @@ const config: HardhatUserConfig = {
     },
     polygon: {
       type: "http" as const,
-      url: process.env.POLYGON_RPC_URL ?? "https://polygon-mainnet.g.alchemy.com/v2/YUs_6FzIKG617Yt8pMqay",
+      url: process.env.POLYGON_RPC_URL ?? "https://polygon-bor-rpc.publicnode.com",
       chainId: 137,
       accounts: process.env.DEPLOYER_PRIVATE_KEY
         ? [process.env.DEPLOYER_PRIVATE_KEY]
