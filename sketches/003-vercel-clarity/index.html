@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EscrowHubs — Programmable Trust</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Geist Sans', 'system-ui', 'sans-serif'], mono: ['Geist Mono', 'monospace'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Geist Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #000; color: #fff; }
+      .surface { background: #111; }
+    }
+    @media (prefers-color-scheme: light) {
+      body { background: #fff; color: #000; }
+      .surface { background: #f5f5f5; }
+    }
+    .geist-button {
+      background: #000;
+      color: #fff;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .geist-button:hover { background: #333; }
+    .geist-button-outline {
+      background: transparent;
+      border: 1px solid #e5e5e5;
+      color: #000;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .geist-button-outline:hover { border-color: #000; }
+    .chain-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid #e5e5e5;
+      font-size: 12px;
+      font-family: 'Geist Mono', monospace;
+    }
+    .chain-pill::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+    .product-card {
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 24px;
+      transition: all 0.2s;
+    }
+    .product-card:hover {
+      border-color: #000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-[#eaeaea] z-50">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <a href="#" class="text-sm font-semibold tracking-tight text-black flex items-center gap-1.5">
+          <span class="w-5 h-5 bg-black text-white rounded flex items-center justify-center text-[10px] font-bold">E</span>
+          EscrowHubs
+        </a>
+        <div class="hidden md:flex gap-6 text-[13px] text-neutral-500">
+          <a href="#products" class="hover:text-black transition">Products</a>
+          <a href="#africa" class="hover:text-black transition">Africa</a>
+          <a href="#team" class="hover:text-black transition">Team</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="#" class="text-[13px] text-neutral-500 hover:text-black transition hidden md:block">Docs</a>
+        <a href="#" class="geist-button">Launch dApp</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pt-32 pb-16 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="text-4xl md:text-6xl font-semibold tracking-tight text-black leading-[1.05] max-w-3xl">
+        Programmable trust for internet commerce.
+      </h1>
+      <p class="mt-6 text-[16px] text-neutral-500 max-w-xl leading-relaxed">
+        Smart contract escrow, AI arbitration, and agent identity — on-chain across Celo, Base, Polygon, BSC, and BlockDAG.
+      </p>
+      <div class="mt-8 flex gap-3 flex-wrap">
+        <button class="geist-button">Launch dApp</button>
+        <button class="geist-button-outline">View on GitHub</button>
+      </div>
+      
+      <!-- Chain pills -->
+      <div class="mt-10 flex gap-2 flex-wrap">
+        <span class="chain-pill">Celo</span>
+        <span class="chain-pill">Base</span>
+        <span class="chain-pill">Polygon</span>
+        <span class="chain-pill">BSC</span>
+        <span class="chain-pill">BlockDAG</span>
+      </div>
+
+      <!-- Grant badge -->
+      <div class="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 text-[11px] text-neutral-500">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+        Prezenti Frontier Pool — $25K grant submitted
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section id="products" class="py-16 surface">
+    <div class="max-w-5xl mx-auto px-6">
+      <p class="text-[11px] font-medium text-neutral-400 uppercase tracking-wider mb-2">Products</p>
+      <h2 class="text-2xl md:text-3xl font-semibold text-black tracking-tight">Infrastructure</h2>
+
+      <div class="mt-8 grid md:grid-cols-2 gap-4">
+        <div class="product-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-bold">E</span>
+              <span class="font-medium">EscrowHubs</span>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Live</span>
+          </div>
+          <p class="text-[13px] text-neutral-600 leading-relaxed">
+            Non-custodial escrow with milestone tracking across 5 chains. AI disputes, fee tiers, optimized for emerging markets.
+          </p>
+          <div class="mt-4 flex gap-3 text-[12px]">
+            <a href="#" class="text-black font-medium hover:underline">Launch →</a>
+            <a href="#" class="text-neutral-400 hover:text-neutral-600">Contracts</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-bold">A</span>
+              <span class="font-medium">AgentCred</span>
+            </div>
+            <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">Core live</span>
+          </div>
+          <p class="text-[13px] text-neutral-600 leading-relaxed">
+            Agent identity, commitments, and reputation. Scoped credentials, portable trust scores, x402 micropayments.
+          </p>
+        </div>
+
+        <div class="product-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-bold">AI</span>
+              <span class="font-medium">AIArbiter</span>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Live</span>
+          </div>
+          <p class="text-[13px] text-neutral-600 leading-relaxed">
+            Autonomous dispute resolution. Evidence evaluation, binding on-chain execution, human appeal path.
+          </p>
+        </div>
+
+        <div class="product-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-bold">R</span>
+              <span class="font-medium">RecallHub</span>
+            </div>
+            <span class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded">Q2/Q3 2026</span>
+          </div>
+          <p class="text-[13px] text-neutral-600 leading-relaxed">
+            Persistent AI memory across sessions and platforms. On-chain context commits, AgentCred integration.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Africa -->
+  <section id="africa" class="py-16">
+    <div class="max-w-5xl mx-auto px-6">
+      <p class="text-[11px] font-medium text-emerald-600 uppercase tracking-wider mb-2">Emerging Markets</p>
+      <h2 class="text-2xl md:text-3xl font-semibold text-black tracking-tight">Built for Africa.</h2>
+      <p class="mt-3 text-[14px] text-neutral-500 max-w-lg leading-relaxed">
+        Sub-cent gas on Celo. Millions of potential users via Opera MiniPay. Designed for mobile-first, low-bandwidth environments.
+      </p>
+
+      <div class="mt-8 grid md:grid-cols-3 gap-4">
+        <div class="border border-neutral-200 rounded-lg p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span class="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">MiniPay</span>
+          </div>
+          <p class="text-[13px] text-neutral-600">
+            Application submitted via Opera's mini-app platform. Awwal Dayyabu, Nigeria.
+          </p>
+          <span class="inline-block mt-3 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded">PENDING</span>
+        </div>
+        <div class="border border-neutral-200 rounded-lg p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Referrals</span>
+          </div>
+          <p class="text-[13px] text-neutral-600">
+            90-day referral program active across all African markets.
+          </p>
+        </div>
+        <div class="border border-neutral-200 rounded-lg p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+            <span class="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Partner</span>
+          </div>
+          <p class="text-[13px] text-neutral-600">
+            Awwal Dayyabu — Africa Integration Partner, Nigeria-based.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Developers -->
+  <section id="developers" class="py-16 surface">
+    <div class="max-w-5xl mx-auto px-6">
+      <h2 class="text-2xl font-semibold text-black tracking-tight">For developers.</h2>
+      <p class="mt-3 text-[14px] text-neutral-500">
+        Embed escrow into your marketplace. Build on AgentCred. Integrate AI arbitration into any workflow.
+      </p>
+      <div class="mt-6 grid md:grid-cols-3 gap-4 text-[13px]">
+        <a href="#" class="block p-4 border border-neutral-200 rounded-lg hover:border-black transition">
+          <span class="font-medium text-black">Contracts</span>
+          <p class="text-neutral-500 mt-1">Verified on CeloScan, Basescan, Polygonscan</p>
+        </a>
+        <a href="#" class="block p-4 border border-neutral-200 rounded-lg hover:border-black transition">
+          <span class="font-medium text-black">GitHub</span>
+          <p class="text-neutral-500 mt-1">Open source contracts and frontends</p>
+        </a>
+        <a href="#" class="block p-4 border border-neutral-200 rounded-lg hover:border-black transition">
+          <span class="font-medium text-black">API</span>
+          <p class="text-neutral-500 mt-1">Webhook support and integration guides</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section id="team" class="py-16">
+    <div class="max-w-5xl mx-auto px-6">
+      <p class="text-[11px] font-medium text-neutral-400 uppercase tracking-wider mb-2">Team</p>
+      <h2 class="text-2xl font-semibold text-black tracking-tight">Who we are.</h2>
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-neutral-200 flex-shrink-0"></div>
+          <div>
+            <h3 class="font-medium text-black">Philip Misner</h3>
+            <p class="text-[11px] text-neutral-400 mt-0.5">Founder</p>
+            <p class="text-[13px] text-neutral-600 mt-1">Systems architect, smart contract developer, 6 US provisionals. Spokane, WA.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-neutral-200 flex-shrink-0"></div>
+          <div>
+            <h3 class="font-medium text-black">Daniel [Lastname]</h3>
+            <p class="text-[11px] text-neutral-400 mt-0.5">Co-founder, IT & Security</p>
+            <p class="text-[13px] text-neutral-600 mt-1">Security specialist, RecallHub product lead. Managing audits and infrastructure.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-neutral-200 flex-shrink-0"></div>
+          <div>
+            <h3 class="font-medium text-black">Awwal Dayyabu</h3>
+            <p class="text-[11px] text-neutral-400 mt-0.5">Africa Integration Partner</p>
+            <p class="text-[13px] text-neutral-600 mt-1">Nigeria-based. Leading MiniPay application and African market expansion.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-neutral-200 py-6">
+    <div class="max-w-5xl mx-auto px-6 flex justify-between items-center text-[11px] text-neutral-400">
+      <p>© 2026 EscrowHubs LLC</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-black transition">Terms</a>
+        <a href="#" class="hover:text-black transition">Privacy</a>
+        <a href="#" class="hover:text-black transition">Risk</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

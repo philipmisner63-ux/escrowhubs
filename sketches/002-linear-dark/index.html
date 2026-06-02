@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EscrowHubs — Programmable Trust</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: { accent: '#8B5CF6', surface: '#0E0E0E', muted: '#1A1A1A' }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; background: #0E0E0E; color: #E5E5E5; }
+    .nav-blur { backdrop-filter: blur(12px); background: rgba(14,14,14,0.85); }
+
+    .chain-tile {
+      display: block; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 18px 16px; text-decoration: none; color: inherit;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .chain-tile:hover {
+      border-color: rgba(139,92,246,0.5); background: #211e2e;
+      box-shadow: 0 0 22px rgba(139,92,246,0.12), 0 4px 16px rgba(0,0,0,0.4);
+      transform: translateY(-2px);
+    }
+    .chain-tile:active { transform: translateY(0); }
+
+    .product-tile {
+      display: block; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 22px; text-decoration: none; color: inherit;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .product-tile:hover {
+      border-color: rgba(139,92,246,0.45); background: #1e1b2b;
+      box-shadow: 0 0 26px rgba(139,92,246,0.1), 0 6px 20px rgba(0,0,0,0.4);
+      transform: translateY(-2px);
+    }
+    .product-tile:active { transform: translateY(0); }
+
+    .badge-live    { color: #34d399; background: rgba(52,211,153,0.1); }
+    .badge-core    { color: #fbbf24; background: rgba(251,191,36,0.1); }
+    .badge-beta    { color: #60a5fa; background: rgba(96,165,250,0.1); }
+    .badge-roadmap { color: #94a3b8; background: rgba(148,163,184,0.1); }
+
+    .section-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+    }
+    .divider { height: 1px; flex: 1; background: rgba(255,255,255,0.05); }
+
+    .patent-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .patent-row:last-child { border-bottom: none; }
+    .patent-num {
+      font-size: 11px; font-weight: 700; color: #8B5CF6;
+      background: rgba(139,92,246,0.1); border-radius: 4px;
+      padding: 2px 7px; min-width: 32px; text-align: center; margin-top: 1px; flex-shrink: 0;
+    }
+
+    .stat-card {
+      background: #1A1A1A; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 20px 22px;
+    }
+    .stat-num { font-size: 32px; font-weight: 700; color: #8B5CF6; line-height: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full nav-blur border-b border-white/10 z-50">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="#" class="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
+        <span class="w-5 h-5 rounded bg-[#8B5CF6]/20 flex items-center justify-center text-[10px] font-bold text-[#8B5CF6]">E</span>
+        EscrowHubs
+      </a>
+      <div class="hidden md:flex gap-6 text-[13px] text-slate-400">
+        <a href="#chains" class="hover:text-white transition">Apps</a>
+        <a href="#products" class="hover:text-white transition">Products</a>
+        <a href="#ip" class="hover:text-white transition">IP</a>
+        <a href="#developers" class="hover:text-white transition">Developers</a>
+        <a href="#team" class="hover:text-white transition">Team</a>
+      </div>
+      <a href="https://app.escrowhubs.io" target="_blank" rel="noopener"
+         class="text-[13px] font-medium bg-white text-black px-3 py-1.5 rounded hover:bg-slate-200 transition">
+        Launch dApp
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pt-28 pb-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-slate-400 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        Live on BlockDAG · Base · Celo · Polygon · BSC
+      </div>
+
+      <h1 class="text-4xl md:text-6xl font-semibold tracking-tight text-white leading-[1.1]">
+        The trust moat<br>for the agentic era.
+      </h1>
+      <p class="mt-6 text-[15px] text-slate-400 max-w-xl leading-relaxed">
+        Smart contract escrow. AI arbitration. Agent identity, reputation, and memory.
+        The infrastructure that moves AI systems from potential intelligence to trusted action — on every major chain.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="https://app.escrowhubs.io" target="_blank" rel="noopener"
+           class="bg-white text-black px-5 py-2 rounded text-[13px] font-medium hover:bg-slate-200 transition flex items-center gap-2">
+          Launch dApp
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+        <a href="#products"
+           class="border border-white/20 text-slate-300 px-5 py-2 rounded text-[13px] font-medium hover:bg-white/5 transition">
+          Explore the stack
+        </a>
+      </div>
+
+      <!-- Stats row -->
+      <div class="mt-14 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="stat-card">
+          <div class="stat-num">5</div>
+          <p class="text-[12px] text-slate-500 mt-1">Chains live</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">9</div>
+          <p class="text-[12px] text-slate-500 mt-1">US patents filed</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">6k+</div>
+          <p class="text-[12px] text-slate-500 mt-1">RecallHub sessions</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">3</div>
+          <p class="text-[12px] text-slate-500 mt-1">AI agents building</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chain Apps -->
+  <section id="chains" class="py-16 border-t border-white/5">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label text-[#8B5CF6]">Live Apps</span>
+        <div class="divider"></div>
+      </div>
+      <h2 class="text-2xl md:text-3xl font-semibold text-white tracking-tight">EscrowHubs on every chain.</h2>
+      <p class="mt-2 text-[13px] text-slate-500">Non-custodial escrow with AI arbitration. Click to launch.</p>
+
+      <div class="mt-8 grid grid-cols-2 md:grid-cols-5 gap-3">
+
+        <!-- BlockDAG -->
+        <a href="https://app.escrowhubs.io" target="_blank" rel="noopener" class="chain-tile">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-semibold text-slate-300">BlockDAG</span>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <div class="w-7 h-7 rounded-md bg-purple-500/15 flex items-center justify-center mb-3">
+            <span class="text-[12px] font-bold text-[#8B5CF6]">BD</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">Chain ID 1404. Milestone escrow + AI arbiter.</p>
+          <p class="mt-2 text-[10px] text-slate-600 font-mono">0xec16f9…402e</p>
+        </a>
+
+        <!-- Base -->
+        <a href="https://base.escrowhubs.io" target="_blank" rel="noopener" class="chain-tile">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-semibold text-slate-300">Base</span>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <div class="w-7 h-7 rounded-md bg-blue-500/15 flex items-center justify-center mb-3">
+            <span class="text-[12px] font-bold text-blue-400">B</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">USDC-native. Privy embedded wallet. Escrow-as-a-service API.</p>
+          <p class="mt-2 text-[10px] text-slate-600 font-mono">0x6a045d…bf3e</p>
+        </a>
+
+        <!-- Celo -->
+        <a href="https://celo.escrowhubs.io" target="_blank" rel="noopener" class="chain-tile">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-semibold text-slate-300">Celo</span>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <div class="w-7 h-7 rounded-md bg-emerald-500/15 flex items-center justify-center mb-3">
+            <span class="text-[12px] font-bold text-emerald-400">C</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">cUSD. MiniPay compatible. Sub-cent gas fees.</p>
+          <p class="mt-2 text-[10px] text-slate-600 font-mono">0x2fcec7…19e1</p>
+        </a>
+
+        <!-- Polygon -->
+        <a href="https://polygon.escrowhubs.io" target="_blank" rel="noopener" class="chain-tile">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-semibold text-slate-300">Polygon</span>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <div class="w-7 h-7 rounded-md bg-violet-500/15 flex items-center justify-center mb-3">
+            <span class="text-[12px] font-bold text-violet-400">P</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">USDC. High throughput. Enterprise-grade escrow.</p>
+          <p class="mt-2 text-[10px] text-slate-600 font-mono">0xe76326…eadb</p>
+        </a>
+
+        <!-- BSC -->
+        <a href="https://bsc.escrowhubs.io" target="_blank" rel="noopener" class="chain-tile">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-semibold text-slate-300">BSC</span>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <div class="w-7 h-7 rounded-md bg-amber-500/15 flex items-center justify-center mb-3">
+            <span class="text-[12px] font-bold text-amber-400">BNB</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">BNB Chain. High volume, low fees.</p>
+          <p class="mt-2 text-[10px] text-slate-600 font-mono">BEP-20</p>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Products -->
+  <section id="products" class="py-16 border-t border-white/5">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label text-[#8B5CF6]">Platform</span>
+        <div class="divider"></div>
+      </div>
+      <h2 class="text-2xl md:text-3xl font-semibold text-white tracking-tight">Infrastructure for the Internet of Cognition.</h2>
+      <p class="mt-2 text-[13px] text-slate-500">Cognition-state protocols. Shared memory fabric. Trust-secured agent commitments. Eight products covering the full agentic stack.</p>
+
+      <div class="mt-8 grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+
+        <!-- AgentCred -->
+        <a href="https://github.com/philipmisner63-ux/agentcred" target="_blank" rel="noopener" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-[#8B5CF6]/15 flex items-center justify-center">
+              <span class="text-[13px] font-bold text-[#8B5CF6]">AC</span>
+            </div>
+            <span class="badge-core text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Core Live</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">AgentCred</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            On-chain identity, credentials, and reputation for AI agents. Deployed Celo mainnet.
+            Scoped credentials, portable trust scores, ERC-8004 registered.
+          </p>
+          <div class="space-y-1 text-[10px] text-slate-600">
+            <p class="font-mono">AgentRegistry: 0xfde0f9…27cd</p>
+            <p class="font-mono">ValidationRegistry: 0x3fd01f…d6c5</p>
+            <p>MCP server · 5 tools · SDK · REST API (port 4320)</p>
+          </div>
+        </a>
+
+        <!-- AIArbiter -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-violet-500/15 flex items-center justify-center">
+              <span class="text-[11px] font-bold text-violet-400">AIⱼ</span>
+            </div>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">AIArbiter</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Autonomous dispute resolution engine. Evaluates evidence against contract conditions.
+            Binding on-chain execution. TrustScoreOracle integration.
+          </p>
+          <p class="text-[10px] text-slate-600">Deployed on all 5 chains</p>
+        </a>
+
+        <!-- Beacon Access Layer -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-cyan-500/15 flex items-center justify-center">
+              <span class="text-[12px] font-bold text-cyan-400">BA</span>
+            </div>
+            <span class="badge-core text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">Beacon Access Layer</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Cryptographic beacon credentials for AI agent access control. Risk-tiered TTLs,
+            capability scoping per operation, coordinated WebSocket kill signal.
+          </p>
+          <p class="text-[10px] text-slate-600">secp256k1 · in-memory authority · port 8645</p>
+        </a>
+
+        <!-- ACP -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-rose-500/15 flex items-center justify-center">
+              <span class="text-[12px] font-bold text-rose-400">ACP</span>
+            </div>
+            <span class="badge-core text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Protocol</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">Agent Communication Protocol</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Cryptographically-authenticated peer-to-peer messaging between heterogeneous AI agents.
+            Capability gating (ACP-CAP-1), WebRTC transport, signed credential verification.
+          </p>
+          <p class="text-[10px] text-slate-600">Patent filed May 12, 2026 · App #64/064,117</p>
+        </a>
+
+        <!-- RecallHub -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-teal-500/15 flex items-center justify-center">
+              <span class="text-[13px] font-bold text-teal-400">R</span>
+            </div>
+            <span class="badge-roadmap text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Q3 2026</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">RecallHub</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Persistent AI memory across sessions and platforms. On-chain context commits,
+            semantic search, cross-agent state continuity. 6,398+ conversations ingested.
+          </p>
+          <p class="text-[10px] text-slate-600">Localhost:4310 · SQLite · $10 desktop app strategy</p>
+        </a>
+
+        <!-- Marketplace -->
+        <a href="https://base.escrowhubs.io/en/marketplace" target="_blank" rel="noopener" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-amber-500/15 flex items-center justify-center">
+              <span class="text-[13px] font-bold text-amber-400">M</span>
+            </div>
+            <span class="badge-beta text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Beta</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">Marketplace</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Connect buyers and sellers with built-in escrow protection. Supabase-backed,
+            Resend email, Stripe + Web3Auth hybrid auth.
+          </p>
+          <p class="text-[10px] text-slate-600">base.escrowhubs.io/en/marketplace</p>
+        </a>
+
+        <!-- Multi-agent Consensus -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-indigo-500/15 flex items-center justify-center">
+              <span class="text-[11px] font-bold text-indigo-400">MΔC</span>
+            </div>
+            <span class="badge-core text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">Multi-Agent Consensus</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Claw (Claude Sonnet) and Hermes (Kimi K2.6) deliberate on-chain decisions,
+            fill each other's blind spots, converge on recommendations. HTTP bridge port 2718.
+          </p>
+          <p class="text-[10px] text-slate-600">Bearer-auth secured · real-time · 3-agent pipeline</p>
+        </a>
+
+        <!-- Agent Bus -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-orange-500/15 flex items-center justify-center">
+              <span class="text-[12px] font-bold text-orange-400">AB</span>
+            </div>
+            <span class="badge-core text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">Agent Bus</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            Real-time HTTP message bus for agent-to-agent communication with signed
+            credential verification. Foundation for ACP implementation.
+          </p>
+          <p class="text-[10px] text-slate-600">Port 9200 · PM2-managed · signed payloads</p>
+        </a>
+
+        <!-- TrustScoreOracle -->
+        <a href="#" class="product-tile">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-8 h-8 rounded-md bg-yellow-500/15 flex items-center justify-center">
+              <span class="text-[12px] font-bold text-yellow-400">TSO</span>
+            </div>
+            <span class="badge-live text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Live</span>
+          </div>
+          <h3 class="text-[14px] font-semibold text-white mb-1">TrustScoreOracle</h3>
+          <p class="text-[12px] text-slate-500 leading-snug mb-3">
+            On-chain reputation oracle maintaining agent trust scores [0–1000].
+            Oracle-maintained, secp256k1 signed updates, EIP-712 hashes.
+          </p>
+          <p class="text-[10px] text-slate-600">Deployed Base · Polygon · Celo</p>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Emerging Markets -->
+  <section id="markets" class="py-14 border-t border-white/5" style="background: rgba(26,26,26,0.4);">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="section-label text-emerald-400">Emerging Markets</span>
+        <div class="divider"></div>
+      </div>
+      <h2 class="text-2xl md:text-3xl font-semibold text-white tracking-tight">Built for global commerce.</h2>
+      <p class="mt-3 text-[13px] text-slate-400 max-w-xl leading-relaxed">
+        Celo sub-cent gas makes escrow viable for any transaction size. MiniPay application submitted — reaching millions of users via Opera browser across Africa.
+        Per-referrer fee tiers and volume tracking built into the factory contract.
+      </p>
+    </div>
+  </section>
+
+  <!-- Intellectual Property -->
+  <section id="ip" class="py-16 border-t border-white/5">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label text-[#8B5CF6]">Intellectual Property</span>
+        <div class="divider"></div>
+      </div>
+      <div class="flex items-baseline gap-4 mb-8">
+        <span class="text-5xl font-bold text-[#8B5CF6]">9</span>
+        <div>
+          <p class="text-[15px] font-semibold text-white">US Provisional Patents Filed</p>
+          <p class="text-[12px] text-slate-500">All filed 2026. Non-provisional deadlines 2027.</p>
+        </div>
+      </div>
+
+      <div class="bg-[#1A1A1A] border border-white/5 rounded-xl px-6 py-2">
+        <div class="patent-row">
+          <span class="patent-num">#1</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">AI-Arbitrated Escrow System</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">System and Method for AI-Powered Multi-Chain Escrow · Filed Apr 5, 2026 · App #64/029,963</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#2</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">Multi-Chain Modular Escrow Factory</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Modular factory pattern for cross-chain deployment · Filed Apr 5, 2026</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#3</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">TrustScoreOracle Reputation Engine</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">On-chain oracle-maintained agent reputation system · Filed Apr 5, 2026</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#4</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">RecallHub — Persistent AI Memory Layer</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Cross-session, cross-platform AI memory with on-chain commits · Filed Apr 26, 2026</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#5</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">Milestone Automation Engine</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Automated milestone tracking and conditional escrow release · Filed Apr 26, 2026</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#6</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">AgentCred — Agent Identity & Credentials</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">On-chain scoped credentials and reputation for AI agents · Filed May 2, 2026 · Conf #5486</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#7</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">Agent Communication Protocol (ACP)</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Cryptographically-authenticated P2P communication between heterogeneous AI agents · Filed May 12, 2026 · App #64/064,117</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#8</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">Beacon Credential Access Control</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Cryptographic beacon credential-based access control for autonomous AI agents · Filed May 15, 2026 · App #64/067,220</p>
+          </div>
+        </div>
+        <div class="patent-row">
+          <span class="patent-num">#9</span>
+          <div>
+            <p class="text-[13px] text-white font-medium">Rate Card — Agent Service Discovery & Negotiation</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Autonomous agent service discovery, negotiation, and escrow-secured settlement using structured rate cards · Filed May 17, 2026 · App #64/068,016</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Developers -->
+  <section id="developers" class="py-16 border-t border-white/5">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label text-[#8B5CF6]">Developers</span>
+        <div class="divider"></div>
+      </div>
+      <h2 class="text-2xl font-semibold text-white tracking-tight">Build on EscrowHubs.</h2>
+      <p class="mt-3 text-[13px] text-slate-400 max-w-xl leading-relaxed">
+        Embed escrow into your marketplace. Build on AgentCred. Wire AI arbitration.
+        REST API, MCP server, and verified contracts on all chains.
+      </p>
+      <div class="mt-6 grid sm:grid-cols-3 gap-3">
+        <div class="bg-[#1A1A1A] border border-white/5 rounded-lg p-5">
+          <p class="text-[12px] font-semibold text-white mb-2">Smart Contracts</p>
+          <p class="text-[12px] text-slate-500 leading-relaxed">Verified on all 5 chains. EscrowFactory + EscrowHub pattern. Open source.</p>
+          <a href="#chains" class="inline-block mt-3 text-[12px] text-[#8B5CF6] hover:text-white transition">View addresses →</a>
+        </div>
+        <div class="bg-[#1A1A1A] border border-white/5 rounded-lg p-5">
+          <p class="text-[12px] font-semibold text-white mb-2">AgentCred MCP</p>
+          <p class="text-[12px] text-slate-500 leading-relaxed">5 tools: issue_credential, verify_agent, check_reputation, present, lookup. ERC-8004 registered.</p>
+          <a href="https://github.com/philipmisner63-ux/agentcred" target="_blank" rel="noopener" class="inline-block mt-3 text-[12px] text-[#8B5CF6] hover:text-white transition">GitHub →</a>
+        </div>
+        <div class="bg-[#1A1A1A] border border-white/5 rounded-lg p-5">
+          <p class="text-[12px] font-semibold text-white mb-2">Escrow-as-a-Service</p>
+          <p class="text-[12px] text-slate-500 leading-relaxed">Embed escrow in your app. Base-native USDC, Privy wallet, per-referrer fee tiers.</p>
+          <a href="https://base.escrowhubs.io" target="_blank" rel="noopener" class="inline-block mt-3 text-[12px] text-[#8B5CF6] hover:text-white transition">Explore →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section id="team" class="py-16 border-t border-white/5" style="background: rgba(26,26,26,0.4);">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label text-[#8B5CF6]">Team</span>
+        <div class="divider"></div>
+      </div>
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-8">The builders.</h2>
+      <div class="grid md:grid-cols-2 gap-6 max-w-2xl">
+        <div>
+          <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 mb-3 flex items-center justify-center text-[13px] font-bold text-[#8B5CF6]">PM</div>
+          <h3 class="text-[15px] font-medium text-white">Philip Misner</h3>
+          <p class="text-[12px] text-slate-500 mt-1">Founder · Spokane, WA</p>
+          <p class="text-[13px] text-slate-400 mt-2 leading-relaxed">
+            Systems architect, smart contract developer. 9 US provisional patents filed.
+            Building the agent infrastructure layer.
+          </p>
+        </div>
+        <div>
+          <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 mb-3 flex items-center justify-center text-[13px] font-bold text-blue-400">DS</div>
+          <h3 class="text-[15px] font-medium text-white">Daniel Simmons</h3>
+          <p class="text-[12px] text-slate-500 mt-1">Co-founder · IT &amp; Security</p>
+          <p class="text-[13px] text-slate-400 mt-2 leading-relaxed">
+            Security specialist, RecallHub product lead, audit coordinator.
+            Leading the desktop app strategy.
+          </p>
+        </div>
+      </div>
+
+      <!-- AI team note -->
+      <div class="mt-10 bg-[#1A1A1A] border border-white/5 rounded-xl p-6 max-w-2xl">
+        <p class="text-[11px] font-semibold text-[#8B5CF6] uppercase tracking-wider mb-2">AI Agents</p>
+        <p class="text-[13px] text-slate-400 leading-relaxed">
+          Claw (Claude Sonnet 4) and Hermes (Kimi K2.6) are registered on-chain and participate
+          in multi-agent consensus on all major decisions. Both are ERC-8004 registered agents.
+          9 patents were drafted or reviewed by the agent team — including ACP, the cognition-state protocol
+          for cryptographically-authenticated communication between heterogeneous AI agents.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 py-8">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-600">
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 rounded bg-[#8B5CF6]/20 flex items-center justify-center text-[8px] font-bold text-[#8B5CF6]">E</span>
+        <p>© 2026 EscrowHubs LLC · Spokane, WA</p>
+      </div>
+      <div class="flex gap-5">
+        <a href="mailto:philip@escrowhubs.io" class="hover:text-slate-400 transition">Contact</a>
+        <a href="#" class="hover:text-slate-400 transition">Terms</a>
+        <a href="#" class="hover:text-slate-400 transition">Privacy</a>
+        <a href="#" class="hover:text-slate-400 transition">Risk Disclosure</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
