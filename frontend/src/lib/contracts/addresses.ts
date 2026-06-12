@@ -13,8 +13,8 @@ function assertAddress(value: string, name: string): Address {
 
 const CONTRACT_ADDRESSES: Record<number, ChainContracts> = {
   1404: {
-    factory:     assertAddress(process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? "0x14e03bbd4a3123e4bdb5b6704c0ccc208bbfaa7a", "factory"),
-    arbiter:     assertAddress(process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  ?? "0xf8c771891dc8158d46c4608cf0008ceb7a9c898b", "arbiter"),
+    factory:     assertAddress(process.env.NEXT_PUBLIC_FACTORY_ADDRESS     ?? "0xec16f9b47405ec8da1e677e6adc2d52f87e1402e", "factory"),
+    arbiter:     assertAddress(process.env.NEXT_PUBLIC_AI_ARBITER_ADDRESS  ?? "0x4703258e28a6731b5d890d33ed29b67906ad9f01", "arbiter"),
     trustOracle: assertAddress(process.env.NEXT_PUBLIC_ORACLE_ADDRESS      ?? "0x9177998c58138ff4ec9ca2a623ed594a4c7db623", "trustOracle"),
   },
 };
