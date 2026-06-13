@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     const chainConfigs: Record<number, { rpc: string; arbiter: string }> = {
       8453:  { rpc: process.env.BASE_RPC_URL    ?? "https://mainnet.base.org",              arbiter: process.env.BASE_ARBITER_ADDRESS    ?? "0x79e78c1ed9a8e239a8334294bf4f0d356f858416" },
       137:   { rpc: process.env.POLYGON_RPC_URL ?? "https://polygon-rpc.com",               arbiter: process.env.POLYGON_ARBITER_ADDRESS ?? "0x79e78c1ed9a8e239a8334294bf4f0d356f858416" },
-      1404:  { rpc: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.bdagscan.com",             arbiter: process.env.BLOCKDAG_ARBITER_ADDRESS ?? "0x4703258e28a6731b5d890d33ed29b67906ad9f01" },
+      1404:  { rpc: process.env.BLOCKDAG_RPC_URL ?? "https://rpc.dagtech.network",             arbiter: process.env.BLOCKDAG_ARBITER_ADDRESS ?? "0x4703258e28a6731b5d890d33ed29b67906ad9f01" },
     };
 
     const cfg = chainConfigs[Number(chainId)];
