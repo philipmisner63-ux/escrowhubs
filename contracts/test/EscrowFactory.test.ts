@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import hre from "hardhat";
-import { parseEther, getAddress } from "viem";
+import { parseEther, getAddress, zeroAddress } from "viem";
 
 // EscrowRecord tuple indices:
 // 0: contractAddress
@@ -22,14 +22,21 @@ const ZERO = "0x0000000000000000000000000000000000000000" as const;
 describe("EscrowFactory", () => {
   async function deploy() {
     const conn = await hre.network.connect();
-    const [owner, beneficiary, arbiter, other] = await conn.viem.getWalletClients();
+    const [owner, beneficiary, arbiter, other, oracleAcct] = await conn.viem.getWalletClients();
 
     const factory   = await conn.viem.deployContract("EscrowFactory", []);
-    const aiArbiter = await conn.viem.deployContract("AIArbiter", [owner.account.address]);
-
+    // AIArbiter now takes (oracleSigner, initialOwner, trustedFactory).
+    // We pass address(0) for trustedFactory initially, then set it after the
+    // factory is deployed so the registry knows the factory is trusted.
+    const aiArbiter = await conn.viem.deployContract("AIArbiter", [
+      oracleAcct.account.address,
+      owner.account.address,
+      zeroAddress,
+    ]);
+    await aiArbiter.write.setTrustedFactory([factory.address]);
     await factory.write.setAIArbiter([aiArbiter.address]);
 
-    return { factory, aiArbiter, conn, owner, beneficiary, arbiter, other };
+    return { factory, aiArbiter, conn, owner, beneficiary, arbiter, other, oracleAcct };
   }
 
   async function deployWithToken() {

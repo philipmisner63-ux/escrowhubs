@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./SimpleEscrow.sol";
 import "./MilestoneEscrow.sol";
+import "./AIArbiter.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -361,6 +362,14 @@ contract EscrowFactory is ReentrancyGuard {
                 _registerEscrow(rec);
                 esc.deposit{ value: net }(net);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry so the oracle can
+                // resolve disputes on this escrow. Best-effort: only
+                // attempted if useAIArbiter is true and an arbiter is set.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.SIMPLE
+                    );
+                }
             } else {
                 // ERC-20 path: fee charged in tokens
                 uint256 gross = IERC20(token).allowance(msg.sender, address(this));
@@ -393,6 +402,13 @@ contract EscrowFactory is ReentrancyGuard {
                 // delta so fee-on-transfer / rebasing tokens are handled correctly.
                 esc.deposit(net);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry so the oracle can
+                // resolve disputes on this escrow.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.SIMPLE
+                    );
+                }
             }
         }
 
@@ -457,6 +473,12 @@ contract EscrowFactory is ReentrancyGuard {
                 _registerEscrow(rec);
                 esc.fund{ value: netTotal }(netTotal);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.MILESTONE
+                    );
+                }
             } else {
                 // ERC-20 path
                 uint256 gross = IERC20(token).allowance(msg.sender, address(this));
@@ -483,6 +505,12 @@ contract EscrowFactory is ReentrancyGuard {
                 IERC20(token).safeTransfer(address(esc), netTotal);
                 esc.fund(netTotal);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.MILESTONE
+                    );
+                }
             }
         }
 
