@@ -351,7 +351,7 @@ contract EscrowFactory is ReentrancyGuard {
                 rec.totalAmount = net;
                 rec.fee = fee;
 
-                SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, address(0));
+                SimpleEscrow esc = new SimpleEscrow(address(this), msg.sender, beneficiary, ra, address(0));
                 rec.contractAddress = address(esc);
                 // Register the escrow record BEFORE the payable deposit so any
                 // observer of view functions (off-chain indexers, integrators)
@@ -379,7 +379,7 @@ contract EscrowFactory is ReentrancyGuard {
                 rec.fee = fee;
 
                 // Deploy the child escrow first so we have its address.
-                SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, token);
+                SimpleEscrow esc = new SimpleEscrow(address(this), msg.sender, beneficiary, ra, token);
                 rec.contractAddress = address(esc);
                 // Register the escrow record BEFORE the token transfers. This
                 // closes the read-only reentrancy window for ERC-777 / callback
@@ -389,6 +389,8 @@ contract EscrowFactory is ReentrancyGuard {
                 // External calls after all state updates
                 IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
                 IERC20(token).safeTransfer(address(esc), net);
+                // deposit() is now onlyFactory + nonReentrant + uses measured
+                // delta so fee-on-transfer / rebasing tokens are handled correctly.
                 esc.deposit(net);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
             }
