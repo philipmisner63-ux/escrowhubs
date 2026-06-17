@@ -450,7 +450,7 @@ contract EscrowFactory is ReentrancyGuard {
                 uint256 kickback = _recordReferralKickback(referrer, msg.value, fee + (net - netTotal), address(0));
                 rec.fee = fee;
 
-                MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, address(0), descriptions, amounts);
+                MilestoneEscrow esc = new MilestoneEscrow(address(this), msg.sender, beneficiary, ra, address(0), descriptions, amounts);
                 rec.contractAddress = address(esc);
                 // Register BEFORE the payable fund() — see createSimpleEscrow
                 // for the read-only reentrancy rationale.
@@ -473,7 +473,7 @@ contract EscrowFactory is ReentrancyGuard {
                 rec.fee = fee;
 
                 // Deploy the child first so we have its address.
-                MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, token, descriptions, amounts);
+                MilestoneEscrow esc = new MilestoneEscrow(address(this), msg.sender, beneficiary, ra, token, descriptions, amounts);
                 rec.contractAddress = address(esc);
                 // Register BEFORE the token transfers — closes the read-only
                 // reentrancy window for ERC-777 / callback tokens. See
