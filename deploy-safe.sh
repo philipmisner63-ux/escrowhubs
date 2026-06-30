@@ -29,15 +29,23 @@ ssh "$REMOTE" bash -s <<'REMOTESCRIPT'
   echo "⬇️  Pulling latest..."
   git merge --no-edit origin/main || true
 
-  # Helper: build a frontend and restart its PM2 process
+  # Helper: install deps, build, and restart a frontend
   build_and_restart() {
     local dir=$1
     local name=$2
     echo ""
     echo "=== Building $name ==="
     cd "/root/blockdag-escrow/$dir"
-    # Use the direct next binary (PM2-safe)
-    pnpm build
+
+    # npm (not pnpm) to avoid pnpm 11 build-script approval gate and
+    # deterministic-version issues with wagmi/appkit.
+    if [ -f package-lock.json ]; then
+      npm ci --legacy-peer-deps
+    else
+      npm install --legacy-peer-deps
+    fi
+
+    NODE_OPTIONS='--max-old-space-size=768' npm run build
     echo "✅ $name built"
   }
 
@@ -50,10 +58,16 @@ ssh "$REMOTE" bash -s <<'REMOTESCRIPT'
 
   echo ""
   echo "🔄 Restarting all PM2 processes..."
-  pm2 restart ecosystem.config.js
-  pm2 restart ecosystem-polygon.config.js
-  pm2 restart ecosystem-celo.config.js
-  pm2 restart ecosystem-naijalancers.config.js
+  pm2 restart ecosystem.config.js --update-env
+  pm2 restart ecosystem-base.config.js --update-env
+  pm2 restart ecosystem-polygon.config.js --update-env
+  pm2 restart ecosystem-celo.config.js --update-env
+  pm2 restart ecosystem-bsc.config.js --update-env
+  pm2 restart ecosystem-naijalancers.config.js --update-env
+
+  echo ""
+  echo "💾 Saving PM2 dump..."
+  pm2 save
 
   echo ""
   echo "📊 PM2 status:"
