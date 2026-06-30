@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./SimpleEscrow.sol";
 import "./MilestoneEscrow.sol";
+import "./AIArbiter.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -31,8 +32,15 @@ contract EscrowFactory is ReentrancyGuard {
     /// Flat fee charged when AI Arbiter is selected (in wei). Default 1 BDAG.
     uint256 public aiArbiterFee    = 1 ether;
 
-    /// Accumulated fees available for withdrawal (net of referral kickbacks)
+    /// Accumulated ETH-denominated protocol fees available for withdrawal
+    /// (net of referral kickbacks). For ERC-20 token escrows, fees accumulate
+    /// in `accumulatedTokenFees` keyed by the token address, and must be
+    /// withdrawn via `withdrawTokenFees(token)`.
     uint256 public accumulatedFees;
+
+    /// Accumulated per-token protocol fees available for withdrawal.
+    /// ETH (address(0)) is NOT tracked here — it lives in `accumulatedFees`.
+    mapping(address => uint256) public accumulatedTokenFees;
 
     // ─── Referrals ────────────────────────────────────────────────────────────
 
@@ -46,8 +54,15 @@ contract EscrowFactory is ReentrancyGuard {
     /// Total gross value of escrows attributed to each referrer (for volume tier tracking)
     mapping(address => uint256) public referralVolume;
 
-    /// Accumulated referral earnings per wallet (claimable via pull pattern)
+    /// Accumulated ETH referral earnings per wallet (claimable via pull pattern).
+    /// For ERC-20 token kickbacks, see `referralEarningsByToken`.
     mapping(address => uint256) public referralEarnings;
+
+    /// Accumulated per-token referral earnings per wallet.
+    /// referralEarningsByToken[referrer][token] is the claimable balance
+    /// of `token` kickbacks owed to `referrer`. ETH (address(0)) lives
+    /// in `referralEarnings` instead.
+    mapping(address => mapping(address => uint256)) public referralEarningsByToken;
 
     /// Number of escrows created via each referrer
     mapping(address => uint256) public referralCount;
@@ -121,10 +136,12 @@ contract EscrowFactory is ReentrancyGuard {
 
     event ReferralCredited(address indexed referrer, address indexed escrow, uint256 amount);
     event ReferralClaimed(address indexed referrer, uint256 amount);
+    event ReferralTokenClaimed(address indexed referrer, address indexed token, uint256 amount);
     event ReferralShareUpdated(uint16 newShareBps);
     event AIArbiterUpdated(address indexed newAIArbiter);
     event FeesUpdated(uint16 protocolFeeBps, uint256 aiArbiterFee);
     event FeesWithdrawn(address indexed to, uint256 amount);
+    event TokenFeesWithdrawn(address indexed token, address indexed to, uint256 amount);
     event TreasuryUpdated(address indexed newTreasury);
 
     // ─── Admin: Fees ──────────────────────────────────────────────────────────
@@ -136,12 +153,30 @@ contract EscrowFactory is ReentrancyGuard {
         emit FeesUpdated(_protocolFeeBps, _aiArbiterFee);
     }
 
-    function withdrawFees() external onlyOwner {
+    function withdrawFees() external onlyOwner nonReentrant {
         uint256 amount = accumulatedFees;
         require(amount > 0, "Nothing to withdraw");
         accumulatedFees = 0;
         emit FeesWithdrawn(treasury, amount);
-        payable(treasury).transfer(amount);
+        // Use call{value:} with success check instead of transfer() — the
+        // 2,300-gas stipend from .transfer() breaks for smart-contract
+        // treasuries (multisigs, governance contracts, future-proofing).
+        // nonReentrant guard above prevents the small reentrancy surface
+        // that .transfer()'s gas cap used to mitigate.
+        (bool ok, ) = payable(treasury).call{value: amount}("");
+        require(ok, "ETH transfer failed");
+    }
+
+    /// @notice Withdraw accumulated protocol fees for a specific ERC-20 token.
+    ///         ETH fees are withdrawn via `withdrawFees()`. Calling this
+    ///         with `token == address(0)` is rejected to avoid silent loss.
+    function withdrawTokenFees(address token) external onlyOwner nonReentrant {
+        require(token != address(0), "Use withdrawFees() for ETH");
+        uint256 amount = accumulatedTokenFees[token];
+        require(amount > 0, "Nothing to withdraw");
+        accumulatedTokenFees[token] = 0;
+        emit TokenFeesWithdrawn(token, treasury, amount);
+        IERC20(token).safeTransfer(treasury, amount);
     }
 
     function setTreasury(address _treasury) external onlyOwner {
@@ -184,13 +219,32 @@ contract EscrowFactory is ReentrancyGuard {
 
     // ─── Referral: claim ──────────────────────────────────────────────────────
 
-    /// @notice Referrers call this to withdraw accumulated BDAG earnings.
+    /// @notice Referrers call this to withdraw accumulated ETH kickback earnings.
+    ///         For ERC-20 token kickbacks, use `claimReferralEarnings(address token)`.
     function claimReferralEarnings() external nonReentrant {
         uint256 earned = referralEarnings[msg.sender];
         require(earned > 0, "No earnings");
         referralEarnings[msg.sender] = 0;
         emit ReferralClaimed(msg.sender, earned);
-        payable(msg.sender).transfer(earned);
+        // call{value:} instead of .transfer() — see withdrawFees() for rationale.
+        (bool ok, ) = payable(msg.sender).call{value: earned}("");
+        require(ok, "ETH transfer failed");
+    }
+
+    /// @notice Referrers call this to withdraw accumulated ERC-20 token kickback
+    ///         earnings for a specific token. ETH is claimed via the no-arg overload.
+    function claimReferralEarnings(address token) external nonReentrant {
+        require(token != address(0), "Use claimReferralEarnings() for ETH");
+        uint256 earned = referralEarningsByToken[msg.sender][token];
+        require(earned > 0, "No earnings");
+        referralEarningsByToken[msg.sender][token] = 0;
+        emit ReferralTokenClaimed(msg.sender, token, earned);
+        IERC20(token).safeTransfer(msg.sender, earned);
+    }
+
+    /// @notice Get the claimable ERC-20 token kickback balance for a referrer.
+    function getTokenReferralEarnings(address referrer, address token) external view returns (uint256) {
+        return referralEarningsByToken[referrer][token];
     }
 
     /// @notice Get referral stats for a wallet.
@@ -218,8 +272,12 @@ contract EscrowFactory is ReentrancyGuard {
     }
 
     /// @dev Compute and record referral kickback. Returns the kickback amount.
+    /// @param token  The escrow's payment token. address(0) means ETH.
+    ///               The kickback is debited from the per-token (or ETH) fee
+    ///               pool and credited to the referrer's per-token (or ETH)
+    ///               earnings map, so the two accounting streams never cross.
     /// State changes happen BEFORE any external calls (CEI pattern).
-    function _recordReferralKickback(address referrer, uint256 grossValue, uint256 fee)
+    function _recordReferralKickback(address referrer, uint256 grossValue, uint256 fee, address token)
         internal returns (uint256 kickback)
     {
         if (referrer == address(0) || referrer == msg.sender) return 0;
@@ -227,8 +285,19 @@ contract EscrowFactory is ReentrancyGuard {
         uint16 effectiveShareBps = referrerShareBps[referrer] > 0 ? referrerShareBps[referrer] : referralShareBps;
         kickback = (grossValue * protocolFeeBps * effectiveShareBps) / (10_000 * 10_000);
         if (kickback == 0 || kickback > fee) return 0;
-        accumulatedFees -= kickback;
-        referralEarnings[referrer]    += kickback;
+        if (token == address(0)) {
+            // ETH path: debit ETH fee pool, credit ETH earnings.
+            accumulatedFees -= kickback;
+            referralEarnings[referrer] += kickback;
+        } else {
+            // ERC-20 path: debit the token fee pool, credit the token earnings.
+            // The corresponding fee was added to accumulatedTokenFees[token]
+            // by the caller (see createSimpleEscrow / createMilestoneEscrow).
+            accumulatedTokenFees[token] -= kickback;
+            referralEarningsByToken[referrer][token] += kickback;
+        }
+        // Cross-token lifetime stats — these are aggregate counters, no
+        // accounting implication, so they live in the same slot for both paths.
         referralTotalEarned[referrer] += kickback;
         referralCount[referrer]       += 1;
         referralVolume[referrer]      += grossValue;
@@ -279,14 +348,28 @@ contract EscrowFactory is ReentrancyGuard {
                 // Native ETH path
                 (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
                 accumulatedFees += fee;
-                uint256 kickback = _recordReferralKickback(referrer, msg.value, fee);
+                uint256 kickback = _recordReferralKickback(referrer, msg.value, fee, address(0));
                 rec.totalAmount = net;
                 rec.fee = fee;
 
-                SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, address(0));
-                esc.deposit{ value: net }(net);
+                SimpleEscrow esc = new SimpleEscrow(address(this), msg.sender, beneficiary, ra, address(0));
                 rec.contractAddress = address(esc);
+                // Register the escrow record BEFORE the payable deposit so any
+                // observer of view functions (off-chain indexers, integrators)
+                // never sees a state where funds are in flight but no record
+                // exists. With nonReentrant guarding the function, this also
+                // closes the read-only reentrancy window for the child escrow.
+                _registerEscrow(rec);
+                esc.deposit{ value: net }(net);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry so the oracle can
+                // resolve disputes on this escrow. Best-effort: only
+                // attempted if useAIArbiter is true and an arbiter is set.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.SIMPLE
+                    );
+                }
             } else {
                 // ERC-20 path: fee charged in tokens
                 uint256 gross = IERC20(token).allowance(msg.sender, address(this));
@@ -296,23 +379,39 @@ contract EscrowFactory is ReentrancyGuard {
                 if (useAIArbiter) fee += aiArbiterFee;
                 require(gross > fee, "Amount too low to cover fees");
                 uint256 net = gross - fee;
-                // Update state BEFORE external call
-                accumulatedFees += fee; // tracked as token units in accumulatedTokenFees ideally, but kept simple
-                uint256 kickback = _recordReferralKickback(referrer, gross, fee);
+                // Update state BEFORE external call. Per-token accounting keeps
+                // ERC-20 fees separate from the ETH fee pool, so they can be
+                // withdrawn via withdrawTokenFees(token).
+                accumulatedTokenFees[token] += fee;
+                uint256 kickback = _recordReferralKickback(referrer, gross, fee, token);
                 rec.totalAmount = net;
                 rec.fee = fee;
 
+                // Deploy the child escrow first so we have its address.
+                SimpleEscrow esc = new SimpleEscrow(address(this), msg.sender, beneficiary, ra, token);
+                rec.contractAddress = address(esc);
+                // Register the escrow record BEFORE the token transfers. This
+                // closes the read-only reentrancy window for ERC-777 / callback
+                // tokens: any token-transfer hook that calls getEscrows() will
+                // see the new record, not an in-flight state.
+                _registerEscrow(rec);
                 // External calls after all state updates
                 IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
-                SimpleEscrow esc = new SimpleEscrow(msg.sender, beneficiary, ra, token);
                 IERC20(token).safeTransfer(address(esc), net);
+                // deposit() is now onlyFactory + nonReentrant + uses measured
+                // delta so fee-on-transfer / rebasing tokens are handled correctly.
                 esc.deposit(net);
-                rec.contractAddress = address(esc);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry so the oracle can
+                // resolve disputes on this escrow.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.SIMPLE
+                    );
+                }
             }
         }
 
-        _registerEscrow(rec);
         emit SimpleEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter, token);
         return rec.contractAddress;
     }
@@ -330,6 +429,9 @@ contract EscrowFactory is ReentrancyGuard {
         address          referrer
     ) external payable nonReentrant returns (address escrowOut) {
         require(trustTier <= 2, "Invalid trust tier");
+        require(descriptions.length == amounts.length, "Length mismatch");
+        require(descriptions.length > 0, "No milestones");
+        require(descriptions.length <= 50, "Too many milestones");
         if (token == address(0)) {
             require(msg.value > 0, "Must send ETH");
         } else {
@@ -361,13 +463,22 @@ contract EscrowFactory is ReentrancyGuard {
                 (uint256 net, uint256 fee) = _computeFee(msg.value, useAIArbiter);
                 require(net >= netTotal, "msg.value too low for amounts + fees");
                 accumulatedFees += fee + (net - netTotal);
-                uint256 kickback = _recordReferralKickback(referrer, msg.value, fee + (net - netTotal));
+                uint256 kickback = _recordReferralKickback(referrer, msg.value, fee + (net - netTotal), address(0));
                 rec.fee = fee;
 
-                MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, address(0), descriptions, amounts);
-                esc.fund{ value: netTotal }(netTotal);
+                MilestoneEscrow esc = new MilestoneEscrow(address(this), msg.sender, beneficiary, ra, address(0), descriptions, amounts);
                 rec.contractAddress = address(esc);
+                // Register BEFORE the payable fund() — see createSimpleEscrow
+                // for the read-only reentrancy rationale.
+                _registerEscrow(rec);
+                esc.fund{ value: netTotal }(netTotal);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.MILESTONE
+                    );
+                }
             } else {
                 // ERC-20 path
                 uint256 gross = IERC20(token).allowance(msg.sender, address(this));
@@ -377,22 +488,32 @@ contract EscrowFactory is ReentrancyGuard {
                 if (useAIArbiter) fee += aiArbiterFee;
                 require(gross > fee, "Amount too low to cover fees");
                 require(gross - fee >= netTotal, "Insufficient amount for milestones");
-                // Update state BEFORE external call
-                accumulatedFees += fee + (gross - fee - netTotal);
-                uint256 kickback = _recordReferralKickback(referrer, gross, fee + (gross - fee - netTotal));
+                // Update state BEFORE external call. Per-token accounting
+                // (token-denominated fee + leftover, kept separate from ETH).
+                accumulatedTokenFees[token] += fee + (gross - fee - netTotal);
+                uint256 kickback = _recordReferralKickback(referrer, gross, fee + (gross - fee - netTotal), token);
                 rec.fee = fee;
 
-                // External calls after all state updates
+                // Deploy the child first so we have its address.
+                MilestoneEscrow esc = new MilestoneEscrow(address(this), msg.sender, beneficiary, ra, token, descriptions, amounts);
+                rec.contractAddress = address(esc);
+                // Register BEFORE the token transfers — closes the read-only
+                // reentrancy window for ERC-777 / callback tokens. See
+                // createSimpleEscrow for the full rationale.
+                _registerEscrow(rec);
                 IERC20(token).safeTransferFrom(msg.sender, address(this), gross);
-                MilestoneEscrow esc = new MilestoneEscrow(msg.sender, beneficiary, ra, token, descriptions, amounts);
                 IERC20(token).safeTransfer(address(esc), netTotal);
                 esc.fund(netTotal);
-                rec.contractAddress = address(esc);
                 if (kickback > 0) emit ReferralCredited(referrer, rec.contractAddress, kickback);
+                // Register with the AIArbiter registry.
+                if (useAIArbiter && aiArbiterAddress != address(0)) {
+                    AIArbiter(aiArbiterAddress).registerEscrow(
+                        rec.contractAddress, AIArbiter.EscrowType.MILESTONE
+                    );
+                }
             }
         }
 
-        _registerEscrow(rec);
         emit MilestoneEscrowCreated(rec.contractAddress, msg.sender, beneficiary, rec.arbiter, rec.totalAmount, rec.fee, trustTier, useAIArbiter, token);
         return rec.contractAddress;
     }

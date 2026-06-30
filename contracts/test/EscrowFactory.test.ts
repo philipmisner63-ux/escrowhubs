@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import hre from "hardhat";
-import { parseEther, getAddress } from "viem";
+import { parseEther, getAddress, zeroAddress } from "viem";
 
 // EscrowRecord tuple indices:
 // 0: contractAddress
@@ -22,14 +22,21 @@ const ZERO = "0x0000000000000000000000000000000000000000" as const;
 describe("EscrowFactory", () => {
   async function deploy() {
     const conn = await hre.network.connect();
-    const [owner, beneficiary, arbiter, other] = await conn.viem.getWalletClients();
+    const [owner, beneficiary, arbiter, other, oracleAcct] = await conn.viem.getWalletClients();
 
     const factory   = await conn.viem.deployContract("EscrowFactory", []);
-    const aiArbiter = await conn.viem.deployContract("AIArbiter", [owner.account.address]);
-
+    // AIArbiter now takes (oracleSigner, initialOwner, trustedFactory).
+    // We pass address(0) for trustedFactory initially, then set it after the
+    // factory is deployed so the registry knows the factory is trusted.
+    const aiArbiter = await conn.viem.deployContract("AIArbiter", [
+      oracleAcct.account.address,
+      owner.account.address,
+      zeroAddress,
+    ]);
+    await aiArbiter.write.setTrustedFactory([factory.address]);
     await factory.write.setAIArbiter([aiArbiter.address]);
 
-    return { factory, aiArbiter, conn, owner, beneficiary, arbiter, other };
+    return { factory, aiArbiter, conn, owner, beneficiary, arbiter, other, oracleAcct };
   }
 
   async function deployWithToken() {
@@ -186,7 +193,7 @@ describe("EscrowFactory", () => {
     assert.ok(record[5] > 0n); // totalAmount > 0
   });
 
-  it("[ERC-20] protocol fee taken in tokens", async () => {
+  it("[ERC-20] protocol fee taken in tokens (and routed to per-token pool, not ETH pool)", async () => {
     const { factory, beneficiary, arbiter, token } = await deployWithToken();
 
     const gross = 1_010_000n;
@@ -198,13 +205,75 @@ describe("EscrowFactory", () => {
        0, false, token.address, ZERO]
     );
 
-    // Factory should have accumulated the fee (in accumulatedFees, same slot)
-    const accumulated = await factory.read.accumulatedFees();
-    assert.ok(accumulated > 0n);
+    // Per-token fee pool should hold the protocol fee, NOT the ETH pool.
+    // This is the fix for the cross-asset accounting mismatch: token fees
+    // were previously mis-credited to accumulatedFees (which can only pay ETH).
+    const ethPool     = await factory.read.accumulatedFees();
+    const tokenPool   = await factory.read.accumulatedTokenFees([token.address]);
+    assert.equal(ethPool, 0n, "ETH pool should be empty for an ERC-20 escrow");
+    assert.ok(tokenPool > 0n, "Per-token pool should hold the ERC-20 fee");
+
     // Escrow should hold net tokens (gross - fee)
     const record = await factory.read.escrows([0n]);
     const escrowBal = await token.read.balanceOf([record[0]]);
     assert.equal(escrowBal, record[5]); // escrow holds totalAmount
+  });
+
+  it("[ERC-20] owner can withdraw accumulated token fees via withdrawTokenFees(token)", async () => {
+    const { factory, beneficiary, arbiter, token, owner, conn } = await deployWithToken();
+    const publicClient = await conn.viem.getPublicClient();
+
+    const gross = 1_010_000n;
+    await token.write.approve([factory.address, gross]);
+    await factory.write.createSimpleEscrow(
+      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address),
+       0, false, token.address, ZERO]
+    );
+
+    const tokenPoolBefore = await factory.read.accumulatedTokenFees([token.address]);
+    assert.ok(tokenPoolBefore > 0n);
+
+    // Withdraw as the owner; treasury defaults to owner.
+    await factory.write.withdrawTokenFees([token.address]);
+
+    assert.equal(await factory.read.accumulatedTokenFees([token.address]), 0n);
+    // Owner's token balance should have increased by the fee amount.
+    const ownerBal = await token.read.balanceOf([getAddress(owner.account.address)]);
+    assert.ok(ownerBal >= tokenPoolBefore);
+  });
+
+  it("[ERC-20] withdrawTokenFees rejects address(0) to avoid silent ETH loss", async () => {
+    const { factory } = await deploy();
+    await assert.rejects(
+      factory.write.withdrawTokenFees(["0x0000000000000000000000000000000000000000"]),
+      /Use withdrawFees\(\) for ETH/
+    );
+  });
+
+  it("[ERC-20] withdrawTokenFees reverts if not owner", async () => {
+    const { factory, beneficiary, arbiter, token, other } = await deployWithToken();
+    const gross = 1_010_000n;
+    await token.write.approve([factory.address, gross]);
+    await factory.write.createSimpleEscrow(
+      [getAddress(beneficiary.account.address), getAddress(arbiter.account.address),
+       0, false, token.address, ZERO]
+    );
+    await assert.rejects(
+      factory.write.withdrawTokenFees([token.address], { account: other.account }),
+      /Not owner|Ownable/i
+    );
+  });
+
+  it("[ERC-20] reject length mismatch on milestone escrow", async () => {
+    const { factory, beneficiary, arbiter, token } = await deployWithToken();
+    await token.write.approve([factory.address, 1_010_000n]);
+    await assert.rejects(
+      factory.write.createMilestoneEscrow(
+        [getAddress(beneficiary.account.address), getAddress(arbiter.account.address),
+         ["M1", "M2"], [300_000n, 400_000n, 300_000n], 0, false, token.address, ZERO]
+      ),
+      /Length mismatch/
+    );
   });
 
   it("[ERC-20] reverts if ETH sent with token escrow", async () => {
@@ -259,7 +328,7 @@ describe("EscrowFactory", () => {
 
   // ─── Referral with ERC-20 ──────────────────────────────────────────────────
 
-  it("[ERC-20] referral credited in tokens", async () => {
+  it("[ERC-20] referral credited in tokens (claimable via claimReferralEarnings(token))", async () => {
     const { factory, beneficiary, arbiter, token, other } = await deployWithToken();
 
     const gross = 1_010_000n;
@@ -270,7 +339,35 @@ describe("EscrowFactory", () => {
        0, false, token.address, getAddress(other.account.address)] // other is referrer
     );
 
-    const [, , claimable] = await factory.read.getReferralStats([getAddress(other.account.address)]);
-    assert.ok(claimable > 0n, "Referrer should have claimable earnings");
+    // Per-token earnings, claimable via the token overload.
+    const tokenEarnings = await factory.read.getTokenReferralEarnings([
+      getAddress(other.account.address), token.address
+    ]);
+    assert.ok(tokenEarnings > 0n, "Referrer should have claimable token earnings");
+
+    // ETH earnings slot should be empty (cross-asset isolation).
+    const ethStats = await factory.read.getReferralStats([getAddress(other.account.address)]);
+    assert.equal(ethStats[3], 0n, "ETH earnings slot should be empty for a token escrow");
+
+    // Claim the token earnings.
+    const balBefore = await token.read.balanceOf([getAddress(other.account.address)]);
+    await factory.write.claimReferralEarnings([token.address], { account: other.account });
+    const balAfter = await token.read.balanceOf([getAddress(other.account.address)]);
+
+    assert.equal(
+      await factory.read.getTokenReferralEarnings([getAddress(other.account.address), token.address]),
+      0n,
+      "Token earnings should be zeroed after claim"
+    );
+    assert.equal(balAfter - balBefore, tokenEarnings, "Referrer should receive the kickback in tokens");
+  });
+
+  it("[ERC-20] claimReferralEarnings(address(0)) reverts to avoid silent loss", async () => {
+    const { factory, other } = await deploy();
+    await assert.rejects(
+      factory.write.claimReferralEarnings(["0x0000000000000000000000000000000000000000"],
+        { account: other.account }),
+      /Use claimReferralEarnings\(\) for ETH/
+    );
   });
 });

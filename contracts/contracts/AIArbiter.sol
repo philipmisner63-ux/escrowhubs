@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -27,10 +28,24 @@ interface IMilestoneEscrow {
  *
  * @dev Evidence is stored on-chain per escrow address. Resolution is gated
  *      behind an authorized oracleSigner address managed by the owner.
+ *
+ *      v0.11.0 security upgrades (Fusion audit 2026-06-16):
+ *      - Escrow registry: escrows must be registered by the trusted factory
+ *        before they can be resolved. Closes the confused-deputy risk where
+ *        any contract that trusts AIArbiter + has matching selectors was
+ *        reachable through the arbiter.
+ *      - Code-length check on resolve calls: rejects calls to EOAs or
+ *        non-existent contracts.
+ *      - Milestone index bounds check: validates the index against
+ *        milestoneCount() before calling resolve.
+ *      - 2-step ownership: prevents permanent bricking on a typo'd newOwner.
+ *      - transferOwnership emits event AFTER validation (fixes CEI smell).
  */
-contract AIArbiter is ReentrancyGuard {
+contract AIArbiter is Ownable2Step, ReentrancyGuard {
 
     // ─── Types ────────────────────────────────────────────────────────────────
+
+    enum EscrowType { NONE, SIMPLE, MILESTONE }
 
     struct Evidence {
         address submitter;
@@ -40,8 +55,17 @@ contract AIArbiter is ReentrancyGuard {
 
     // ─── State ────────────────────────────────────────────────────────────────
 
-    address public owner;
+    /// @notice The off-chain AI oracle service wallet.
     address public oracleSigner;
+
+    /// @notice The trusted factory that may register escrows with this arbiter.
+    ///         Only the factory can populate the registry; only registered
+    ///         escrows can be resolved. Set by owner at deployment.
+    address public trustedFactory;
+
+    /// @notice escrow address → type. Populated by the trusted factory.
+    ///         Escrows with type NONE (or absent) cannot be resolved.
+    mapping(address => EscrowType) public escrowType;
 
     /// escrow address → evidence submissions
     mapping(address => Evidence[]) private _evidenceLog;
@@ -60,60 +84,86 @@ contract AIArbiter is ReentrancyGuard {
     );
 
     event OracleSignerUpdated(address indexed newSigner);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event TrustedFactoryUpdated(address indexed newFactory);
+    event EscrowRegistered(address indexed escrow, EscrowType typ);
+    event EscrowUnregistered(address indexed escrow);
+    // OwnershipTransferred is inherited from Ownable — do not redeclare.
 
     // ─── Modifiers ────────────────────────────────────────────────────────────
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
-        _;
-    }
 
     modifier onlyOracle() {
         require(msg.sender == oracleSigner, "Not oracle");
         _;
     }
 
-    // ─── Constructor ─────────────────────────────────────────────────────────
+    modifier onlyFactory_() {
+        require(msg.sender == trustedFactory, "Not factory");
+        _;
+    }
 
     /**
-     * @param _oracleSigner  Address of the off-chain AI oracle service wallet.
+     * @param _oracleSigner   The off-chain AI oracle service wallet.
+     * @param _initialOwner   The admin address (multisig recommended).
+     * @param _trustedFactory The factory contract authorized to register
+     *                        escrows with this arbiter. Set to address(0)
+     *                        initially; the owner must set it before any
+     *                        escrows can be registered/resolved.
      */
-    constructor(address _oracleSigner) {
+    constructor(
+        address _oracleSigner,
+        address _initialOwner,
+        address _trustedFactory
+    ) Ownable(_initialOwner) {
         require(_oracleSigner != address(0), "Invalid oracle signer");
-        owner        = msg.sender;
-        oracleSigner = _oracleSigner;
+        require(_initialOwner != address(0), "Invalid initial owner");
+        oracleSigner   = _oracleSigner;
+        trustedFactory = _trustedFactory;
     }
 
     // ─── Admin ────────────────────────────────────────────────────────────────
 
-    /**
-     * @notice Update the authorized oracle signer address.
-     * @param newSigner  New oracle wallet address.
-     */
     function setOracleSigner(address newSigner) external onlyOwner {
         require(newSigner != address(0), "Invalid oracle signer");
         oracleSigner = newSigner;
         emit OracleSignerUpdated(newSigner);
     }
 
-    /**
-     * @notice Transfer contract ownership.
-     * @param newOwner  New owner address.
-     */
-    function transferOwnership(address newOwner) external onlyOwner {
-        emit OwnershipTransferred(owner, newOwner);
-        require(newOwner != address(0), "Invalid owner");
-        owner = newOwner;
+    /// @notice Set the trusted factory that can register escrows.
+    ///         Required before any escrow can be resolved.
+    function setTrustedFactory(address newFactory) external onlyOwner {
+        require(newFactory != address(0), "Invalid factory");
+        trustedFactory = newFactory;
+        emit TrustedFactoryUpdated(newFactory);
+    }
+
+    // ─── Registry ────────────────────────────────────────────────────────────
+
+    /// @notice Register an escrow with this arbiter. Only the trusted
+    ///         factory may call. Required before any resolve call on the
+    ///         escrow can succeed.
+    function registerEscrow(address escrowAddress, EscrowType typ)
+        external
+        onlyFactory_
+    {
+        require(escrowAddress != address(0), "Invalid escrow");
+        require(escrowAddress.code.length > 0, "Escrow not a contract");
+        require(typ != EscrowType.NONE, "Cannot register as NONE");
+        require(escrowType[escrowAddress] == EscrowType.NONE, "Already registered");
+        escrowType[escrowAddress] = typ;
+        emit EscrowRegistered(escrowAddress, typ);
+    }
+
+    /// @notice Unregister an escrow (e.g. when fully resolved and the
+    ///         factory wants to reclaim storage or signal end-of-life).
+    ///         Only the factory may call.
+    function unregisterEscrow(address escrowAddress) external onlyFactory_ {
+        require(escrowType[escrowAddress] != EscrowType.NONE, "Not registered");
+        escrowType[escrowAddress] = EscrowType.NONE;
+        emit EscrowUnregistered(escrowAddress);
     }
 
     // ─── Evidence ─────────────────────────────────────────────────────────────
 
-    /**
-     * @notice Submit evidence for an active dispute.
-     * @param escrowAddress  Address of the disputed escrow contract.
-     * @param evidenceURI    IPFS URI (ipfs://...) or short plaintext description.
-     */
     function submitEvidence(address escrowAddress, string calldata evidenceURI)
         external
     {
@@ -131,79 +181,72 @@ contract AIArbiter is ReentrancyGuard {
 
     // ─── Resolution: SimpleEscrow ─────────────────────────────────────────────
 
-    /**
-     * @notice AI oracle: release funds to beneficiary on a SimpleEscrow.
-     * @param escrowAddress  Address of the SimpleEscrow contract.
-     */
     function resolveRelease(address escrowAddress)
         external
         onlyOracle
         nonReentrant
     {
+        _requireSimpleRegistered(escrowAddress);
         emit DisputeResolved(escrowAddress, "release");
         ISimpleEscrow(escrowAddress).resolveRelease();
     }
 
-    /**
-     * @notice AI oracle: refund depositor on a SimpleEscrow.
-     * @param escrowAddress  Address of the SimpleEscrow contract.
-     */
     function resolveRefund(address escrowAddress)
         external
         onlyOracle
         nonReentrant
     {
+        _requireSimpleRegistered(escrowAddress);
         emit DisputeResolved(escrowAddress, "refund");
         ISimpleEscrow(escrowAddress).resolveRefund();
     }
 
     // ─── Resolution: MilestoneEscrow ──────────────────────────────────────────
 
-    /**
-     * @notice AI oracle: release a specific milestone to beneficiary.
-     * @param escrowAddress  Address of the MilestoneEscrow contract.
-     * @param milestoneIndex Index of the disputed milestone.
-     */
     function resolveMilestoneRelease(address escrowAddress, uint256 milestoneIndex)
         external
         onlyOracle
         nonReentrant
     {
+        _requireMilestoneRegistered(escrowAddress);
+        require(milestoneIndex < IMilestoneEscrow(escrowAddress).milestoneCount(), "Index out of bounds");
         emit DisputeResolved(escrowAddress, "release");
         IMilestoneEscrow(escrowAddress).resolveRelease(milestoneIndex);
     }
 
-    /**
-     * @notice AI oracle: refund a specific milestone to depositor.
-     * @param escrowAddress  Address of the MilestoneEscrow contract.
-     * @param milestoneIndex Index of the disputed milestone.
-     */
     function resolveMilestoneRefund(address escrowAddress, uint256 milestoneIndex)
         external
         onlyOracle
         nonReentrant
     {
+        _requireMilestoneRegistered(escrowAddress);
+        require(milestoneIndex < IMilestoneEscrow(escrowAddress).milestoneCount(), "Index out of bounds");
         emit DisputeResolved(escrowAddress, "refund");
         IMilestoneEscrow(escrowAddress).resolveRefund(milestoneIndex);
     }
 
+    // ─── Internal validation ─────────────────────────────────────────────────
+
+    function _requireSimpleRegistered(address escrowAddress) internal view {
+        require(escrowAddress != address(0), "Invalid escrow");
+        require(escrowAddress.code.length > 0, "Escrow not a contract");
+        require(escrowType[escrowAddress] == EscrowType.SIMPLE, "Not a registered simple escrow");
+    }
+
+    function _requireMilestoneRegistered(address escrowAddress) internal view {
+        require(escrowAddress != address(0), "Invalid escrow");
+        require(escrowAddress.code.length > 0, "Escrow not a contract");
+        require(escrowType[escrowAddress] == EscrowType.MILESTONE, "Not a registered milestone escrow");
+    }
+
     // ─── Views ────────────────────────────────────────────────────────────────
 
-    /**
-     * @notice Get the number of evidence submissions for an escrow.
-     * @param escrowAddress  Address of the escrow contract.
-     */
     function getEvidenceCount(address escrowAddress)
         external view returns (uint256)
     {
         return _evidenceLog[escrowAddress].length;
     }
 
-    /**
-     * @notice Get a specific evidence submission.
-     * @param escrowAddress  Address of the escrow contract.
-     * @param index          Index in the evidence array.
-     */
     function getEvidence(address escrowAddress, uint256 index)
         external view returns (Evidence memory)
     {
@@ -211,10 +254,6 @@ contract AIArbiter is ReentrancyGuard {
         return _evidenceLog[escrowAddress][index];
     }
 
-    /**
-     * @notice Get all evidence for an escrow (use with care on large arrays).
-     * @param escrowAddress  Address of the escrow contract.
-     */
     function getAllEvidence(address escrowAddress)
         external view returns (Evidence[] memory)
     {
